@@ -1,0 +1,52 @@
+databases:
+  - name: frea-market-db
+    plan: free
+    databaseName: laravel_db
+    user: laravel_user
+
+services:
+  - type: web
+    name: frea-market
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: APP_NAME
+        value: frea-market
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        generateValue: true
+      # Render does not provide the public https:// URL via fromService,
+      # so set this manually to your service URL after the first deploy
+      # (e.g. https://frea-market.onrender.com).
+      - key: APP_URL
+        value: https://frea-market.onrender.com
+      - key: LOG_CHANNEL
+        value: stack
+      - key: LOG_LEVEL
+        value: error
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DATABASE_URL
+        fromDatabase:
+          name: frea-market-db
+          property: connectionString
+      - key: SESSION_DRIVER
+        value: file
+      - key: CACHE_DRIVER
+        value: file
+      - key: FILESYSTEM_DRIVER
+        value: local
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: MAIL_MAILER
+        value: log
+      - key: STRIPE_PUBLIC_KEY
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false

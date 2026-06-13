@@ -1,4 +1,3 @@
-version: '3.8'
 services:
  
 
@@ -17,31 +16,28 @@ services:
         volumes:
             - ./src:/var/www/
 
-    mysql:
-        image: mysql:8.0.26
+    pgsql:
+        image: postgres:15
         environment:
-            MYSQL_ROOT_PASSWORD: root
-            MYSQL_DATABASE: laravel_db
-            MYSQL_USER: laravel_user
-            MYSQL_PASSWORD: laravel_pass
+            POSTGRES_DB: laravel_db
+            POSTGRES_USER: laravel_user
+            POSTGRES_PASSWORD: laravel_pass
+            TZ: Asia/Tokyo
         command:
-            mysqld --default-authentication-plugin=mysql_native_password
-        volumes:
-            - ./docker/mysql/data:/var/lib/mysql
-            - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
-
-    phpmyadmin:
-        image: phpmyadmin/phpmyadmin
-        environment:
-            - PMA_ARBITRARY=1
-            - PMA_HOST=mysql
-            - PMA_USER=laravel_user
-            - PMA_PASSWORD=laravel_pass
-
-        depends_on:
-            - mysql
+            postgres -c timezone=Asia/Tokyo
         ports:
-            - 8080:80
+            - "5432:5432"
+        volumes:
+            - ./docker/postgres/data:/var/lib/postgresql/data
+
+    adminer:
+        image: adminer
+        environment:
+            - ADMINER_DEFAULT_SERVER=pgsql
+        depends_on:
+            - pgsql
+        ports:
+            - 8080:8080
 
  
     mailhog:
