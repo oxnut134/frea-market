@@ -4,9 +4,12 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Database\Seeders\Concerns\ResetsAutoIncrement;
 
 class CategoriesTableSeeder extends Seeder
 {
+    use ResetsAutoIncrement;
+
     /**
      * Run the database seeds.
      *
@@ -14,113 +17,37 @@ class CategoriesTableSeeder extends Seeder
      */
     public function run()
     {
+        $now = now();
 
-        $param = [
-            'category' => 'ファッション',
-            'created_at' => now(),
-            'updated_at' => now(),
+        $categories = [
+            'ファッション',
+            '家電',
+            'インテリア',
+            'レディース',
+            'メンズ',
+            'コスメ',
+            '本',
+            'ゲーム',
+            'スポーツ',
+            'キッチン',
+            'ハンドメイド',
+            'アクセサリー',
+            'おもちゃ',
+            'ベビー・キッズ',
         ];
-        DB::table('categories')->insert($param);
 
-        $param = [
-            'category' => '家電',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ];
-        DB::table('categories')->insert($param);
+        $rows = [];
+        foreach ($categories as $index => $category) {
+            $rows[] = [
+                'id' => $index + 1,
+                'category' => $category,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
 
-        $param = [
-            'category' => 'インテリア',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ];
-        DB::table('categories')->insert($param);
+        DB::table('categories')->upsert($rows, ['id'], ['category', 'updated_at']);
 
-        $param = [
-            'category' => 'レディース',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ];
-        DB::table('categories')->insert($param);
-
-        $param = [
-            'category' => 'メンズ',
-            'created_at' => now(),
-            'updated_at' => now(),
-
-        ];
-        DB::table('categories')->insert($param);
-
-        $param = [
-            'category' => 'コスメ',
-            'created_at' => now(),
-            'updated_at' => now(),
-
-        ];
-        DB::table('categories')->insert($param);
-
-        $param = [
-            'category' => '本',
-            'created_at' => now(),
-            'updated_at' => now(),
-
-        ];
-        DB::table('categories')->insert($param);
-
-        $param = [
-            'category' => 'ゲーム',
-            'created_at' => now(),
-            'updated_at' => now(),
-
-        ];
-        DB::table('categories')->insert($param);
-
-        $param = [
-            'category' => 'スポーツ',
-            'created_at' => now(),
-            'updated_at' => now(),
-
-        ];
-        DB::table('categories')->insert($param);
-
-        $param = [
-            'category' => 'キッチン',
-            'created_at' => now(),
-            'updated_at' => now(),
-
-        ];
-        DB::table('categories')->insert($param);
-
-        $param = [
-            'category' => 'ハンドメイド',
-            'created_at' => now(),
-            'updated_at' => now(),
-
-        ];
-        DB::table('categories')->insert($param);
-
-        $param = [
-            'category' => 'アクセサリー',
-            'created_at' => now(),
-            'updated_at' => now(),
-
-        ];
-        DB::table('categories')->insert($param);
-
-        $param = [
-            'category' => 'おもちゃ',
-            'created_at' => now(),
-            'updated_at' => now(),
-
-        ];
-        DB::table('categories')->insert($param);
-
-        $param = [
-            'category' => 'ベビー・キッズ',
-            'created_at' => now(),
-            'updated_at' => now(),
-
-        ];
-        DB::table('categories')->insert($param);
+        $this->resetAutoIncrement('categories');
     }
 }
