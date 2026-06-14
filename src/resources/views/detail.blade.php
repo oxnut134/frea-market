@@ -89,7 +89,7 @@
                             let action = myLike === 1 ? 'remove' : 'add';
 
                             $.ajax({
-                                url: `http://localhost/like/${itemId}/${action}`, // コントローラ起動
+                                url: `/like/${itemId}/${action}`, // コントローラ起動
                                 method: 'GET',
                                 success: function(data) {
                                     if (action === 'remove') {
