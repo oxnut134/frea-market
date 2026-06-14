@@ -19,6 +19,10 @@ class Item extends Model
         'status',
     ];
 
+    protected $casts = [
+        'likes_count' => 'integer',
+    ];
+
     /*public function purchaseManyToMany()
     {
         //return $this->hasOne(Purchase::class, 'id', 'item_id' );

@@ -121,7 +121,7 @@ class ItemController extends Controller
             $item->price = number_format($item->price); //三桁カンマ
         }
         //いいね数取得
-        $like_count = Like::where('item_id', $id)->count();
+        $like_count = $item->likes_count;
         $user_id = Auth::id();
         $my_like = Like::where('user_id', $user_id)
             ->where('item_id', $id)->count();

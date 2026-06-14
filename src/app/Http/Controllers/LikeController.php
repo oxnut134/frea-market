@@ -13,30 +13,33 @@ class LikeController extends Controller
     public function add($id)
     {
         $current_user_id = Auth::id(); // 本番ではAuth::id()を使用
-        // いいねの存在確認とカウントを同時に取得
-        $likeExists = Like::where('item_id', $id)
-            ->where('user_id', $current_user_id)
-            ->exists();
+        $item = Item::findOrFail($id);
 
-        if (!$likeExists) {
-            Like::create([
-                'item_id' => $id,
-                'user_id' => $current_user_id
-            ]);
+        $like = Like::firstOrCreate([
+            'item_id' => $id,
+            'user_id' => $current_user_id,
+        ]);
+
+        if ($like->wasRecentlyCreated) {
+            $item->increment('likes_count');
         }
 
-        $likeCount = Like::where('item_id', $id)->count();
-        return response()->json(['likes' => $likeCount]);
+        return response()->json(['likes' => $item->likes_count]);
     }
 
     public function remove($id)
     {
         $current_user_id = Auth::id(); // 本番ではAuth::id()を使用
-        Like::where('item_id', $id)
+        $item = Item::findOrFail($id);
+
+        $deleted = Like::where('item_id', $id)
             ->where('user_id', $current_user_id)
             ->delete();
 
-        $likeCount = Like::where('item_id', $id)->count();
-        return response()->json(['likes' => $likeCount]);
+        if ($deleted) {
+            $item->decrement('likes_count');
+        }
+
+        return response()->json(['likes' => $item->likes_count]);
     }
 }
