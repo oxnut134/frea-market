@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 
 class Comment extends Model
@@ -20,7 +21,7 @@ class Comment extends Model
     {
         //dd($request);
         $item_id = $request->item_id;
-        $user_id = 1;                     //1は本番ではAuth::id()となる
+        $user_id = Auth::id();
 
         $comment = new Comment;
         $comment->item_id = $item_id;

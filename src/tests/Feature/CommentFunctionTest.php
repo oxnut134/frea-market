@@ -354,6 +354,40 @@ class CommentFunctionTest extends TestCase
            }
 
 */
+    //------------------------ コメント投稿者の保存確認 ------------------------------
+
+    public function testCommentIsSavedWithLoginUser()
+    {
+        $seller = User::factory()->create();
+        $commenter = User::factory()->create(); //出品者とは別のユーザーで投稿する
+
+        $item = new Item;
+        $item->user_id = $seller->id;
+        $item->item_image = 'Item-Armani+Mens+Clock.jpg';
+        $item->item_name = '腕時計';
+        $item->brand_name = 'Armani';
+        $item->price = 15000;
+        $item->description = 'スタイリッシュなデザインのメンズ腕時計';
+        $item->condition = '良好';
+        $item->save();
+
+        $this->actingAs($commenter);
+
+        $response = $this->post('/item/comment', [
+            'item_id' => $item->id,
+            'comment' => 'test',
+        ]);
+        $response->assertStatus(302);
+
+        // ログインユーザーが投稿者として保存されていることを確認
+        $this->assertDatabaseHas('comments', [
+            'item_id' => $item->id,
+            'user_id' => $commenter->id,
+            'comment' => 'test',
+        ]);
+        $this->assertEquals(1, Comment::count());
+    }
+
     //------------------------ 3rd method -------------------------------------------
 
 
