@@ -54,7 +54,6 @@ class LoginValidationTest extends TestCase
             'name' => 'PHPtest',
             'email' => 'PHPtest@test.com',
             'password' => bcrypt('abc12345'),
-            'password_confirmation' => bcrypt('abc12345')
         ]);
 
         $user = User::all();

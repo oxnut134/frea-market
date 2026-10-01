@@ -6,7 +6,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Database\Seeders\Concerns\ResetsAutoIncrement;
 
-class PurchasestableSeeder extends Seeder
+class PurchasesTableSeeder extends Seeder
 {
     use ResetsAutoIncrement;
 

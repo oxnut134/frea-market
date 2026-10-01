@@ -85,7 +85,6 @@ class AuthController extends Controller
         $user->name = $request->name;
         $user->email = $request->email;
         $user->password = $request->password;
-        $user->password_confirmation = $request->password_confirmation;
 
         $user->save();
 
