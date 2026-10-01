@@ -38,19 +38,16 @@ class SearchItemsTest extends TestCase
                     'name' => 'cat',
                     'email' => 'cat@test.com',
                     'password' => bcrypt('abc12345'),
-                    'password_confirmation' => bcrypt('abc12345')
                 ],
                 [
                     'name' => 'dog',
                     'email' => 'dog@test.com',
                     'password' => bcrypt('abc12345'),
-                    'password_confirmation' => bcrypt('abc12345')
                 ],
                 [
                     'name' => 'rat',
                     'email' => 'rat@test.com',
                     'password' => bcrypt('abc12345'),
-                    'password_confirmation' => bcrypt('abc12345')
                 ]
             ];
         foreach ($users as $user) {
@@ -144,19 +141,16 @@ class SearchItemsTest extends TestCase
                     'name' => 'cat',
                     'email' => 'cat@test.com',
                     'password' => bcrypt('abc12345'),
-                    'password_confirmation' => bcrypt('abc12345')
                 ],
                 [
                     'name' => 'dog',
                     'email' => 'dog@test.com',
                     'password' => bcrypt('abc12345'),
-                    'password_confirmation' => bcrypt('abc12345')
                 ],
                 [
                     'name' => 'rat',
                     'email' => 'rat@test.com',
                     'password' => bcrypt('abc12345'),
-                    'password_confirmation' => bcrypt('abc12345')
                 ]
 
             ];

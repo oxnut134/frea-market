@@ -78,18 +78,6 @@ class AuthController extends Controller
             return view('index', ['items' => $items]);
         }
     }
-    /* Not needed because fortify  do this function by itself
-    public function addUser(Request $request)
-    {
-        $user = new User;
-        $user->name = $request->name;
-        $user->email = $request->email;
-        $user->password = $request->password;
-
-        $user->save();
-
-        return view('profile_first');
-    }*/
 
     public function ProfileFirst()
     {
