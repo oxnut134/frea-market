@@ -67,7 +67,6 @@ Route::middleware('auth')->group(function () {
     //会員登録後のプロフィール入力
     Route::get('/profile/first', [AuthController::class, 'Profilefirst'])->name('profile.first');
     Route::post('/profile/first', [AuthController::class, 'addProfile']);
-    //Route::get('/index', [AuthController::class, 'index'])->name('index');;
 
     //認証メール  mailhog
     Route::get('/send-mail', [MailController::class, 'sendMail'])->name('send-mail');
@@ -80,15 +79,3 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout/success', [PaymentController::class, 'store'])->name('checkout.success');
     Route::get('/checkout/cancel', [PaymentController::class, 'cancel'])->name('checkout.cancel');
 });
-
-
-//以下viewテスト用
-//Route::get('/update', [TestController::class, 'update']);
-//Route::get('/register', [TestController::class, 'register']);
-//Route::get('header', [TestController::class, 'header']);
-//Route::get('/header', [TestController::class, 'header']);
-
-
-/*Route::get('/', function () {
-    return view('welcome');
-});*/

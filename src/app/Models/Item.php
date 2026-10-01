@@ -23,11 +23,6 @@ class Item extends Model
         'likes_count' => 'integer',
     ];
 
-    /*public function purchaseManyToMany()
-    {
-        //return $this->hasOne(Purchase::class, 'id', 'item_id' );
-        return $this->belongsToMany(Purchase::class, 'purchase_item', 'item_id','purchase_id' );
-    }*/
     public function purchase()
     {
         //return $this->hasOne(Purchase::class, 'id', 'item_id' );
@@ -37,11 +32,6 @@ class Item extends Model
     {
         return $this->belongsToMany(Category::class, 'item_category', 'item_id', 'category_id');
     }
-   /* public function userManyToMany()
-    {
-        //return $this->belongsToMany(User::class, 'user_id', 'id');
-    return $this->belongsToMany(User::class, 'item_user', 'item_id', 'user_id');
-    }*/
     public function user()
     {
         //return $this->belongsToMany(User::class, 'user_id', 'id');

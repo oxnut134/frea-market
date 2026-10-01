@@ -36,15 +36,6 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    /*protected $casts = [
-        'email_verified_at' => 'datetime',
-    ];*/
-
     public function likeToItem()
     {
         return $this->belongsToMany(Item::class, 'likes', 'item_id', 'user_id');
@@ -55,10 +46,6 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsToMany(Item::class, 'comments', 'item_id', 'user_id');
     }
 
-    /*public function itemsManyT0Many()
-    {
-        return $this->belongsToMany(Item::class, 'item_user', 'user_id', 'item_id');
-    }*/
     public function items()
     {
         return $this->hasMany(Item::class, 'id', 'user_id');

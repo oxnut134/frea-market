@@ -5,15 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Purchase;
 use App\Models\Item;
-use App\Models\PurchaseItem;
-use App\Models\Like;
-use App\Models\Comment;
 use App\Models\User;
 use App\Models\Profile;
-use App\Models\Category;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\ProfileRequest;
-use App\Http\Requests\ProfileFirstRequest;
 
 
 class UserController extends Controller

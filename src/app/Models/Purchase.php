@@ -16,10 +16,6 @@ class Purchase extends Model
         'delivery_address',
     ];
 
-    /*public function itemManyToMany()
-    {
-        return $this->belongsToMany(Item::class, 'purchase_item', 'purchase_id', 'item_id');
-    }*/
     public function item()
     {
         return $this->belongsTo(Item::class, 'id', 'id');

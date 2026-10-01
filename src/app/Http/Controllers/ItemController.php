@@ -81,24 +81,6 @@ class ItemController extends Controller
             );
         }
     }
-    /* ***This method is included in the function 'index' because of additional tab-processing***
-    public function showMyList(Request $request)
-    {
-        //$items = Item::where('item_name', 'like', '%' . $request['keyword'] . '%')->get();
-        //$items = $items->whereHas('likes')->get();
-        //dd($request);
-        $keyword = $request->keyword;
-        //dd($keyword);
-        $items = Item::where('item_name', 'like', '%' . $keyword . '%')
-            ->whereHas('likeToUser', function ($query) {
-                $query->where('user_id', Auth::id());}) // 認証されたユーザーのIDでフィルタリング
-            ->where('user_id', '!=', Auth::id()) //本番はこちらを追記/自分の出品は表示しない
-            ->get();
-
-            //dd($items);
-
-        return view('index', ['items' => $items]);
-    }*/
     public function search(Request $request)
     {
         //dd($request);
