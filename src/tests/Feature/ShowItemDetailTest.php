@@ -195,7 +195,7 @@ class ShowItemDetailTest extends TestCase
 
         $this->actingAs($user);
         $response = $this->get('/');
-        $response = $this->get('/item/1');
+        $response = $this->get('/item/' . Item::first()->id);
         //dd($response);
         $response->assertSee('Item-Armani+Mens+Clock.jpg');
         $response->assertSee('腕時計');
