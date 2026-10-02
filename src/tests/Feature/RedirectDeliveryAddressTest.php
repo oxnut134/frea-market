@@ -196,9 +196,9 @@ class RedirectDeliveryAddressTest extends TestCase
         $user = User::first(); // usersテーブルの最初のレコードを取得
         $item = Item::first(); // itemsテーブルの最初のレコードを取得
         $response = $this->get('/');
-        $response = $this->get('/item/$item->id');
-        $response = $this->get('/purchase/$item->id');
-        $response = $this->get('/purchase/address/$item->id');
+        $response = $this->get("/item/{$item->id}");
+        $response = $this->get("/purchase/{$item->id}");
+        $response = $this->get("/purchase/address/{$item->id}");
         $profile = Profile::where('user_id', $user->id)->first();
         $purchase = Purchase::where('user_id', $user->id)
             ->where('item_id', $item->id)
@@ -213,7 +213,7 @@ class RedirectDeliveryAddressTest extends TestCase
         ]);
         $response->assertStatus(302);
 
-        $response = $this->get('/purchase/$item->id');
+        $response = $this->get("/purchase/{$item->id}");
 
 
         $response->assertSee('123-1234');      // ステータスが表示されているか
