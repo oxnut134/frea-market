@@ -15,13 +15,4 @@ class Purchase extends Model
         'payment_method',
         'delivery_address',
     ];
-
-    public function item()
-    {
-        return $this->belongsTo(Item::class, 'id', 'id');
-    }
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'user_id', 'id');
-    }
 }

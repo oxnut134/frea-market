@@ -35,28 +35,4 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $hidden = [
         'password',
     ];
-
-    public function likeToItem()
-    {
-        return $this->belongsToMany(Item::class, 'likes', 'item_id', 'user_id');
-    }
-
-    public function commentToItem()
-    {
-        return $this->belongsToMany(Item::class, 'comments', 'item_id', 'user_id');
-    }
-
-    public function items()
-    {
-        return $this->hasMany(Item::class, 'id', 'user_id');
-    }
-    public function purchases()
-    {
-        return $this->hasMany(Purchase::class, 'user_id');
-    }
-
-    public function profile()
-    {
-        return $this->hasOne(Profile::class, 'user_id', 'id');
-    }
 }
