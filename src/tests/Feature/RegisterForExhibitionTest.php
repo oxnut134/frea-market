@@ -229,6 +229,7 @@ class RegisterForExhibitionTest extends TestCase
         $response->assertStatus(200); //リダイレクト/正常
         $item = Item::first(); // itemsテーブルの最初のレコードを取得
         $profile = Profile::where('user_id', $user->id)->first();
+        $category = Category::first();
 
         //入力。登録ボタンクリック
         $response = $this->post('/sell', [
@@ -241,39 +242,33 @@ class RegisterForExhibitionTest extends TestCase
             'price' => 4000,
             'description' => 'クラシックなデザインの革靴',
             'condition' => '状態が悪い',
+            'categories' => [$category->category],
         ]);
-
-        //************************************************************
-        //
-        // 「　画像ファイルはjpegかpngの型式にしてください。　」
-        //　のバリデーションエラー発生でテーブルへの登録処理不能
-        //　本システムでは正常動作につき、このテストコードは作成断念
-        //
-        //*************************************************************
 
         //レスポンス確認
         $response->assertStatus(302); //リダイレクト/正常
-        // セッション内のエラーを取得
-        $errors = session('errors');
+        $response->assertSessionHasNoErrors();
 
-        // 特定のフィールドのエラーを確認
-        dd($errors->get('item_image'));
         // DB保存を確認
         // 新規作成されたレコードを取得
         $item = Item::where('user_id', $user->id)
             ->where('item_name', '革靴')
             ->first();
-        dd($item);
         // DB保存確認（動的に取得したIDを使用）
         $this->assertDatabaseHas('items', [
             'id' => $item->id, // 動的に取得したIDを使用
             'user_id' => $user->id,
-            //'item_image' => 'Item-Leather+Shoes+Product+Photo.jpg',
-            'item_image' => 'Item-Living+Room+Laptop.jpg',
+            'item_image' => 'Item-Leather-Shoes-Product-Photo.jpg',
             'item_name' => '革靴',
+            'brand_name' => 'regal',
             'price' => 4000,
             'description' => 'クラシックなデザインの革靴',
             'condition' => '状態が悪い',
+        ]);
+        // カテゴリーの紐づけを確認
+        $this->assertDatabaseHas('item_category', [
+            'item_id' => $item->id,
+            'category_id' => $category->id,
         ]);
 
 
