@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
+use App\Models\Profile;
 use App\Models\Item;
 use App\Models\Like;
 use App\Models\Purchase;
@@ -102,6 +103,8 @@ class SearchItemsTest extends TestCase
             (new Item)->forceFill($item)->save(); // item_image は $fillable 対象外のため
         }
         $user = User::first(); // usersテーブルの最初のレコードを取得
+        $user->forceFill(['email_verified_at' => now()])->save(); // メール認証済みにする
+        Profile::create(['user_id' => $user->id, 'profile_image' => 'person.png', 'post_code' => '111-1111', 'address' => 'Tokyo']);
         $item = Item::first(); // itemsテーブルの最初のレコードを取得
 
         // /search は auth ミドルウェア配下のためログインする

@@ -55,6 +55,7 @@ class MyProfileDisplayedTest extends TestCase
             $new_user->name = $user['name'];
             $new_user->email = $user['email'];
             $new_user->password = $user['password'];
+            $new_user->email_verified_at = now();
 
             $new_user->save();
         }

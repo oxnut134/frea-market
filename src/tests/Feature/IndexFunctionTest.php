@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
+use App\Models\Profile;
 use App\Models\Item;
 use App\Models\Purchase;
 use Illuminate\Support\Facades\Auth;
@@ -58,6 +59,7 @@ class IndexFunctionTest extends TestCase
             $new_user->name = $user['name'];
             $new_user->email = $user['email'];
             $new_user->password = $user['password'];
+            $new_user->email_verified_at = now();
 
             $new_user->save();
         }
@@ -168,6 +170,7 @@ var_dump("2nd_Method: testGetAllItems");
             $new_user->name = $user['name'];
             $new_user->email = $user['email'];
             $new_user->password = $user['password'];
+            $new_user->email_verified_at = now();
 
             $new_user->save();
         }
@@ -289,6 +292,7 @@ var_dump("3rd_Method: testGetAllItems");
             $new_user->name = $user['name'];
             $new_user->email = $user['email'];
             $new_user->password = $user['password'];
+            $new_user->email_verified_at = now();
 
             $new_user->save();
         }
@@ -340,6 +344,7 @@ var_dump("3rd_Method: testGetAllItems");
         }
 
         $user = User::where('email', 'cat@test.com')->first();
+        Profile::create(['user_id' => $user->id, 'profile_image' => 'person.png', 'post_code' => '111-1111', 'address' => 'Tokyo']); // プロフィール登録済みでないと一覧を表示できない
 
         $response = $this->actingAs($user)->get('/');
         //$response->assertSee('sold');

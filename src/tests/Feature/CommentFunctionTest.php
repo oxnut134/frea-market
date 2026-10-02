@@ -55,6 +55,7 @@ class CommentFunctionTest extends TestCase
             $new_user->name = $user['name'];
             $new_user->email = $user['email'];
             $new_user->password = $user['password'];
+            $new_user->email_verified_at = now();
 
             $new_user->save();
         }
@@ -213,6 +214,7 @@ class CommentFunctionTest extends TestCase
             $new_user->name = $user['name'];
             $new_user->email = $user['email'];
             $new_user->password = $user['password'];
+            $new_user->email_verified_at = now();
 
             $new_user->save();
         }
@@ -360,6 +362,7 @@ class CommentFunctionTest extends TestCase
     {
         $seller = User::factory()->create();
         $commenter = User::factory()->create(); //出品者とは別のユーザーで投稿する
+        Profile::create(['user_id' => $commenter->id, 'profile_image' => 'person.png', 'post_code' => '111-1111', 'address' => 'Tokyo']);
 
         $item = new Item;
         $item->user_id = $seller->id;
@@ -418,6 +421,7 @@ class CommentFunctionTest extends TestCase
             $new_user->name = $user['name'];
             $new_user->email = $user['email'];
             $new_user->password = $user['password'];
+            $new_user->email_verified_at = now();
 
             $new_user->save();
         }
