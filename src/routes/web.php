@@ -22,12 +22,22 @@ use App\Http\Controllers\PaymentController;
 
 //---------------- 模擬テスト　frea-market -----------------------------
 
-//未認証ユーザー閲覧可能
-Route::get('/frea', [ItemController::class, 'index']);
-Route::get('/item/{item_id}', [ItemController::class, 'getItemDetail']);
+//未ログインユーザー閲覧可能
+Route::middleware('profile.exists')->group(function () {
+    Route::get('/frea', [ItemController::class, 'index']);
+    Route::get('/item/{item_id}', [ItemController::class, 'getItemDetail']);
+});
 
-//login, register, profile.first
+//ログインユーザーのみ
 Route::middleware('auth')->group(function () {
+
+    //会員登録後のプロフィール入力
+    Route::get('/profile/first', [AuthController::class, 'Profilefirst'])->name('profile.first');
+    Route::post('/profile/first', [AuthController::class, 'addProfile']);
+});
+
+//プロフィール登録済みのログインユーザーのみ
+Route::middleware(['auth', 'profile.exists'])->group(function () {
 
     //http://localhost
     Route::get('/', [ItemController::class, 'index']);
@@ -62,10 +72,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/stripe', [PaymentController::class, 'index'])->name('payment.index');
     Route::post('/payment', [PaymentController::class, 'store'])->name('payment.store');
     Route::get('/payment/direct', [PaymentController::class, 'directPay'])->name('payment.direct');
-
-    //会員登録後のプロフィール入力
-    Route::get('/profile/first', [AuthController::class, 'Profilefirst'])->name('profile.first');
-    Route::post('/profile/first', [AuthController::class, 'addProfile']);
 
     //stripe 新API対応
     Route::post('/checkout', [PaymentController::class, 'checkout'])->name('checkout');

@@ -13,6 +13,11 @@ class AuthController extends Controller
 
     public function ProfileFirst()
     {
+        // プロフィール登録済みの場合は商品一覧へ
+        if (Profile::where('user_id', Auth::id())->exists()) {
+            return redirect('/');
+        }
+
         $user = User::find(Auth::id());
         /*$post_code = null;
         $address = null;
@@ -30,8 +35,13 @@ class AuthController extends Controller
     }
     public function addProfile(ProfileFirstRequest $request)
     {
+        // プロフィール登録済みの場合は商品一覧へ（プロフィールの重複を防ぐ）
+        if (Profile::where('user_id', Auth::id())->exists()) {
+            return redirect('/');
+        }
+
         $profile = new Profile;
-        $profile->user_id = Auth::id(); //1は本番ではAuth::id()となる
+        $profile->user_id = Auth::id();
         if ($request->profile_image == null) {
             //$profile->profile_image = $request->backup_image;
         } else {
