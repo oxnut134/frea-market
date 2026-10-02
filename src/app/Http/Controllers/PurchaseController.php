@@ -50,7 +50,7 @@ class PurchaseController extends Controller
         $item = Item::find($item_id);
 
         $login_user_id = Auth::id(); // 1は本番ではAuth::id();
-        $profile = Profile::find($login_user_id);
+        $profile = Profile::where('user_id', $login_user_id)->first();
         $post_code = $profile->post_code;
         $address = $profile->address;
         $building = $profile->building;
@@ -71,7 +71,7 @@ class PurchaseController extends Controller
     public function returnPurchase(RedirectRequest $request)
     {
 
-        $profile = Profile::find(Auth::id()); //1は本番時Auth::id()に置き換え
+        $profile = Profile::where('user_id', Auth::id())->first();
 
         $profile->post_code = $request->post_code;
         $profile->address = $request->address;
