@@ -76,6 +76,11 @@ return [
 
     'home' => RouteServiceProvider::HOME,
 
+    // 会員登録直後はメール認証待ち画面へ
+    'redirects' => [
+        'register' => '/email/verify',
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Fortify Routes Prefix / Subdomain

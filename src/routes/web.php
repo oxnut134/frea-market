@@ -28,16 +28,16 @@ Route::middleware('profile.exists')->group(function () {
     Route::get('/item/{item_id}', [ItemController::class, 'getItemDetail']);
 });
 
-//ログインユーザーのみ
-Route::middleware('auth')->group(function () {
+//メール認証済みユーザーのみ
+Route::middleware(['auth', 'verified'])->group(function () {
 
     //会員登録後のプロフィール入力
     Route::get('/profile/first', [AuthController::class, 'Profilefirst'])->name('profile.first');
     Route::post('/profile/first', [AuthController::class, 'addProfile']);
 });
 
-//プロフィール登録済みのログインユーザーのみ
-Route::middleware(['auth', 'profile.exists'])->group(function () {
+//メール認証済み、かつプロフィール登録済みユーザーのみ
+Route::middleware(['auth', 'verified', 'profile.exists'])->group(function () {
 
     //http://localhost
     Route::get('/', [ItemController::class, 'index']);

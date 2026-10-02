@@ -18,23 +18,6 @@ class ItemController extends Controller
 {
     public function index(Request $request)
     {
-        //dd($request);
-        $referer = $request->headers->get('referer');
-        $verified = $request->verified;
-        //dd($verified);
-
-        // routing by header of $request sent from Fortify
-
-        if ($referer == "http://localhost/register") { //in case from register
-
-            return view('emails.guide_verification');
-            //return redirect('/profile/first');
-        } elseif ($verified == 1) {                    // in case from verification mail
-
-            //return view('emails.verify_email');
-            return redirect('/profile/first');
-        }
-
         $tab = $request->query('tab');
         $keyword = $request->query('keyword');
         //dd(Auth::id());
