@@ -5,10 +5,11 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Database\Seeders\Concerns\ResetsAutoIncrement;
+use Database\Seeders\Concerns\SeedsImages;
 
 class ItemsTableSeeder extends Seeder
 {
-    use ResetsAutoIncrement;
+    use ResetsAutoIncrement, SeedsImages;
 
     /**
      * Run the database seeds.
@@ -23,7 +24,7 @@ class ItemsTableSeeder extends Seeder
             [
                 'id' => 1,
                 'user_id' => 1,
-                'item_image' => 'Item-Armani+Mens+Clock.jpg',
+                'item_image' => $this->seedImage('items/armani-mens-clock.jpg'),
                 'item_name' => '腕時計',
                 'brand_name' => 'Armani',
                 'price' => 15000,
@@ -35,7 +36,7 @@ class ItemsTableSeeder extends Seeder
             [
                 'id' => 2,
                 'user_id' => 1,
-                'item_image' => 'Item-HDD+Hard+Disk.jpg',
+                'item_image' => $this->seedImage('items/hdd-hard-disk.jpg'),
                 'item_name' => 'HDD',
                 'brand_name' => '',
                 'price' => 5000,
@@ -47,7 +48,7 @@ class ItemsTableSeeder extends Seeder
             [
                 'id' => 3,
                 'user_id' => 1,
-                'item_image' => 'Item-iLoveIMG+d.jpg',
+                'item_image' => $this->seedImage('items/onions.jpg'),
                 'item_name' => '玉ねぎ3束',
                 'brand_name' => null,
                 'price' => 300,
@@ -59,7 +60,7 @@ class ItemsTableSeeder extends Seeder
             [
                 'id' => 4,
                 'user_id' => 2,
-                'item_image' => 'Item-Leather+Shoes+Product+Photo.jpg',
+                'item_image' => $this->seedImage('items/leather-shoes.jpg'),
                 'item_name' => '革靴',
                 'brand_name' => null,
                 'price' => 4000,
@@ -71,7 +72,7 @@ class ItemsTableSeeder extends Seeder
             [
                 'id' => 5,
                 'user_id' => 2,
-                'item_image' => 'Item-Living+Room+Laptop.jpg',
+                'item_image' => $this->seedImage('items/laptop.jpg'),
                 'item_name' => 'ノートPC',
                 'brand_name' => null,
                 'price' => 45000,
@@ -83,7 +84,7 @@ class ItemsTableSeeder extends Seeder
             [
                 'id' => 6,
                 'user_id' => 3,
-                'item_image' => 'Item-Music+Mic+4632231.jpg',
+                'item_image' => $this->seedImage('items/microphone.jpg'),
                 'item_name' => 'マイク',
                 'brand_name' => null,
                 'price' => 8000,
@@ -95,7 +96,7 @@ class ItemsTableSeeder extends Seeder
             [
                 'id' => 7,
                 'user_id' => 3,
-                'item_image' => 'Item-Purse+fashion+pocket.jpg',
+                'item_image' => $this->seedImage('items/shoulder-bag.jpg'),
                 'item_name' => 'ショルダーバッグ',
                 'brand_name' => 'Nine West',
                 'price' => 3500,
@@ -107,7 +108,7 @@ class ItemsTableSeeder extends Seeder
             [
                 'id' => 8,
                 'user_id' => 3,
-                'item_image' => 'Item-Tumbler+souvenir.jpg',
+                'item_image' => $this->seedImage('items/tumbler.jpg'),
                 'item_name' => 'タンブラー',
                 'brand_name' => null,
                 'price' => 500,
@@ -119,7 +120,7 @@ class ItemsTableSeeder extends Seeder
             [
                 'id' => 9,
                 'user_id' => 3,
-                'item_image' => 'Item-Waitress+with+Coffee+Grinder.jpg',
+                'item_image' => $this->seedImage('items/coffee-grinder.jpg'),
                 'item_name' => 'コーヒーミル',
                 'brand_name' => null,
                 'price' => 4000,
@@ -131,7 +132,7 @@ class ItemsTableSeeder extends Seeder
             [
                 'id' => 10,
                 'user_id' => 4,
-                'item_image' => 'Item-外出メイクアップセット.jpg',
+                'item_image' => $this->seedImage('items/makeup-set.jpg'),
                 'item_name' => 'メイクセット',
                 'brand_name' => null,
                 'price' => 2500,

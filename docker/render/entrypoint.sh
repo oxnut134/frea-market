@@ -8,8 +8,14 @@ if [ -z "$APP_KEY" ]; then
     php artisan key:generate --force
 fi
 
+# Expose storage/app/public as public/storage (used while IMAGE_DISK=public)
+php artisan storage:link
+
 php artisan migrate --force
 php artisan db:seed --force
+
+# The seeders run as root; let php-fpm (www-data) write uploaded images
+chown -R www-data:www-data storage/app/public
 
 php artisan config:cache
 php artisan route:cache

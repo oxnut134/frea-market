@@ -154,6 +154,22 @@ php artisan db:seed
 - **ItemsTableSeeder**
 - **CategoriesTableSeeder**
 
+### 画像の公開リンク作成
+
+商品画像・プロフィール画像は `storage/app/public` に保存されます（シード画像もシーディング時にここへコピーされます）。
+シーディングの後、php コンテナ内で一度だけ次の 2 つを実行してください。
+
+```
+docker compose exec php php artisan storage:link
+docker compose exec php chown -R www-data:www-data storage/app/public
+```
+
+- `storage:link`：ブラウザから画像を表示できるように `public/storage` のリンクを作成します。
+- `chown`：シーディング（root で実行）が作ったディレクトリに、アプリ（www-data）からアップロード画像を書き込めるようにします。実行しないと画像のアップロードが 500 エラーになります。
+
+- 保存先のディスクは `.env` の `IMAGE_DISK` で切り替えます（ローカル：`public`、本番：`s3`）。
+- 画像アップロードの上限は 5MB です。`docker/php/php.ini` を変更した場合は `docker compose build php && docker compose up -d php` で再ビルドしてください。
+
 ---
 
 ### 1-5 Mailhog設定
