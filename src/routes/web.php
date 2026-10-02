@@ -8,7 +8,6 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\MailController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -67,12 +66,6 @@ Route::middleware('auth')->group(function () {
     //会員登録後のプロフィール入力
     Route::get('/profile/first', [AuthController::class, 'Profilefirst'])->name('profile.first');
     Route::post('/profile/first', [AuthController::class, 'addProfile']);
-
-    //認証メール  mailhog
-    Route::get('/send-mail', [MailController::class, 'sendMail'])->name('send-mail');
-    Route::post('/send-reply-mail', [MailController::class, 'sendReply'])->name('send-reply-mail');
-    //for the button requiring to resend a confirmation mail
-    Route::get('/email', [MailController::class, 'showEmail']);
 
     //stripe 新API対応
     Route::post('/checkout', [PaymentController::class, 'checkout'])->name('checkout');
