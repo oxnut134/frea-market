@@ -51,3 +51,8 @@ input {
 
 }
 
+button:disabled,
+input[type="submit"]:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}

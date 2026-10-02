@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>メール認証</title>
+    <script src="{{ asset('js/submit-guard.js') }}" defer></script>
 </head>
 
 <body style="width:100%;display:flex;justify-content:center;">
