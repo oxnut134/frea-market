@@ -13,10 +13,6 @@
             <div class="profile-form_title">
                 <h2 class="profile-form_profile_logo">プロフィール設定</h2>
             </div>
-            <!--<div class="profile-form_user_picture_wrapper">
-                <img class="profile-form_user_picture" src="{{asset('storage/Armani+Mens+Clock.jpg')}}">
-                <input class="profile-form_input_user_image" type="file" value="画像を選択する">
-            </div>-->
             <style>
                 /* チェックボックスを非表示にする */
                 input[type="file"] {
@@ -46,9 +42,9 @@
                 }
             </style>
             <div class="profile-form_user_picture_wrapper">
-                <img class="profile-form_user_picture" id="imagePreview" src="{{asset('storage/'.$profile['profile_image'])}}" alt="選択した画像がここに表示されます。">
+                <img class="profile-form_user_picture" id="imagePreview" src="{{ $profile->image_url }}" alt="選択した画像がここに表示されます。">
                 <label for="imageInput" class="toggle_button">画像を選択する</label>
-                <input class="profile-form_input_user_image" type="file" id="imageInput" name="profile_image" value="{{ $profile['profile_image'] }}">
+                <input class="profile-form_input_user_image" type="file" id="imageInput" name="profile_image">
             </div>
      @if ($errors->has('profile_image'))
     <div  style="width:100%;display:flex;justify-content:flex-start;">
@@ -76,7 +72,7 @@
                 <h3 class="profile-form_input_title_logo">ユーザー名</h3>
             </div>
             <div class="profile-form_input_box ">
-                <input class="profile-form_input_field" type="text" name="user_name" value="{{ $profile['user_name'] }}">
+                <input class="profile-form_input_field" type="text" name="user_name" value="{{ $user['name'] }}">
             </div>
      @if ($errors->has('user_name'))
     <div  style="width:100%;display:flex;justify-content:flex-start;">
@@ -124,7 +120,6 @@
         </div>
     </div>
     @endif
-            <input type="hidden" name="backup_image" value="{{ $backup_image }}">
             <div class="profile-form_button_box">
                 <button class="profile-form_redirect_button">更新する</button>
             </div>

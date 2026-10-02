@@ -120,7 +120,7 @@ class ItemController extends Controller
                     'comments' => $comment_count,
                     'first_comment' => $first_comment,
                     'user_name' => $user->name,
-                    'profile_image' => $profile->profile_image,
+                    'profile_image_url' => $profile->image_url,
                     'categories' => $categories //配列渡し
                 ]
             );

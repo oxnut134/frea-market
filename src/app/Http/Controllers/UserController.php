@@ -109,16 +109,17 @@ class UserController extends Controller
             ]
         );
     }
-    public function showProfile(Request $request)
+    public function showProfile()
     {
-        //dd($request);
-        $backup_image = $request->profile_image;
+        $auth_id = Auth::id();
+        $user = User::find($auth_id);
+        $profile = Profile::where('user_id', $auth_id)->first();
 
         return view(
             'profile',
             [
-                'profile' => $request,
-                'backup_image' => $backup_image
+                'profile' => $profile,
+                'user' => $user,
             ]
         );
     }
@@ -131,7 +132,7 @@ class UserController extends Controller
 
         $user->name = $request->user_name;
         if ($request->profile_image == null) {
-            $profile->profile_image = $request->backup_image;
+            // 画像が選択されていない場合は現在の画像のまま
         } else {
             // get new file attributes from temporary directory of PHP when image file was replaced.
             $file = $request->file('profile_image');

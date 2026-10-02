@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Item extends Model
 {
@@ -42,6 +43,12 @@ class Item extends Model
     public function likes()
     {
         return $this->hasMany(Like::class, 'item_id', 'id');
+    }
+
+    // 商品画像のURL（$item->image_url）
+    public function getImageUrlAttribute()
+    {
+        return Storage::disk(config('filesystems.images'))->url($this->item_image);
     }
 
 }

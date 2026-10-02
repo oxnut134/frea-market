@@ -7,16 +7,10 @@
 @section('content')
 
     <form class="mypage-form_user_profile_box"  action="/mypage/profile" method="get">
-            @csrf
             <div class="mypage-form_user_picture_wrapper">
-                <img class="mypage-form_user_picture" src="{{asset('storage/'.$profile['profile_image'])}}" alt="画像がここに表示されます。">
+                <img class="mypage-form_user_picture" src="{{ $profile->image_url }}" alt="画像がここに表示されます。">
                 <div class="mypage-form_user_name">{{ $user['name'] }}</div>
             </div>
-            <input type="hidden" name="profile_image" value="{{ $profile['profile_image'] }}">
-            <input type="hidden" name="user_name" value="{{ $user['name'] }}">
-            <input type="hidden" name="post_code" value="{{ $profile['post_code'] }}">
-            <input type="hidden" name="address" value="{{ $profile['address'] }}">
-            <input type="hidden" name="building" value="{{ $profile['building'] }}">
             <button class="mypage-form_edit_profile_button">
                 プロフィールを編集
             </button>
@@ -29,7 +23,7 @@
         @if(isset($items))
         @foreach($items as $item)
         <a class="mypage-form_image_wrapper" href="/item/{{ $item['id'] }}" >
-            <img class="mypage-form_image_attribute" src="{{asset('storage/'. $item['item_image']) }}">
+            <img class="mypage-form_image_attribute" src="{{ $item->image_url }}">
             <div style="display:flex;justify-content:space-between;">
                 <div style="color:#000;" >{{ $item['item_name'] }}</div>
                 <div style="color:red;font-size:20px;">{{ $item['status'] }}</div>

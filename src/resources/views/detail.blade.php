@@ -10,7 +10,7 @@
 <body>{{ $my_like }}
     <div class="detail-form">
         <div class="detail-form_Item_image">
-            <img class="detail-form_image_attribute" src="{{asset( 'storage/'.$item->item_image)}}">
+            <img class="detail-form_image_attribute" src="{{ $item->image_url }}">
 
         </div>
         <div class="detail-form_detail_descriptions">
@@ -145,7 +145,7 @@
             @auth
             <h2>{{ 'コメント(' . $comments . ')'}}</h2>
             <div class="detail-form_user_picture_wrapper">
-                <img class="detail-form_user_picture" src="{{asset( 'storage/'.$profile_image)}}" alt="{{asset( 'storage/'.$item->profile_image)}}">
+                <img class="detail-form_user_picture" src="{{ $profile_image_url }}" alt="プロフィール画像">
                 <div class="detail-form_user_name">{{ $user_name }}</div>
             </div>
             @if(isset($first_comment['comment']) )

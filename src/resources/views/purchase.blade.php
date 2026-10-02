@@ -14,7 +14,7 @@
         @csrf
         <div class="purchase-form_confirm_box">
             <div class="purchase-form_item_image_wrapper">
-                <img class="purchase-form_item_image" src="{{asset( 'storage/'.$item->item_image)}}">
+                <img class="purchase-form_item_image" src="{{ $item->image_url }}">
                 <div class="purchase-form_item_information">
                     <div class="purchase-form_item_name">{{ $item['item_name'] }}</div>
                     <div class="purchase-form_item_price">{{ ' ¥ '.number_format($item['price']) }}</div>

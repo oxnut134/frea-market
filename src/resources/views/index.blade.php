@@ -22,7 +22,7 @@
         @if(isset($items))
         @foreach($items as $item)
         <a class="index-form_image_wrapper" href="/item/{{ $item['id'] }}">
-            <img class="index-form_image_attribute" src="{{asset('storage/'. $item['item_image']) }}">
+            <img class="index-form_image_attribute" src="{{ $item->image_url }}">
             <div style="display:flex;justify-content:space-between;">
                 <span>{{ $item['item_name'] }}</span>
                 <span style="color:red;font-size:20px;">{{ $item['status'] }}</span>
