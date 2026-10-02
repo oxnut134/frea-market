@@ -5,6 +5,13 @@
     <meta charset="UTF-8">
     <title>メール認証</title>
     <script src="{{ asset('js/submit-guard.js') }}" defer></script>
+    <style>
+        button:disabled,
+        input[type="submit"]:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+    </style>
 </head>
 
 <body style="width:100%;display:flex;justify-content:center;">
