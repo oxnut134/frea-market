@@ -99,10 +99,13 @@ class SearchItemsTest extends TestCase
         ];
 
         foreach ($items as $item) {
-            Item::create($item);
+            (new Item)->forceFill($item)->save(); // item_image は $fillable 対象外のため
         }
         $user = User::first(); // usersテーブルの最初のレコードを取得
         $item = Item::first(); // itemsテーブルの最初のレコードを取得
+
+        // /search は auth ミドルウェア配下のためログインする
+        $this->actingAs($user);
 
 
         // 検索キーワード
