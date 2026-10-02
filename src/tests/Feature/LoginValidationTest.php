@@ -52,14 +52,14 @@ class LoginValidationTest extends TestCase
     {
         User::factory()->create([
             'name' => 'PHPtest',
-            'email' => 'PHPtest@test.com',
+            'email' => 'phptest@test.com',
             'password' => bcrypt('abc12345'),
         ]);
 
         $user = User::all();
 
         $response = $this->post('/login', [
-            'email' => 'PHPtest@test.com', // 正しいメールアドレス
+            'email' => 'phptest@test.com', // 正しいメールアドレス
             'password' => 'abc12345', // 正しいパスワード
         ]);
         //echo "\nレスポンスコード: ", $response->status(), "\n";
