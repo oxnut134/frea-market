@@ -16,6 +16,7 @@ use App\Models\Profile;
 use App\Models\Purchase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 class RegisterForExhibitionTest extends TestCase
 {
@@ -222,6 +223,8 @@ class RegisterForExhibitionTest extends TestCase
 
         //------------ テスト実行---------------------------------------------------
 
+        Storage::fake('public'); // 画像の保存先をテスト用のディスクに差し替える
+
         $user = User::first();
         $this->actingAs($user); //  ログイン
         $response = $this->get('/');
@@ -259,13 +262,16 @@ class RegisterForExhibitionTest extends TestCase
         $this->assertDatabaseHas('items', [
             'id' => $item->id, // 動的に取得したIDを使用
             'user_id' => $user->id,
-            'item_image' => 'Item-Leather-Shoes-Product-Photo.jpg',
             'item_name' => '革靴',
             'brand_name' => 'regal',
             'price' => 4000,
             'description' => 'クラシックなデザインの革靴',
             'condition' => '状態が悪い',
         ]);
+        // 画像は元のファイル名ではなく items/ 配下のランダムな名前で保存される
+        $this->assertStringStartsWith('items/', $item->item_image);
+        $this->assertStringNotContainsString('Item-Leather-Shoes-Product-Photo', $item->item_image);
+        Storage::disk('public')->assertExists($item->item_image);
         // カテゴリーの紐づけを確認
         $this->assertDatabaseHas('item_category', [
             'item_id' => $item->id,

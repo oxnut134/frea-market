@@ -25,8 +25,7 @@ class ProfileRequest extends FormRequest
     {
 
         return [
-            //'profile_image' =>  'required|mimes:jpeg,png,jpg|max:2048',//for first_profile
-            'profile_image' =>  'mimes:jpeg,png,jpg',//for first_profile
+            'profile_image' =>  ['nullable','mimes:jpeg,png,jpg','max:5120'],
              'user_name' => ['required'],
              'post_code' => ['required','regex:/^\d{3}-\d{4}$/'],
              'address' => ['required'],
@@ -37,16 +36,14 @@ class ProfileRequest extends FormRequest
     {
 
         return [
-            //'profile_image.required' => 'お名前を入力してください。',
-            //'profile_image.required' => '画像ファイルを入力してください。',
             'profile_image.mimes' => '画像ファイルはjpg,jpeg,pngの型式にしてください。',
+            'profile_image.max' => '画像ファイルは5MB以下にしてください。',
+            'profile_image.uploaded' => '画像ファイルは5MB以下にしてください。',
             'user_name.required' => 'お名前を入力してください。',
             'post_code.required' => '郵便番号を入力してください。',
             'post_code.regex' => '郵便番号はハイフンありの８文字で入力してください。',
             'address.required' => '住所を入力してください。',
             //'building.required' => '建物名を入力してください。'
-    //'profile_image.image' => 'アップロードされたファイルは画像ではありません。',
-    //'profile_image.max' => '画像サイズは2MB以下にしてください。',
         ];
     }
 

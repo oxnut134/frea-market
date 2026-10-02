@@ -159,15 +159,8 @@ class ItemController extends Controller
         $item->price = $request->price;
         $item->description = $request->description;
         $item->condition = $request->condition;
-        if ($request->item_image == null) {
-        } else {
-            // get new file attributes from temporary directory of PHP when image file was replaced.
-            $file = $request->file('item_image');
-            //get new file name
-            $originalFileName = $file->getClientOriginalName();
-            //set new file name
-            $item->item_image = $originalFileName;
-        }
+        // 画像を画像用ディスクに保存し、保存先のパス（items/ランダムな名前）を記録する
+        $item->item_image = $request->file('item_image')->store('items', config('filesystems.images'));
         $item->save();
 
         // 新しいアイテムIDを取得

@@ -8,6 +8,7 @@ use App\Models\Item;
 use App\Models\User;
 use App\Models\Profile;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\ProfileRequest;
 
 
@@ -131,24 +132,23 @@ class UserController extends Controller
         $profile = Profile::where('user_id', $user_id)->first();
 
         $user->name = $request->user_name;
-        if ($request->profile_image == null) {
-            // 画像が選択されていない場合は現在の画像のまま
-        } else {
-            // get new file attributes from temporary directory of PHP when image file was replaced.
-            $file = $request->file('profile_image');
-            //get new file name
-            $originalFileName = $file->getClientOriginalName();
-            //set new file name
-            $profile->profile_image = $originalFileName;
+        // 画像が選択された場合だけ差し替える（選択されていない場合は現在の画像のまま）
+        $disk = Storage::disk(config('filesystems.images'));
+        $old_image = $profile->profile_image;
+        if ($request->hasFile('profile_image')) {
+            $profile->profile_image = $request->file('profile_image')->store('profiles', config('filesystems.images'));
         }
         $profile->post_code = $request->post_code;
         $profile->address = $request->address;
         $profile->building = $request->building;
-        //dd($profile);
         $user->save();
         $profile->save();
 
-        //dd(Profile::find(1));
+        // 差し替えた場合は、保存が終わってから古い画像を削除する
+        if ($old_image && $old_image !== $profile->profile_image) {
+            $disk->delete($old_image);
+        }
+
         return redirect()->route('mypage');
     }
 }

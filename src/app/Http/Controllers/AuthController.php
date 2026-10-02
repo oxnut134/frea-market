@@ -42,17 +42,10 @@ class AuthController extends Controller
 
         $profile = new Profile;
         $profile->user_id = Auth::id();
-        if ($request->profile_image == null) {
-            //$profile->profile_image = $request->backup_image;
-        } else {
-            // get new file attributes from temporary directory of PHP when image file was replaced.
-            $file = $request->file('profile_image');
-            //get new file name
-            $originalFileName = $file->getClientOriginalName();
-            //set new file name
-            $profile->profile_image = $originalFileName;
+        // 画像は任意。選択された場合は画像用ディスクに保存し、保存先のパスを記録する
+        if ($request->hasFile('profile_image')) {
+            $profile->profile_image = $request->file('profile_image')->store('profiles', config('filesystems.images'));
         }
-        //$profile->profile_image = $request->profile_image;
 
         $profile->post_code = $request->post_code;
         $profile->address = $request->address;

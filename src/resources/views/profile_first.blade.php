@@ -42,7 +42,7 @@
                 }
             </style>
             <div class="profile-form_user_picture_wrapper">
-                <img class="profile-form_user_picture" id="imagePreview" src="" alt="選択した画像がここに表示されます。">
+                <img class="profile-form_user_picture" id="imagePreview" src="{{ asset('images/default-profile.svg') }}" alt="選択した画像がここに表示されます。">
                 <label for="imageInput" class="toggle_button">画像を選択する</label>
                 <input class="profile-form_input_user_image" type="file" id="imageInput" name="profile_image" value="">
             </div>

@@ -26,7 +26,7 @@ class ExhibitRequest extends FormRequest
 
         return [
 
-            'item_image' => ['required','mimes:jpeg,png,jpg'],
+            'item_image' => ['required','mimes:jpeg,png,jpg','max:5120'],
              'categories' => ['required'],
              'condition' => ['required'],
              'item_name' => ['required'],
@@ -42,6 +42,8 @@ class ExhibitRequest extends FormRequest
             //'profile_image.required' => 'お名前を入力してください。',
             'item_image.required' => '画像ファイルを選択してください。',
             'item_image.mimes' => '画像ファイルはjpegかpngの型式にしてください。',
+            'item_image.max' => '画像ファイルは5MB以下にしてください。',
+            'item_image.uploaded' => '画像ファイルは5MB以下にしてください。',
             'categories.required' => 'カテゴリーを選択してください。',
             'condition.required' => '状態を選択してください。',
             'item_name.required' => '商品名を入力してください。',

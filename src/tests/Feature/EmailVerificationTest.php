@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
@@ -139,7 +138,6 @@ class EmailVerificationTest extends TestCase
         $this->actingAs($user);
 
         $response = $this->post('/profile/first', [
-            'profile_image' => UploadedFile::fake()->image('person.png'),
             'user_name' => 'test',
             'post_code' => '111-1111',
             'address' => 'Tokyo',
