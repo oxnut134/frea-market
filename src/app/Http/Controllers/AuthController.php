@@ -51,6 +51,11 @@ class AuthController extends Controller
         $profile->address = $request->address;
         $profile->building = $request->building;
 
+        // ユーザー名は users テーブルに保存する
+        $user = User::find(Auth::id());
+        $user->name = $request->user_name;
+
+        $user->save();
         $profile->save();
 
         return redirect('/');

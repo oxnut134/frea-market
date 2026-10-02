@@ -79,7 +79,7 @@ class EnsureProfileExistsTest extends TestCase
     // プロフィール登録済みでプロフィール入力画面を開くと商品一覧に戻される
     public function testUserWithProfileIsRedirectedFromProfileFirst(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['name' => '登録時の名前']);
         $this->createProfile($user);
         $this->actingAs($user);
 
@@ -94,5 +94,47 @@ class EnsureProfileExistsTest extends TestCase
         ])->assertRedirect('/');
         $this->assertEquals(1, Profile::where('user_id', $user->id)->count());
         $this->assertDatabaseHas('profiles', ['user_id' => $user->id, 'address' => 'Tokyo']);
+        $this->assertSame('登録時の名前', $user->fresh()->name);
+    }
+
+    // 初回プロフィール入力のユーザー名は users テーブルに保存される
+    public function testFirstProfileSavesUserName(): void
+    {
+        $user = User::factory()->create(['name' => '登録時の名前']);
+        $this->actingAs($user);
+
+        // 入力画面には登録時の名前が表示される
+        $this->get('/profile/first')->assertStatus(200)->assertSee('登録時の名前');
+
+        $response = $this->post('/profile/first', [
+            'user_name' => '変更後の名前',
+            'post_code' => '111-1111',
+            'address' => 'Tokyo',
+        ]);
+        $response->assertSessionHasNoErrors();
+        $response->assertRedirect('/');
+
+        $this->assertSame('変更後の名前', $user->fresh()->name);
+        $this->assertDatabaseHas('profiles', ['user_id' => $user->id, 'address' => 'Tokyo']);
+
+        // マイページに変更後の名前が表示される
+        $this->get('/mypage')->assertSee('変更後の名前')->assertDontSee('登録時の名前');
+    }
+
+    // ユーザー名が空の場合は、プロフィールもユーザー名も保存されない
+    public function testFirstProfileRequiresUserName(): void
+    {
+        $user = User::factory()->create(['name' => '登録時の名前']);
+        $this->actingAs($user);
+
+        $response = $this->post('/profile/first', [
+            'user_name' => '',
+            'post_code' => '111-1111',
+            'address' => 'Tokyo',
+        ]);
+        $response->assertSessionHasErrors(['user_name' => 'お名前を入力してください。']);
+
+        $this->assertSame('登録時の名前', $user->fresh()->name);
+        $this->assertDatabaseCount('profiles', 0);
     }
 }
