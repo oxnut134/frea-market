@@ -532,7 +532,7 @@ class CommentFunctionTest extends TestCase
         $user = User::first();
         $this->actingAs($user);
         $response = $this->get('/');
-        $response = $this->get('/item/1');
+        $response = $this->get('/item/' . Item::first()->id);
 
         //コメント透谷確認
         $item = Item::first();

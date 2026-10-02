@@ -201,8 +201,8 @@ class PurchaseFunctionTest extends TestCase
 
         $this->actingAs($user);
         $response = $this->get('/');
-        $response = $this->get('/item/1');
-        $response = $this->get('/purchase/1');
+        $response = $this->get('/item/' . Item::first()->id);
+        $response = $this->get('/purchase/' . Item::first()->id);
         $user = User::first(); // usersテーブルの最初のレコードを取得
         $item = Item::first(); // itemsテーブルの最初のレコードを取得
         $profile = Profile::where('user_id', $user->id)->first();
