@@ -24,7 +24,7 @@
 
             <div class="detail-form_engagement_image_box">
                 <a class="detail-form_engagement_image_wrapper" href="" data-product-id="{{ $item['id'] }}">
-                    <img class="like-icon" src="{{ asset('storage/not-liked.png') }}" alt="Like Icon"> <!-- 初期状態の画像 -->
+                    <img class="like-icon" src="{{ asset('images/not-liked.png') }}" alt="Like Icon"> <!-- 初期状態の画像 -->
                     <div id="like-count">
                         <div id="count" class="detail-form_engagement_count">{{ $likes }}</div>
                     </div>
@@ -72,9 +72,9 @@
 
                         // 初期状態の設定
                         if (initialCount > 0) {
-                            $('.like-icon').addClass('liked').attr('src', "{{ asset('storage/liked.png') }}"); // 初期状態を設定
+                            $('.like-icon').addClass('liked').attr('src', "{{ asset('images/liked.png') }}"); // 初期状態を設定
                         } else {
-                            $('.like-icon').addClass('not-liked').attr('src', "{{ asset('storage/not-liked.png') }}"); // 初期状態を設定
+                            $('.like-icon').addClass('not-liked').attr('src', "{{ asset('images/not-liked.png') }}"); // 初期状態を設定
                         }
 
                         $('.detail-form_engagement_image_wrapper').on('click', function(e) {
@@ -104,9 +104,9 @@
 
                                     // 画像を更新
                                     if (currentCount <= 0) {
-                                        likeIcon.attr('src', "{{ asset('storage/not-liked.png') }}"); // いいね数が0のとき
+                                        likeIcon.attr('src', "{{ asset('images/not-liked.png') }}"); // いいね数が0のとき
                                     } else {
-                                        likeIcon.attr('src', "{{ asset('storage/liked.png') }}"); // いいね数が1以上のとき
+                                        likeIcon.attr('src', "{{ asset('images/liked.png') }}"); // いいね数が1以上のとき
                                     }
 
                                     countElement.text(currentCount); // 現在のカウントを表示
@@ -120,7 +120,7 @@
                 </script>
                 <!-------　コメント　------------------>
                 <div class="detail-form_engagement_image_wrapper">
-                    <img class="detail-form_engagement_image" src="{{asset('storage/comment.png')}}">
+                    <img class="detail-form_engagement_image" src="{{asset('images/comment.png')}}">
                     <div class="detail-form_engagement_count">{{ $comments }}</div>
                 </div>
             </div>

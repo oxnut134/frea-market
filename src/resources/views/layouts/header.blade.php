@@ -23,7 +23,7 @@
 
             @endif
 
-            <img class="frea-market_header_logo" src=" {{ asset('storage/logo.svg')}}" alt="error">
+            <img class="frea-market_header_logo" src=" {{ asset('images/logo.svg')}}" alt="error">
 
             @if (Auth::check())
             <form action="/search" method="post" style="width:50%;display:flex;justify-content:flex-end;">
