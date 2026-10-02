@@ -201,7 +201,7 @@ class RedirectDeliveryAddressTest extends TestCase
         $response = $this->get('/purchase/address/$item->id');
         $profile = Profile::where('user_id', $user->id)->first();
         $purchase = Purchase::where('user_id', $user->id)
-            ->where('Item_id', $item->id)
+            ->where('item_id', $item->id)
             ->get();
 
         //変更処理

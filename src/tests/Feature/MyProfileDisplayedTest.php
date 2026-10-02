@@ -199,7 +199,7 @@ class MyProfileDisplayedTest extends TestCase
         $item = Item::first(); // itemsテーブルの最初のレコードを取得
         $profile = Profile::where('user_id', $user->id)->first();
         $purchase = Purchase::where('user_id', $user->id)
-            ->where('Item_id', $item->id)
+            ->where('item_id', $item->id)
             ->get();
         //dd($profile);
 
