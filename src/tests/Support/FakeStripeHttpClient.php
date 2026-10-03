@@ -15,7 +15,8 @@ class FakeStripeHttpClient implements ClientInterface
     public array $requests = [];
 
     /**
-     * @param array<int, array{0: int, 1: array}> $responses 返す応答（ステータスコードと本文）を順番に並べたもの
+     * @param array<int, array{0: int, 1: array}|\Throwable> $responses 返す応答（ステータスコードと本文）を順番に並べたもの。
+     *                                                                  例外を入れると、その順番で例外を投げる（通信エラーの再現など）
      */
     public function __construct(private array $responses)
     {
@@ -25,7 +26,12 @@ class FakeStripeHttpClient implements ClientInterface
     {
         $this->requests[] = ['method' => $method, 'url' => $absUrl, 'params' => $params];
 
-        [$status, $body] = array_shift($this->responses) ?? [500, ['error' => ['message' => 'No fake response']]];
+        $response = array_shift($this->responses) ?? [500, ['error' => ['message' => 'No fake response']]];
+        if ($response instanceof \Throwable) {
+            throw $response;
+        }
+
+        [$status, $body] = $response;
 
         return [json_encode($body), $status, []];
     }

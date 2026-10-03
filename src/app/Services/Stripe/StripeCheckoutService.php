@@ -10,6 +10,8 @@ use RuntimeException;
 use Stripe\Checkout\Session;
 use Stripe\Event;
 use Stripe\Exception\ApiErrorException;
+use Stripe\Exception\InvalidRequestException;
+use Stripe\Exception\RateLimitException;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\Exception\UnexpectedValueException;
 use Stripe\StripeClient;
@@ -87,6 +89,9 @@ class StripeCheckoutService
      * Checkout Session を期限切れにする
      *
      * すでに完了・期限切れの Session など、Stripe が受け付けなかった場合は false を返す。
+     * 通信エラー・認証エラー・リクエスト過多などは、例外としてそのまま上に伝わる。
+     *
+     * @throws ApiErrorException Stripe が受け付けなかった場合以外のエラー
      */
     public function expireCheckoutSession(string $sessionId): bool
     {
@@ -94,7 +99,11 @@ class StripeCheckoutService
             $this->stripe->checkout->sessions->expire($sessionId);
 
             return true;
-        } catch (ApiErrorException $e) {
+        } catch (RateLimitException $e) {
+            // RateLimitException は InvalidRequestException を継承しているので、先に除外する
+            throw $e;
+        } catch (InvalidRequestException $e) {
+            // すでに完了・期限切れの Session など、Stripe が受け付けなかった場合
             return false;
         }
     }

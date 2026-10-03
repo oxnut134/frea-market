@@ -7,6 +7,11 @@ use App\Services\Stripe\StripeCheckoutService;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Stripe\ApiRequestor;
+use Stripe\Exception\ApiConnectionException;
+use Stripe\Exception\ApiErrorException;
+use Stripe\Exception\AuthenticationException;
+use Stripe\Exception\InvalidRequestException;
+use Stripe\Exception\RateLimitException;
 use Stripe\StripeClient;
 use Tests\Support\FakeStripeHttpClient;
 
@@ -114,7 +119,7 @@ class StripeCheckoutServiceTest extends TestCase
     {
         $service = $this->service([[400, ['error' => ['type' => 'invalid_request_error', 'message' => 'Invalid amount']]]]);
 
-        $this->expectException(\Stripe\Exception\InvalidRequestException::class);
+        $this->expectException(InvalidRequestException::class);
         $service->createCheckoutSession($this->params());
     }
 
@@ -136,5 +141,49 @@ class StripeCheckoutServiceTest extends TestCase
         $service = $this->service([[400, ['error' => ['type' => 'invalid_request_error', 'message' => 'Only Checkout Sessions with a status of open can be expired.']]]]);
 
         $this->assertFalse($service->expireCheckoutSession('cs_test_123'));
+    }
+
+    // 存在しない Session（404）も、Stripe が受け付けなかった場合として false
+    public function testExpireCheckoutSessionReturnsFalseWhenSessionDoesNotExist(): void
+    {
+        $service = $this->service([[404, ['error' => ['type' => 'invalid_request_error', 'message' => 'No such checkout.session']]]]);
+
+        $this->assertFalse($service->expireCheckoutSession('cs_test_missing'));
+    }
+
+    // 通信エラーは上に伝わる
+    public function testExpireCheckoutSessionPropagatesConnectionErrors(): void
+    {
+        $service = $this->service([new ApiConnectionException('Could not connect to Stripe')]);
+
+        $this->expectException(ApiConnectionException::class);
+        $service->expireCheckoutSession('cs_test_123');
+    }
+
+    // 認証エラー（鍵の誤り）は上に伝わる
+    public function testExpireCheckoutSessionPropagatesAuthenticationErrors(): void
+    {
+        $service = $this->service([[401, ['error' => ['type' => 'invalid_request_error', 'message' => 'Invalid API Key provided']]]]);
+
+        $this->expectException(AuthenticationException::class);
+        $service->expireCheckoutSession('cs_test_123');
+    }
+
+    // リクエスト過多（RateLimitException は InvalidRequestException の子クラス）も false にせず上に伝わる
+    public function testExpireCheckoutSessionPropagatesRateLimitErrors(): void
+    {
+        $service = $this->service([[429, ['error' => ['type' => 'invalid_request_error', 'message' => 'Too many requests']]]]);
+
+        $this->expectException(RateLimitException::class);
+        $service->expireCheckoutSession('cs_test_123');
+    }
+
+    // Stripe 側のエラー（500）は上に伝わる
+    public function testExpireCheckoutSessionPropagatesServerErrors(): void
+    {
+        $service = $this->service([[500, ['error' => ['type' => 'api_error', 'message' => 'Something went wrong']]]]);
+
+        $this->expectException(ApiErrorException::class);
+        $service->expireCheckoutSession('cs_test_123');
     }
 }
