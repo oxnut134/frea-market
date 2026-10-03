@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Purchase;
 use App\Models\Item;
 use App\Models\Like;
 use App\Models\Comment;
@@ -25,7 +24,8 @@ class ItemController extends Controller
             $keyword = $request->keyword;
             //dd($keyword);
             //検索状態保持
-            $items = Item::where('item_name', 'like', '%' . $keyword . '%')
+            $items = Item::with('activePurchase')
+                ->where('item_name', 'like', '%' . $keyword . '%')
                 ->whereHas('likeToUser', function ($query) {
                     $query->where('user_id', Auth::id());
                 }) // 認証されたユーザーのIDでフィルタリング
@@ -41,19 +41,8 @@ class ItemController extends Controller
                 'keyword' => $keyword,
             ]);
         } else {
-            $items = Item::all(); //全てのアイテムを取得
+            $items = Item::with('activePurchase')->get(); //全てのアイテムを取得
             //$items = Item::where('user_id', '!=', Auth::id())->get(); //自分の出品は表示なし
-
-            //購入済みの時statusカラムにsoldをセット
-            foreach ($items as $item) {
-                if (Purchase::where('item_id', $item->id)->exists()) {
-                    $item->status = "sold";
-                } else {
-                    $item->status = "";
-                }
-                $item->save();
-            }
-
 
             return view(
                 'index',
@@ -67,7 +56,7 @@ class ItemController extends Controller
     public function search(Request $request)
     {
         //dd($request);
-        $items = Item::where('item_name', 'like', '%' . $request['keyword'] . '%')->get();
+        $items = Item::with('activePurchase')->where('item_name', 'like', '%' . $request['keyword'] . '%')->get();
 
         //dd($items);
 

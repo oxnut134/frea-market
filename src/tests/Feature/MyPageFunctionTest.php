@@ -214,7 +214,7 @@ class MyPageFunctionTest extends TestCase
         }
 
         $response = $this->get('/mypage/?tab=buy'); //購入商品の表示確認
-        $items = Item::whereHas('purchase', function ($query) {
+        $items = Item::whereHas('activePurchase', function ($query) {
             $query->where('user_id', Auth::id()); // Purchaseのuser_idがAuthと一致するもの
         })->get();
         foreach ($items as $item) {
@@ -224,6 +224,44 @@ class MyPageFunctionTest extends TestCase
 
 
         return;
+    }
+
+    //-------------------- 購入した商品：支払い済みと、自分の期限内の確保中だけを表示 --------------------------
+
+    public function testPurchasedItemsTabShowsPaidAndOwnPendingItems()
+    {
+        $user = User::factory()->create();
+        Profile::create(['user_id' => $user->id, 'profile_image' => 'person.png', 'post_code' => '111-1111', 'address' => 'Tokyo']);
+        $seller = User::factory()->create();
+        $other = User::factory()->create();
+
+        $names = ['paid' => '腕時計', 'pending' => 'HDD', 'pending_expired' => '玉ねぎ3束', 'expired' => '革靴', 'others' => 'ノートPC'];
+        $items = [];
+        foreach ($names as $key => $name) {
+            $items[$key] = Item::forceCreate([
+                'user_id' => $seller->id,
+                'item_image' => 'items/' . $key . '.jpg',
+                'item_name' => $name,
+                'price' => 5000,
+                'description' => 'test',
+                'condition' => '良好',
+            ]);
+        }
+
+        Purchase::factory()->create(['user_id' => $user->id, 'item_id' => $items['paid']->id]);
+        Purchase::factory()->pending()->create(['user_id' => $user->id, 'item_id' => $items['pending']->id]);
+        Purchase::factory()->pendingExpired()->create(['user_id' => $user->id, 'item_id' => $items['pending_expired']->id]);
+        Purchase::factory()->expired()->create(['user_id' => $user->id, 'item_id' => $items['expired']->id]);
+        Purchase::factory()->create(['user_id' => $other->id, 'item_id' => $items['others']->id]);
+
+        $response = $this->actingAs($user)->get('/mypage/?tab=buy');
+
+        $response->assertStatus(200);
+        $response->assertSeeInOrder(['腕時計', 'SOLD', 'HDD', 'お支払い待ち']);
+        $response->assertDontSee('取引中');
+        $response->assertDontSee('玉ねぎ3束');
+        $response->assertDontSee('革靴');
+        $response->assertDontSee('ノートPC');
     }
 }
 

@@ -27,9 +27,9 @@ class MylistFunctionTest extends TestCase
     // ---------------- Mylist-1 いいねアイテムのみ表示　---------------------
 
 
-        public function testCheckSoldOutSign()
+        public function testShowsOnlyLikedItems()
     {
-        var_dump("*****1st_Method:testCheckSoldOutSign");
+        var_dump("*****1st_Method:testShowsOnlyLikedItems");
         $users =
             [
                 [
@@ -142,8 +142,6 @@ class MylistFunctionTest extends TestCase
     }
 
     //--------------------mylist-2 'sold' 表示　--------------------------
-/*
-
     public function testCheckSoldOutSign()
     {
         var_dump("****2nd_Method: testCheckSoldOutSign");
@@ -246,52 +244,43 @@ class MylistFunctionTest extends TestCase
         }
 
 
-        // 購入テーブル作成
-        $purchases = [
-            [
-                'user_id' => $user->id, // ユーザーのIDをリンク
-                'item_id' => $item->id, // アイテムのIDをリンク
-                //'payment_method' => 'コンビニ払い',
-                //'delivery_address' => 'test'
-            ],
-        ];
+        // 残りの商品にもいいねして、3 件ともマイリストに表示させる
+        $items = Item::orderBy('id')->get();
+        Like::insert([
+            ['user_id' => $user->id, 'item_id' => $items[1]->id],
+            ['user_id' => $user->id, 'item_id' => $items[2]->id],
+        ]);
+        $buyer = User::where('email', 'dog@test.com')->first();
 
-        foreach ($purchases as $purchase) {
-
-            $new_purchase = new Purchase;
-            $new_purchase->user_id = $purchase['user_id'];
-            $new_purchase->item_id = $purchase['item_id'];
-            //$new_purchase->payment_method = $purchase['payment_method'];
-            //$new_purchase->delivery_address = $purchase['delivery_address'];
-
-            $new_purchase->save();
-        }
-//
-
-        //いいねしたものだけ表示チェック
         $user = User::where('email', 'cat@test.com')->first();
+        Profile::create(['user_id' => $user->id, 'profile_image' => 'person.png', 'post_code' => '111-1111', 'address' => 'Tokyo']); // プロフィール登録済みでないと一覧を表示できない
 
-                $like = Like::first();
-               $response = $this->actingAs($user)->get('/?tab=mylist');
-                $response->assertSee(
-                    Like::where('item_id', $item->id)
-                        ->where('user_id', $user->id)
-                        ->exists() ? $item->item_image : null
-               );
-
-        //sold表示チェック
-
-        $response = $this->actingAs($user)->get('/');
-
+        // 購入がなければ、どちらも表示されない
         $response = $this->actingAs($user)->get('/?tab=mylist');
-        //dd($response);
-        $response->assertSee('sold');
+        $response->assertSee($items[0]->item_name);
+        $response->assertDontSee('SOLD');
+        $response->assertDontSee('取引中');
 
+        // 期限切れの確保では、どちらも表示されない
+        Purchase::factory()->pendingExpired()->create(['user_id' => $buyer->id, 'item_id' => $items[2]->id]);
+        $response = $this->actingAs($user)->get('/?tab=mylist');
+        $response->assertDontSee('SOLD');
+        $response->assertDontSee('取引中');
+
+        // 期限内の確保は「取引中」
+        Purchase::factory()->pending()->create(['user_id' => $buyer->id, 'item_id' => $items[1]->id]);
+        $response = $this->actingAs($user)->get('/?tab=mylist');
+        $response->assertSee('取引中');
+        $response->assertDontSee('SOLD');
+
+        // 支払い済みは「SOLD」
+        Purchase::factory()->create(['user_id' => $buyer->id, 'item_id' => $items[0]->id]);
+        $response = $this->actingAs($user)->get('/?tab=mylist');
+        $response->assertSee('SOLD');
 
         return;
     }
 
-*/
     //--------------------mylist-3 自己出品は非表示　--------------------------
 /*
 

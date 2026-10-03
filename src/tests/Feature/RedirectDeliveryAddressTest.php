@@ -247,32 +247,21 @@ class RedirectDeliveryAddressTest extends TestCase
         ]));
         $response->assertStatus(200); //正常コード/リダイレクト
 
-        //購入品のsold表示チェック
-        $response = $this->get('/');  // 　　'/'で表示
-        $response->assertSee('sold');
-        $this->assertDatabaseHas('items', [
-            'id' => $item->id,
-            'status' => 'sold',
-        ]);
+
+        //購入品のSOLD表示チェック
+        $response = $this->get('/');  // '/'で表示
         $response->assertSee($item->item_name); // 商品名が表示されているか
-        $response->assertSee('sold');      // ステータスが表示されているか
+        $response->assertSee('SOLD');
 
-
-        $response = $this->get('/');
-        $response = $this->get('/mypage/?tab=buy'); //　　'?tab=buy'で表示
-
-        $response->assertSee('sold');
-        $this->assertDatabaseHas('items', [
-            'id' => $item->id,
-            'status' => 'sold',
-        ]);
+        $response = $this->get('/mypage/?tab=buy'); // '?tab=buy'で表示
+        $response->assertSee('SOLD');
 
         // 購入アイテムの変更後配送先との紐づけ確認
         $this->assertDatabaseHas('purchases', [
             'user_id' => $user->id, // 購入者のID
             'item_id' => $item->id, // 購入された商品のID
             'delivery_address' => $delivery_address, // 新配送先住所
-            'payment_method' => $payment_method, // 支払い方法
+            'payment_method' => 'konbini', // 支払い方法
         ]);
         /*
 

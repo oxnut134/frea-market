@@ -72,7 +72,6 @@ class PurchaseFunctionTest extends TestCase
                 'price' => 15000,
                 'description' => 'スタイリッシュなデザインのメンズ腕時計',
                 'condition' => '良好',
-                'status' => null,
             ],
             [
                 'user_id' => $users[2]->id,
@@ -82,7 +81,6 @@ class PurchaseFunctionTest extends TestCase
                 'price' => 5000,
                 'description' => '高速で信頼性の高いハードディスク',
                 'condition' => '目立った傷や汚れなし',
-                'status' => null,
             ],
             [
                 'user_id' => $users[2]->id,
@@ -92,7 +90,6 @@ class PurchaseFunctionTest extends TestCase
                 'price' => 300,
                 'description' => '新鮮な玉ねぎ3束のセット',
                 'condition' => '状態が悪い',
-                'status' => null,
             ],
         ];
 
@@ -228,7 +225,6 @@ class PurchaseFunctionTest extends TestCase
         //dump($response);
         $delivery_address = $profile->post_code . $profile->address . $profile->building;
         $payment_method = "カード支払い";
-        $status = $item->status;
         $purchaseCount = Purchase::count();
         //決済するボタンクリック
         $response = $this->get(route('payment.direct', [
@@ -237,29 +233,17 @@ class PurchaseFunctionTest extends TestCase
             'delivery_address' => $delivery_address,
             'payment_method' => $payment_method,
             'email' => $user->email,
-            'status' => $status
         ]));
         $response->assertStatus(200); //正常コード/リダイレクト
 
-        //購入品のsold表示チェック
-        $response = $this->get('/');  // 　　'/'で表示
-        $response->assertSee('sold'); //sold表示確認
-        $this->assertDatabaseHas('items', [
-            'id' => $item->id,
-            'status' => 'sold',
-        ]);
+        //購入品のSOLD表示チェック
+        $response = $this->get('/');  // '/'で表示
         $response->assertSee($item->item_name); // 商品名が表示されているか
-        $response->assertSee('sold');      // ステータスが表示されているか
+        $response->assertSee('SOLD'); //SOLD表示確認
 
+        $response = $this->get('/mypage/?tab=buy'); // 購入した商品画面'?tab=buy'で表示
+        $response->assertSee('SOLD'); //SOLD表示確認
 
-        $response = $this->get('/'); //商品一覧に移動
-        $response = $this->get('/mypage/?tab=buy'); //　　購入した商品画面'?tab=buy'で表示
-
-        $response->assertSee('sold'); //sold表示確認
-        $this->assertDatabaseHas('items', [ // Itemテーブルにsoldが書き込まれているか
-            'id' => $item->id,
-            'status' => 'sold',
-        ]);
 
 
         return;

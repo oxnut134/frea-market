@@ -72,7 +72,6 @@ class PaymentMethodDisplayedTest extends TestCase
                 'price' => 15000,
                 'description' => 'スタイリッシュなデザインのメンズ腕時計',
                 'condition' => '良好',
-                'status' => null,
             ],
             [
                 'user_id' => $users[2]->id,
@@ -82,7 +81,6 @@ class PaymentMethodDisplayedTest extends TestCase
                 'price' => 5000,
                 'description' => '高速で信頼性の高いハードディスク',
                 'condition' => '目立った傷や汚れなし',
-                'status' => null,
             ],
             [
                 'user_id' => $users[2]->id,
@@ -92,7 +90,6 @@ class PaymentMethodDisplayedTest extends TestCase
                 'price' => 300,
                 'description' => '新鮮な玉ねぎ3束のセット',
                 'condition' => '状態が悪い',
-                'status' => null,
             ],
         ];
 

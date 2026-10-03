@@ -26,7 +26,7 @@
             <img class="mypage-form_image_attribute" src="{{ $item->image_url }}">
             <div style="display:flex;justify-content:space-between;">
                 <div style="color:#000;" >{{ $item['item_name'] }}</div>
-                <div style="color:red;font-size:20px;">{{ $item['status'] }}</div>
+                <div style="color:red;font-size:20px;">{{ !empty($awaiting_payment) && $item->sale_status === \App\Models\Item::SALE_STATUS_TRADING ? 'お支払い待ち' : $item->sale_status_label }}</div>
             </div>
         </a>
         @endforeach

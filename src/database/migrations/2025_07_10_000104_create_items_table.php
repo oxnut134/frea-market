@@ -22,8 +22,6 @@ class CreateItemsTable extends Migration
             $table->integer('price');
             $table->text('description');
             $table->string('condition', 100);
-            $table->string('status', 15); //20250622add
-
 
             $table->timestamps();
         });

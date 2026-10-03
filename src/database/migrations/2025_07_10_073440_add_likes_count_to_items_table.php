@@ -15,7 +15,7 @@ class AddLikesCountToItemsTable extends Migration
     public function up()
     {
         Schema::table('items', function (Blueprint $table) {
-            $table->unsignedInteger('likes_count')->default(0)->after('status');
+            $table->unsignedInteger('likes_count')->default(0);
         });
 
         // 既存のlikesレコードからカウントをバックフィル

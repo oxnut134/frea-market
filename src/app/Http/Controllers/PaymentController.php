@@ -77,24 +77,9 @@ class PaymentController extends Controller
             $payment_method = $request->query('payment_method');
 
             $item = Item::find($item_id);
-            //soldでない場合はテーブルに保存する
-            if ($item->status != "sold") {
-                $user_id = Auth::id();
-                $count = Purchase::where('item_id', $item_id)
-                    ->where('user_id', $user_id)
-                    ->count();
-                if ($count == 0) {
-                    $purchase = new Purchase;
-                } else {
-                    $purchase = Purchase::where('item_id', $item_id)
-                        ->where('user_id', $user_id)
-                        ->first();
-                }
-                $purchase->user_id = Auth::id();                  //1は本番ではAuth::id()となる
-                $purchase->item_id = $item_id;
-                $purchase->payment_method = $payment_method;
-                $purchase->delivery_address = $delivery_address;
-                $purchase->save();
+            //販売中の場合はテーブルに保存する
+            if ($item->sale_status === Item::SALE_STATUS_ON_SALE) {
+                $this->savePaidPurchase($item, $payment_method, $delivery_address);
                 return view('temporary_message', [
                     'message' => 'ありがとうございました！ご購入が完了しました。',
                     'redirect_url' => '/thank-you',
@@ -120,26 +105,10 @@ class PaymentController extends Controller
 
     public function directPay(Request $request)
     {
-        //soldでなければ新たなレコードを追加
+        //販売中であれば新たなレコードを追加
         $item = Item::find($request->item_id);
-        if ($item->status != "sold") {
-            $user_id = Auth::id();
-            $count = Purchase::where('item_id', $request->item_id)
-                ->where('user_id', $user_id)
-                ->count();
-            //$count = Purchase::count();
-            if ($count == 0) {
-                $purchase = new Purchase;
-            } else {
-                $purchase = Purchase::where('item_id', $request->item_id)
-                    ->where('user_id', $user_id)
-                    ->first(); // 1件だけ取得する場合
-            }
-            $purchase->user_id = Auth::id();                  //1は本番ではAuth::id()となる
-            $purchase->item_id = $request->item_id;
-            $purchase->payment_method = $request->payment_method;
-            $purchase->delivery_address = $request->delivery_address;
-            $purchase->save();
+        if ($item->sale_status === Item::SALE_STATUS_ON_SALE) {
+            $this->savePaidPurchase($item, $request->payment_method, $request->delivery_address);
             return view('temporary_message', [
                 'message' => 'ありがとうございました！ご購入が完了しました。',
                 'redirect_url' => '/thank-you'
@@ -151,5 +120,20 @@ class PaymentController extends Controller
                 'redirect_url' => '/error'
             ]);
         }
+    }
+
+    // 旧フローのつなぎ：支払い済みの購入を 1 件追加する（Checkout への切り替えで削除する）
+    private function savePaidPurchase(Item $item, $payment_method_label, $delivery_address)
+    {
+        $purchase = new Purchase;
+        $purchase->user_id = Auth::id();
+        $purchase->item_id = $item->id;
+        $purchase->status = Purchase::STATUS_PAID;
+        $purchase->payment_method = Purchase::paymentMethodFromLabel($payment_method_label);
+        $purchase->amount = $item->price;
+        $purchase->delivery_address = $delivery_address;
+        $purchase->expires_at = now();
+        $purchase->paid_at = now();
+        $purchase->save();
     }
 }

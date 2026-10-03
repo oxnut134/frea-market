@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Purchase;
 use App\Models\Item;
 use App\Models\User;
 use App\Models\Profile;
@@ -38,15 +37,7 @@ class UserController extends Controller
     public function getProfile()
     {
         //$items = Item::all();
-        $items = Item::where('user_id', '!=', Auth::id())->get(); //本番はこちらに変更/自分の出品は表示なし
-        foreach ($items as $item) {
-            if (Purchase::where('item_id', $item->id)->exists()) {
-                $item->status = "sold";
-            } else {
-                $item->status = "";
-            }
-            $item->save();
-        }
+        $items = Item::with('activePurchase')->where('user_id', '!=', Auth::id())->get(); //本番はこちらに変更/自分の出品は表示なし
         $auth_id = Auth::id();
         $user = User::find($auth_id);
         $profile = Profile::where('user_id', $auth_id)->first(); //本番はAuth::id()となる
@@ -72,7 +63,8 @@ class UserController extends Controller
             ->where('user_id', $auth_id) //本番はAuth::id()となる
            ->get();*/
     
-        $items = Item::whereHas('purchase', function ($query) {
+        // 支払い済みの商品と、自分が確保中（期限内）の商品
+        $items = Item::with('activePurchase')->whereHas('activePurchase', function ($query) {
             $query->where('user_id', Auth::id()); // Purchaseのuser_idがAuthと一致するもの
         })->get();
         //dd($item);
@@ -85,7 +77,8 @@ class UserController extends Controller
                 'items' => $items,
                 //'keyword' => $
                 'profile' => $profile,
-                'user' => $user
+                'user' => $user,
+                'awaiting_payment' => true, // 確保中の商品を「お支払い待ち」と表示する
             ]
 
 
@@ -94,7 +87,7 @@ class UserController extends Controller
     public function getExhibitedItems()
     {
         $auth_id = Auth::id();
-        $items = Item::all()->where('user_id', $auth_id);
+        $items = Item::with('activePurchase')->where('user_id', $auth_id)->get();
         //dd($item);
         $profile = Profile::where('user_id', $auth_id)->first(); //本番はAuth::id()となる
         $user = User::find($auth_id); //本番はAuth::id()となる

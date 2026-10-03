@@ -124,7 +124,13 @@
                     <div class="detail-form_engagement_count">{{ $comments }}</div>
                 </div>
             </div>
+            @if($item->sale_status !== \App\Models\Item::SALE_STATUS_ON_SALE)
+            <div class="detail-form_sale_status">{{ $item->sale_status_label }}</div>
+            @elseif(Auth::check() && Auth::id() == $item->user_id)
+            <div class="detail-form_sale_status">出品中の商品です</div>
+            @else
             <a class="detail-form_button_to_purchase_step" href="/purchase/{{ $item['id'] }}">購入手続きへ</a>
+            @endif
             <h2>商品説明</h2>
             <p>{{ $item->description }}</p>
             <h2>商品の情報</h2>
