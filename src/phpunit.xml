@@ -33,5 +33,9 @@
 		<server name="QUEUE_CONNECTION" value="sync" />
 		<server name="SESSION_DRIVER" value="array" />
 		<server name="TELESCOPE_ENABLED" value="false" />
+		<!-- テストでは Stripe に接続しない。ダミーの鍵と Webhook シークレットを使う -->
+		<server name="STRIPE_PUBLIC_KEY" value="pk_test_dummy" />
+		<server name="STRIPE_SECRET_KEY" value="sk_test_dummy" />
+		<server name="STRIPE_WEBHOOK_SECRET" value="whsec_test_dummy" />
 	</php>
 </phpunit>
