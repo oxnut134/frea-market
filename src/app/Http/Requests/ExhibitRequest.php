@@ -32,7 +32,8 @@ class ExhibitRequest extends FormRequest
              'item_name' => ['required'],
              //'brand_name' => ['required'],
              'description' => ['required','max:255'],
-             'price' => ['required','integer','min:0'],
+             // Stripe のコンビニ払いの下限（120円）に合わせる
+             'price' => ['required','integer','min:120'],
         ];
     }
     public function messages()
@@ -50,8 +51,8 @@ class ExhibitRequest extends FormRequest
             'description.required' => '商品の説明を入力してください。',
             'description.max' => '商品の説明は255文字以内で入力してください。',
             'price.required' => '商品価格を入力してください。',
-            'price.integer' => '商品価格は0円以上で入力してください。',
-            'price.min' => '商品価格は0円以上で入力してください。'
+            'price.integer' => '商品価格は数値で入力してください。',
+            'price.min' => '商品価格は120円以上で入力してください。'
         ];
     }
 }
