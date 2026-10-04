@@ -1,7 +1,7 @@
 @extends('layouts.header')
 
 @section('css')
-<link rel="stylesheet" href="{{ asset('css/detail.css') }}">
+<link rel="stylesheet" href="@versioned('css/detail.css')">
 @endsection
 
 @section('content')

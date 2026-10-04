@@ -1,7 +1,7 @@
 @extends('layouts.header')
 
 @section('css')
-<link rel="stylesheet" href="{{ asset('css/redirect.css') }}">
+<link rel="stylesheet" href="@versioned('css/redirect.css')">
 @endsection
 
 @section('content')

@@ -6,11 +6,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>フリマアプリ</title>
-    <link rel="stylesheet" href="{{ asset('css/sanitize.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/header.css') }}">
+    <link rel="stylesheet" href="@versioned('css/sanitize.css')">
+    <link rel="stylesheet" href="@versioned('css/header.css')">
     @yield('css')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="{{ asset('js/submit-guard.js') }}" defer></script>
+    <script src="@versioned('js/submit-guard.js')" defer></script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
