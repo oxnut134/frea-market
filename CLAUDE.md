@@ -88,11 +88,28 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
 - 購入フロー：`PurchaseController`（`checkout` / `complete` / キャンセル）、`StripeWebhookController`（`POST /stripe/webhook`、auth 外・CSRF 除外、署名不正は 400、処理中の例外は 500）、`app/Services/Purchase/PurchaseWebhookHandlers`
 - テストの補助：`tests/Support/InteractsWithCheckout`（偽の Stripe クライアント、署名付き Webhook の送信）
 
+## 依存パッケージ（完了）
+
+`composer audit` の 41 件のうち 36 件を更新で解消。残る 5 件（`laravel/framework` 4 件、`league/flysystem` 1 件）は Laravel 9 以上が必要で、メジャーアップグレードは範囲外。理由は README の「依存パッケージの脆弱性」と `composer.json` に記録した。
+
+### 決定事項
+
+- `minimum-stability` は `stable` — Composer 2.9 以降は勧告のある版を候補から外すため、`dev` のままだと `composer update` が `laravel/framework` を `8.x-dev` に切り替える（脆弱性は直らず、audit の件数だけ減る）
+- 残す勧告は `composer.json` の `config.policy.advisories.ignore-id` に「GHSA の ID: 理由」で登録する（旧 `audit.ignore` は非推奨）。理由のない登録はしない。外すと Laravel 8 が候補に残らず、`composer update` が解決できなくなる
+- 登録するのは、入っている版に該当する勧告だけ — 古い版だけが対象の勧告（framework 8.83.28 未満、flysystem 1.1.4 未満）は、古い版へ下がるのを止めるために残す
+- 更新は、対象のパッケージを名指しして `--with-dependencies` を付ける（全体の `composer update` はしない）— 変更を小さくし、原因を絞りやすくするため。本番用と開発用はコミットを分ける
+- `composer audit` の終了コードは 1 のまま — 放棄されたパッケージ（`fruitcake/laravel-cors`、`swiftmailer/swiftmailer`）が失敗扱いになるため。Laravel 9 以上で不要になるもので、設定は変えない
+- 会員登録のメールアドレスは `not_regex:/[\x00-\x1F\x7F]/` で制御文字を弾く — `email` ルールが引用符内の CRLF、NUL、TAB を通すため。GHSA-5vg9-5847-vvmq（email ルールの CRLF インジェクション、high）への緩和策で、修正ではない
+  - メッセージは `validation.php` の `custom.email.not_regex`（共通の `not_regex` に置くと、ほかの項目でも「メールアドレス形式で…」と出るため）
+  - テストは `RegisterEmailControlCharactersTest`（`RegisterValidationTest` は COACHTECH の一覧と対応しているので足さない）
+- Composer の設定の書式は、同梱のスキーマで確認する（コンテナ内で `composer` を `.phar` の名前でコピーし、`phar://.../res/composer-schema.json` を読む）
+
 ## 今後の予定
 
-- 次：依存パッケージの脆弱性対応（`composer audit`：12 パッケージ 41 件、Laravel 8 のサポート終了が根本原因）
-- その後、Render へのデプロイ：S3（`IMAGE_DISK=s3`、`AWS_*`、バケットの公開設定）、SMTP、Webhook エンドポイントの登録と `STRIPE_WEBHOOK_SECRET`、DB の作り直し、`entrypoint.sh` の `storage:link` / `chown` の動作確認、`PurchasesTableSeeder` を `DatabaseSeeder` から呼ぶかの判断（今は呼んでいない）
-- 仕上げ：いいね（連打対策、アイコンの切り替え条件）、検索欄の `value`、ロゴの `alt`、README
+- 次：Render へのデプロイ：S3（`IMAGE_DISK=s3`、`AWS_*`、バケットの公開設定）、SMTP、Webhook エンドポイントの登録と `STRIPE_WEBHOOK_SECRET`、DB の作り直し、`entrypoint.sh` の `storage:link` / `chown` の動作確認、`PurchasesTableSeeder` を `DatabaseSeeder` から呼ぶかの判断（今は呼んでいない）
+  - SMTP に切り替えるときは GHSA-5vg9-5847-vvmq を再確認する（今は `MAIL_MAILER=log` で外部に送っていない前提で残している）。README と `composer.json` の理由も合わせて直す
+- 仕上げ：いいね（連打対策、アイコンの切り替え条件）、検索欄の `value`、ロゴの `alt`、README（「利用技術」が古い：PHP 7.4.9、MySQL、stripe-php 9.9 など）
+- Laravel のメジャーアップグレード（未定）：残る 5 件の勧告と、放棄されたパッケージ 2 つが解消する
 - 確認待ち：`/search` の要ログインが仕様どおりか（今は触らない）
 - 確認待ち：商品一覧（`index`）で自分の出品を除外するか（今は触らない。`IndexFunctionTest::testWithoutMyExhibition` は skip）
 - 既知の点：画像の保存後に DB 登録が失敗するとファイルが残る
@@ -106,3 +123,4 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
 - 送信中表示：`public/js/submit-guard.js` で二重送信防止と「処理中…」
 - 決済：Cashier の削除、stripe-php v21、`StripeCheckoutService`、購入状態の管理（`purchases.status`）と販売状況の表示、Checkout と Webhook への切り替え、README の手順
 - 画像：Storage のディスクに保存（ランダムなファイル名）、シード画像はシーディング時にディスクへコピー、`public/storage` はシンボリックリンクに、`laravel-lang/lang` を削除（Packagist のマルウェア報告。手元の版はクリーンと確認済み）
+- 依存パッケージ：脆弱な 10 パッケージを更新（35 パッケージ）、`minimum-stability` を `stable` に、残る 5 件の勧告を理由付きで登録、登録メールアドレスの制御文字の検証、README への記録
