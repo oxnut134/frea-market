@@ -66,8 +66,8 @@ Route::middleware(['auth', 'verified', 'profile.exists'])->group(function () {
     Route::post('/sell', [ItemController::class, 'upItem']);
 
     //いいね＆コメント
-    Route::get('/like/{id}/add', [LikeController::class, 'add']);
-    Route::get('/like/{id}/remove', [LikeController::class, 'remove']);
+    Route::post('/like/{id}', [LikeController::class, 'add'])->whereNumber('id');
+    Route::delete('/like/{id}', [LikeController::class, 'remove'])->whereNumber('id');
     Route::post('/item/comment', [CommentController::class, 'addComment']);
 });
 

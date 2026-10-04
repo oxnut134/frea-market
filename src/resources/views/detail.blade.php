@@ -92,8 +92,11 @@
                             let action = myLike === 1 ? 'remove' : 'add';
 
                             $.ajax({
-                                url: `/like/${itemId}/${action}`, // コントローラ起動
-                                method: 'GET',
+                                url: `/like/${itemId}`, // コントローラ起動
+                                method: action === 'remove' ? 'DELETE' : 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                                },
                                 success: function(data) {
                                     if (action === 'remove') {
                                         likeIcon.removeClass('liked').addClass('not-liked');

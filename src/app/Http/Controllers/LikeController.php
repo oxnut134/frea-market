@@ -11,26 +11,27 @@ class LikeController extends Controller
 {
     public function add($id)
     {
-        $current_user_id = Auth::id(); // 本番ではAuth::id()を使用
         $item = Item::findOrFail($id);
 
-        Like::firstOrCreate([
-            'item_id' => $id,
-            'user_id' => $current_user_id,
+        // すでにいいね済みなら何もしない（ON CONFLICT DO NOTHING）。同時に届いてもユニーク違反にならない
+        Like::insertOrIgnore([
+            'item_id' => $item->id,
+            'user_id' => Auth::id(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
-        return response()->json(['likes' => $item->likes()->count()]);
+        return response()->json(['liked' => true, 'likes' => $item->likes()->count()]);
     }
 
     public function remove($id)
     {
-        $current_user_id = Auth::id(); // 本番ではAuth::id()を使用
         $item = Item::findOrFail($id);
 
-        Like::where('item_id', $id)
-            ->where('user_id', $current_user_id)
+        Like::where('item_id', $item->id)
+            ->where('user_id', Auth::id())
             ->delete();
 
-        return response()->json(['likes' => $item->likes()->count()]);
+        return response()->json(['liked' => false, 'likes' => $item->likes()->count()]);
     }
 }
