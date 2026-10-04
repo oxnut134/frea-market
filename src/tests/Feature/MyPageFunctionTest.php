@@ -257,7 +257,7 @@ class MyPageFunctionTest extends TestCase
         $response = $this->actingAs($user)->get('/mypage/?tab=buy');
 
         $response->assertStatus(200);
-        $response->assertSeeInOrder(['腕時計', 'SOLD', 'HDD', 'お支払い待ち']);
+        $response->assertSeeInOrder(['SOLD', '腕時計', 'お支払い待ち', 'HDD']); // 表示は商品画像に重なるので、商品名より前に出る
         $response->assertDontSee('取引中');
         $response->assertDontSee('玉ねぎ3束');
         $response->assertDontSee('革靴');

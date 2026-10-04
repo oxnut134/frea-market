@@ -10,7 +10,10 @@
 <body>{{ $my_like }}
     <div class="detail-form">
         <div class="detail-form_Item_image">
-            <img class="detail-form_image_attribute" src="{{ $item->image_url }}">
+            <div class="sale-status_frame detail-form_image_frame">
+                <img class="detail-form_image_attribute" src="{{ $item->image_url }}">
+                @include('partials.sale_status_overlay')
+            </div>
 
         </div>
         <div class="detail-form_detail_descriptions">

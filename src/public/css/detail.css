@@ -10,8 +10,11 @@
     align-items: flex-start;
     margin-top: 8vh;
 }
-.detail-form_image_attribute {
+.detail-form_image_frame {
     width: 80%;
+}
+.detail-form_image_attribute {
+    width: 100%;
 }
 .detail-form_detail_descriptions {
     width: 45%;

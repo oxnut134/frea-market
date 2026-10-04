@@ -56,3 +56,46 @@ input[type="submit"]:disabled {
     opacity: 0.6;
     cursor: wait;
 }
+
+/* 販売状況（SOLD / 取引中 / お支払い待ち）を商品画像に重ねる表示 */
+.sale-status_frame {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    container-type: inline-size;
+}
+/* 画像の中央を通る斜めの帯。枠より長くして、はみ出した部分は枠で隠す */
+.sale-status_overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 160%;
+    height: 5vw;
+    height: 24cqw;
+    transform: translate(-50%, -50%) rotate(-25deg);
+    font-size: 3.3vw;
+    font-size: 16cqw;
+    font-weight: 900;
+    -webkit-text-stroke: 0.06em #fff;
+    paint-order: stroke fill;
+    line-height: 1;
+    white-space: nowrap;
+    pointer-events: none;
+}
+.sale-status_overlay--sold {
+    background-color: rgba(255, 0, 0, 0.35);
+    color: #e60000;
+}
+.sale-status_overlay--trading {
+    background-color: rgba(255, 150, 0, 0.4);
+    color: #ff7a00;
+}
+.sale-status_overlay--awaiting {
+    background-color: rgba(0, 120, 255, 0.35);
+    color: #0050e6;
+    font-size: 2.3vw;
+    font-size: 11cqw;
+}
