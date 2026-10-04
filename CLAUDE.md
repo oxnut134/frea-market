@@ -5,17 +5,19 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
 
 ## 環境
 
+- 作業フォルダは WSL2 の `~/coachtech/frea-market`。Windows のフォルダ（`/mnt/c/...`）は使わない — Docker のマウントが遅いため。ホストは WSL2 の Ubuntu（bash）
 - Laravel 8 / PHP 8.1 / PostgreSQL 15。アプリ本体は `src/`
 - Docker Compose：`php`（`docker/php/Dockerfile`）、`nginx`（:80）、`pgsql`（:5432）、`adminer`（:8080）、`mailhog`（:8025 / SMTP :1025）
 - artisan と composer は php コンテナ内で実行：`docker compose exec php php artisan ...`
+- 新しい環境では、`storage` と `bootstrap/cache` の持ち主を www-data にする：`docker compose exec php chown -R www-data:www-data storage bootstrap/cache` と `docker compose exec php chmod -R ug+rwX storage bootstrap/cache`
 - テスト：`docker compose exec php php artisan test`。DB は `phpunit.xml` の `pgsql_test` / `frea_test`。Stripe の鍵と Webhook シークレットも `phpunit.xml` のダミー値を使う
+  - `frea_test` は自動では作られない。新しい環境では `docker compose exec pgsql createdb -U laravel_user frea_test` で作る
 - メール：ローカルは MailHog（http://localhost:8025）
 - 画像：`IMAGE_DISK`（既定 `public`、本番は `s3`）。URL は `Item::image_url` / `Profile::image_url` で生成
   - 新しい環境では、シーディング後に `php artisan storage:link` と `chown -R www-data:www-data storage/app/public`
   - アップロード上限 5MB（`docker/php/php.ini` は 6M。変更したら `docker compose build php && docker compose up -d php`）
-- Stripe CLI：ホストの `C:\Program Files\Stripe\stripe`（1.43.2）。nginx がホストの 80 番なので、ホストから `stripe listen --forward-to http://localhost/stripe/webhook`。表示された `whsec_...` を `.env` の `STRIPE_WEBHOOK_SECRET` に入れる。この版では `stripe docs` が使えない（ドキュメントは docs.stripe.com の `.md` を直接取得）
+- Stripe CLI：WSL2 側の `/usr/bin/stripe`（1.51.1）を使う。Windows 側の `C:\Program Files\Stripe\stripe`（1.43.2）は使わない。ログインは未実施（`stripe login`）。nginx が WSL2 の 80 番なので、`stripe listen --forward-to http://localhost/stripe/webhook`（WSL2 では未確認）。表示された `whsec_...` を `.env` の `STRIPE_WEBHOOK_SECRET` に入れる。`stripe docs` が使えるかは未確認（使えなければ docs.stripe.com の `.md` を直接取得）
 - 本番：Render（ルートの `Dockerfile`、`render.yaml`、`docker/render/entrypoint.sh`）。`MAIL_MAILER=log`、`IMAGE_DISK=public` のまま
-- ホストは Windows + Git Bash：sed でバックスラッシュを含む置換をすると崩れるので Edit を使う。curl で日本語を送ると Shift-JIS になるので UTF-8 のファイル経由で送る
 
 ## 作業ルール
 
@@ -106,9 +108,10 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
 
 ## 今後の予定
 
-- 次：Render へのデプロイ：S3（`IMAGE_DISK=s3`、`AWS_*`、バケットの公開設定）、SMTP、Webhook エンドポイントの登録と `STRIPE_WEBHOOK_SECRET`、DB の作り直し、`entrypoint.sh` の `storage:link` / `chown` の動作確認、`PurchasesTableSeeder` を `DatabaseSeeder` から呼ぶかの判断（今は呼んでいない）
+- 次：いいね機能の見直し（調査と方針は `reports/2026-10-04-like-review.md`）：`likes_count` の廃止、POST / DELETE への変更と `insertOrIgnore`、アイコンの判定と連打対策の 3 コミット
+- その次：Render へのデプロイ：S3（`IMAGE_DISK=s3`、`AWS_*`、バケットの公開設定）、SMTP、Webhook エンドポイントの登録と `STRIPE_WEBHOOK_SECRET`、DB の作り直し、`entrypoint.sh` の `storage:link` / `chown` の動作確認、`PurchasesTableSeeder` を `DatabaseSeeder` から呼ぶかの判断（今は呼んでいない）
   - SMTP に切り替えるときは GHSA-5vg9-5847-vvmq を再確認する（今は `MAIL_MAILER=log` で外部に送っていない前提で残している）。README と `composer.json` の理由も合わせて直す
-- 仕上げ：いいね（連打対策、アイコンの切り替え条件）、検索欄の `value`、ロゴの `alt`、README（「利用技術」が古い：PHP 7.4.9、MySQL、stripe-php 9.9 など）
+- 仕上げ：検索欄の `value`、ロゴの `alt`、README（「利用技術」が古い：PHP 7.4.9、MySQL、stripe-php 9.9 など）
 - Laravel のメジャーアップグレード（未定）：残る 5 件の勧告と、放棄されたパッケージ 2 つが解消する
 - 確認待ち：`/search` の要ログインが仕様どおりか（今は触らない）
 - 確認待ち：商品一覧（`index`）で自分の出品を除外するか（今は触らない。`IndexFunctionTest::testWithoutMyExhibition` は skip）
