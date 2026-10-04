@@ -37,7 +37,11 @@ return [
         'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
         // 購入手続き中の商品を確保しておく時間（Checkout Session の有効期限、30分以上）
         'checkout_expires_minutes' => 30,
+        // Stripe に送る期限に足す余裕（秒）。Stripe は「作成から 30 分以上」を要求するので、通信の遅れで下回らないようにする
+        'checkout_expiry_buffer_seconds' => 60,
         // コンビニ払いの支払期限（日数）
         'konbini_expires_after_days' => 3,
+        // コンビニ払いの支払期限（最終日の 23:59:59）の後、商品の確保を続ける時間（分）。期限間際の入金の通知を待つため
+        'konbini_expiry_grace_minutes' => 1440,
     ],
 ];

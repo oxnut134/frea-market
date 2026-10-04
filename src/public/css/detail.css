@@ -164,3 +164,7 @@
     margin-top: 4vh;
     font-size: 17px;
 }
+.detail-form_message {
+    margin-top: 2vh;
+    color: red;
+}

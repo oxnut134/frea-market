@@ -43,12 +43,9 @@ class Purchase extends Model
         'paid_at' => 'datetime',
     ];
 
-    // 表示名（カード支払い / コンビニ払い）から支払い方法を求める。該当しなければ null
-    public static function paymentMethodFromLabel($label)
+    public function item()
     {
-        $payment_method = array_search($label, self::PAYMENT_METHOD_LABELS, true);
-
-        return $payment_method === false ? null : $payment_method;
+        return $this->belongsTo(Item::class, 'item_id', 'id');
     }
 
     // 支払い方法の表示名（$purchase->payment_method_label）

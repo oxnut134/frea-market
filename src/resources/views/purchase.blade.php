@@ -7,10 +7,14 @@
 @section('content')
 
 <body>
-    @if(isset($errors))
+    @if($canceled)
+    <div class="purchase-form_notice">決済をキャンセルしました。</div>
+    @endif
+    @if ($errors->has('checkout'))
+    <div class="purchase-form_notice purchase-form_notice--error">{{ $errors->first('checkout') }}</div>
     @endif
 
-    <form class="purchase-form" action="/stripe" method="post">
+    <form class="purchase-form" action="/purchase/{{ $item['id'] }}/checkout" method="post">
         @csrf
         <div class="purchase-form_confirm_box">
             <div class="purchase-form_item_image_wrapper">
@@ -22,12 +26,16 @@
             </div>
             <div class="purchase-form_item_payment_method">
                 <h3 class="purchase-form_item_payment_method_column_name">支払い方法</h3>
-<select class="purchase-form_select_payment_method" name="payment_method" id="payment-method-select">
-<!--     <select class="purchase-form_select_payment_method" name="payment_method">-->
-                    <option disabled selected>選択してください</option>
-                    <option value="コンビニ払い">コンビニ払い</option>
-                    <option value="カード支払い">カード支払い</option>
+                @if($own_pending)
+                <div class="purchase-form_shipping_address">{{ $own_pending->payment_method_label }}</div>
+                @else
+                <select class="purchase-form_select_payment_method" name="payment_method" id="payment-method-select">
+                    <option value="" disabled @if(!old('payment_method')) selected @endif>選択してください</option>
+                    @foreach($payment_methods as $value => $label)
+                    <option value="{{ $value }}" @if(old('payment_method') === $value) selected @endif>{{ $label }}</option>
+                    @endforeach
                 </select>
+                @endif
                 @if ($errors->has('payment_method'))
                 <div style="width:100%;display:flex;justify-content:center;">
                     <div style="width:85%;display:flex;justify-content:flex-start;color:red;">
@@ -40,16 +48,15 @@
                 <div class="purchase-form_shipping_address_redirect_row">
                     <h3 class="purchase-form_shipping_address_column_name">配送先</h3>
 
+                    @if(!$own_pending)
                     <a class="purchase-form_shipping_address_redirect_button" href="/purchase/address/{{ $item['id'] }}">変更する</a>
+                    @endif
                 </div>
+                @if($own_pending)
+                <div class="purchase-form_shipping_address">{{ $own_pending->delivery_address }}</div>
+                @else
                 <div class="purchase-form_shipping_address">{{ '〒'.$post_code }}</div>
                 <div class="purchase-form_shipping_address">{{ $address.' '.$building }}</div>
-                @if ($errors->has('delivery_address'))
-                <div style="width:100%;display:flex;justify-content:center;">
-                    <div style="width:85%;display:flex;justify-content:flex-start;color:red;">
-                        {{$errors->first('delivery_address')}}
-                    </div>
-                </div>
                 @endif
             </div>
         </div>
@@ -62,21 +69,21 @@
                 </div>
                 <div class="purchase-form_purchase_payment_method_wrapper">
                     <span class="purchase-form_purchase_payment_method">支払い方法</span>
-                    @if($payment_method)
-                    <span class="purchase-form_purchase_payment_method"><span id="selected-payment-method"></span></span>
-                    @endif
+                    <span class="purchase-form_purchase_payment_method"><span id="selected-payment-method">{{ $own_pending ? $own_pending->payment_method_label : ($payment_methods[old('payment_method')] ?? '') }}</span></span>
                 </div>
-                <!------- payment_method はセット済------->
-                    <input type="hidden" name="delivery_address" value="{{ $post_code.$address.$building}}">
-                    <input type="hidden" name="price" value="{{ $item['price'] }}">
-                    <input type="hidden" name="item_name" value="{{ $item['item_name'] }}">
-                    <input type="hidden" name="item_id" value="{{ $item['id'] }}">
-                    <input type="hidden" name="email" value="{{ $email }}">
-                    <button class="purchase-form_purchase_button">
-                        購入する
-                    </button>
+                @if($own_pending && $own_pending->stripe_checkout_url)
+                {{-- 自分が確保中で、決済がまだ終わっていない --}}
+                <div class="purchase-form_pending_message">購入手続きの途中です。</div>
+                <a class="purchase-form_purchase_button purchase-form_purchase_button--link" href="{{ $own_pending->stripe_checkout_url }}">決済を続ける</a>
+                @elseif($own_pending)
+                {{-- コンビニ払いの支払い番号を発行済み --}}
+                <div class="purchase-form_pending_message">コンビニでのお支払いをお待ちしています。支払い方法は Stripe からのメールをご確認ください。</div>
+                @else
+                <button class="purchase-form_purchase_button">
+                    購入する
+                </button>
+                @endif
             </div>
-            <!--<div id="item-id" data-id="{{ $item['price'] }}"></div>-->
         </div>
         </form>
 </body>
@@ -84,10 +91,13 @@
     document.addEventListener('DOMContentLoaded', function () {
         const paymentMethodSelect = document.getElementById('payment-method-select');
         const selectedPaymentMethod = document.getElementById('selected-payment-method');
+        if (!paymentMethodSelect) {
+            return;
+        }
 
+        // 選んだ支払い方法の表示名を、小計にも表示する
         paymentMethodSelect.addEventListener('change', function () {
-            const selectedValue = paymentMethodSelect.value;
-            selectedPaymentMethod.textContent = selectedValue;
+            selectedPaymentMethod.textContent = paymentMethodSelect.options[paymentMethodSelect.selectedIndex].text;
         });
     });
 </script>

@@ -23,11 +23,9 @@ class PurchaseRequest extends FormRequest
      */
     public function rules()
     {
-
+        // 金額・送付先・メールアドレスはリクエストから受け取らず、サーバー側で決める
         return [
-            'payment_method' => ['required'],
-            'delivery_address' => ['required'],
-             'email' => ['required'],
+            'payment_method' => ['required', 'in:card,konbini'],
         ];
     }
     public function messages()
@@ -35,8 +33,7 @@ class PurchaseRequest extends FormRequest
 
         return [
             'payment_method.required' => 'お支払い方法を入力してください。',
-            'delivery_address.required' => '配送先を入力してください。',
-            'email.required' => 'emailが設定されていません。'
+            'payment_method.in' => 'お支払い方法を入力してください。',
         ];
     }
 }

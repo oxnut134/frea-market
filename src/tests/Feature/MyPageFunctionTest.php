@@ -257,7 +257,9 @@ class MyPageFunctionTest extends TestCase
         $response = $this->actingAs($user)->get('/mypage/?tab=buy');
 
         $response->assertStatus(200);
-        $response->assertSeeInOrder(['SOLD', '腕時計', 'お支払い待ち', 'HDD']); // 表示は商品画像に重なるので、商品名より前に出る
+        // 表示は商品画像に重なるので、商品名の直前に出る（商品の並び順には依存させない）
+        $this->assertMatchesRegularExpression('/SOLD<\/span>\s*<\/div>\s*<div[^>]*>\s*<div[^>]*>腕時計/u', $response->getContent());
+        $this->assertMatchesRegularExpression('/お支払い待ち<\/span>\s*<\/div>\s*<div[^>]*>\s*<div[^>]*>HDD/u', $response->getContent());
         $response->assertDontSee('取引中');
         $response->assertDontSee('玉ねぎ3束');
         $response->assertDontSee('革靴');

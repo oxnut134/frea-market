@@ -3,367 +3,85 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
+use Tests\Support\InteractsWithCheckout;
 use Tests\TestCase;
-use Illuminate\Support\Facades\DB;
-use App\Models\User;
-use App\Models\Item;
-use App\Models\Like;
-use App\Models\Comment;
-use App\Models\Category;
-use App\Models\ItemCategory;
-use App\Models\Profile;
 use App\Models\Purchase;
-use Illuminate\Support\Facades\Auth;
 
-
+// 支払い方法選択機能
 class PaymentMethodDisplayedTest extends TestCase
 {
-    /**
-     * A basic feature test example.
-     *
-     * @return void
-     */
-    use RefreshDatabase;
+    use RefreshDatabase, InteractsWithCheckout;
 
-    //--------------------ShowItemDetail-1 アイテム詳細 全項目表示確認 --------------------------
+    private $buyer;
+    private $item;
 
-    public function testPaymantMethodDisplayedOnTotalField()
+    protected function setUp(): void
     {
-        var_dump("*****1st_Method:testPaymantMethodDisplayedOnTotalField");
-        $users =
-            [
-                [
-                    'name' => 'cat',
-                    'email' => 'cat@test.com',
-                    'password' => bcrypt('abc12345'),
-                ],
-                [
-                    'name' => 'dog',
-                    'email' => 'dog@test.com',
-                    'password' => bcrypt('abc12345'),
-                ],
-                [
-                    'name' => 'rat',
-                    'email' => 'rat@test.com',
-                    'password' => bcrypt('abc12345'),
-                ]
-            ];
-        foreach ($users as $user) {
+        parent::setUp();
 
-            $new_user = new User;
-            $new_user->name = $user['name'];
-            $new_user->email = $user['email'];
-            $new_user->password = $user['password'];
-            $new_user->email_verified_at = now();
+        $this->buyer = $this->createUserWithProfile();
+        $this->item = $this->createItem($this->createUserWithProfile());
+    }
 
-            $new_user->save();
-        }
+    protected function tearDown(): void
+    {
+        $this->resetStripe();
 
-        $users = User::all();
-        //$users = User::factory()->count(3)->create();
+        parent::tearDown();
+    }
 
-        $items = [
-            [
-                'user_id' => $users[2]->id,
-                'item_image' => 'Item-Armani+Mens+Clock.jpg',
-                'item_name' => '腕時計',
-                'brand_name' => 'Armani',
-                'price' => 15000,
-                'description' => 'スタイリッシュなデザインのメンズ腕時計',
-                'condition' => '良好',
-            ],
-            [
-                'user_id' => $users[2]->id,
-                'item_image' => 'Item-HDD+Hard+Disk.jpg',
-                'item_name' => 'HDD',
-                'brand_name' => '',
-                'price' => 5000,
-                'description' => '高速で信頼性の高いハードディスク',
-                'condition' => '目立った傷や汚れなし',
-            ],
-            [
-                'user_id' => $users[2]->id,
-                'item_image' => 'Item-iLoveIMG+d.jpg',
-                'item_name' => '玉ねぎ3束',
-                'brand_name' => null,
-                'price' => 300,
-                'description' => '新鮮な玉ねぎ3束のセット',
-                'condition' => '状態が悪い',
-            ],
-        ];
+    // 購入画面で支払い方法を選択できる
+    public function testPurchasePageShowsPaymentMethodOptions(): void
+    {
+        $response = $this->actingAs($this->buyer)->get('/purchase/' . $this->item->id);
 
-        foreach ($items as $item) {
-
-            $new_item = new Item;
-            $new_item->user_id = $item['user_id'];
-            $new_item->item_image = $item['item_image'];
-            $new_item->item_name = $item['item_name'];
-            $new_item->brand_name = $item['brand_name'];
-            $new_item->price = $item['price'];
-            $new_item->description = $item['description'];
-            $new_item->condition = $item['condition'];
-
-            $new_item->save();
-        }
-
-        $categories = [
-
-            ['category' => 'ファッション',],
-            ['category' => '家電',],
-            ['category' => 'インテリア',],
-            ['category' => 'レディース',],
-            ['category' => 'メンズ',],
-            ['category' => 'コスメ',],
-            ['category' => '本',],
-            ['category' => 'ゲーム',],
-            ['category' => 'スポーツ',],
-            ['category' => 'キッチン',],
-            ['category' => 'ハンドメイド',],
-            ['category' => 'アクセサリー',],
-            ['category' => 'おもちゃ',],
-            ['category' => 'ベビー・キッズ',]
-        ];
-
-        foreach ($categories as $category) {
-            Category::create($category);
-        }
-
-
-        $user = User::first(); // usersテーブルの最初のレコードを取得
-        $item = Item::first(); // itemsテーブルの最初のレコードを取得
-        //最初のアイテムにいいね
-        $likes = [
-            'user_id' => $user['id'], // 最初のユーザーのIDをリンク
-            'item_id' => $item['id'], // アイテムのIDをリンク
-        ];
-        // 一括挿入
-        Like::insert($likes); // likesテーブルにいいねを保存
-
-
-        //コメント
-        $user = User::first(); // usersテーブルの最初のレコードを取得
-        $item = Item::first(); // itemsテーブルの最初のレコードを取得
-
-        $comments = [
-            [
-                'user_id' => $user['id'], // 最初のユーザーのIDをリンク
-                'item_id' => $item['id'], // ２番目のアイテムのIDをリンク
-                'comment' => "test",
-            ],
-            [
-                'user_id' => $user['id'], // 最初のユーザーのIDをリンク
-                'item_id' => $item['id'] + 1, // ３番目のアイテムのIDをリンク
-                'comment' => "test",
-            ]
-        ];
-        // 一括挿入
-        Comment::insert($comments); // commentsテーブルに一括保存
-
-        //カテゴリー
-        $category = Category::first(); // categoriesテーブルの最初のレコードを取得
-        $item = Item::first(); // itemsテーブルの最初のレコードを取得
-
-        $item_category = [
-            [
-                'item_id' => $item['id'], // 最初のユーザーのIDをリンク
-                'category_id' => $category['id'], // ２番目のアイテムのIDをリンク
-            ],
-            [
-                'item_id' => $item['id'], // 最初のユーザーのIDをリンク
-                'category_id' => $category['id'] + 1, // ３番目のアイテムのIDをリンク
-            ]
-        ];
-        // 一括挿入
-        ItemCategory::insert($item_category); // item_categoryテーブルに一括を保存
-
-        //プロファイル登録
-        $user = User::first(); // usersテーブルの最初のレコードを取得
-        $profiles = [
-            [
-                'user_id' => $user['id'], // ユーザーのIDをリンク
-                'profile_image' => 'comment.png',
-                'post_code' => '111-1111',
-                'address' => 'Tokyo'
-            ],
-        ];
-        // 一括挿入
-        Profile::insert($profiles); //profilesテーブルに一括を保存
-
-
-
-        //------------ テスト実行---------------------------------------------------
-
-
-        // ログイン
-        $this->actingAs($user);
-
-        // 商品購入ページにアクセス
-        $response = $this->get('/purchase/' . $item->id);
-
-        // ページが正常に表示されることを確認
         $response->assertStatus(200);
+        $response->assertSee('<option value="konbini" >コンビニ払い</option>', false);
+        $response->assertSee('<option value="card" >カード支払い</option>', false);
+        // 小計の支払い方法（選択すると JavaScript が表示名を入れる）
+        $response->assertSee('id="selected-payment-method"', false);
+    }
 
-        // 支払い方法を選択して送信
-        $response = $this->post('/stripe', [
-            'payment_method' => 'カード支払い',
-            'delivery_address' => '〒1234567 東京都渋谷区1-1-1 ビル名',
-            'price' => $item->price,
-            'item_id' => $item->id,
-            'email' => $user->email,
-        ]);
+    // 選択した支払い方法が、決済と購入に反映される
+    public function testSelectedPaymentMethodIsUsedForCheckout(): void
+    {
+        foreach (['card', 'konbini'] as $payment_method) {
+            $item = $this->createItem($this->createUserWithProfile());
+            $http = $this->fakeStripe([$this->checkoutSessionResponse(['id' => 'cs_test_' . $payment_method])]);
 
-        // POSTリクエストが成功することを確認
-        $response->assertStatus(200);
+            $this->actingAs($this->buyer)
+                ->post('/purchase/' . $item->id . '/checkout', ['payment_method' => $payment_method])
+                ->assertRedirect('https://checkout.stripe.com/c/pay/cs_test_123');
 
-        // 選択した支払い方法が正しく表示されるか確認
-        $response->assertSee('カード支払い');
+            $this->assertSame([$payment_method], $http->requests[0]['params']['payment_method_types']);
+            $this->assertDatabaseHas('purchases', ['item_id' => $item->id, 'payment_method' => $payment_method]);
+        }
+    }
 
+    // 支払い方法を選ばない、または選択肢以外の値では購入できない
+    public function testPaymentMethodMustBeOneOfTheOptions(): void
+    {
+        $http = $this->fakeStripe();
 
+        foreach ([[], ['payment_method' => ''], ['payment_method' => 'カード支払い'], ['payment_method' => 'paypal']] as $input) {
+            $this->actingAs($this->buyer)
+                ->post('/purchase/' . $this->item->id . '/checkout', $input)
+                ->assertSessionHasErrors(['payment_method' => 'お支払い方法を入力してください。']);
+        }
 
-        /*$this->actingAs($user);
-        $response = $this->get('/');
-        $response = $this->get('/item/1');
-        $response = $this->get('/purchase/1');
-        $user = User::first(); // usersテーブルの最初のレコードを取得
-        $item = Item::first(); // itemsテーブルの最初のレコードを取得
-        $profile = Profile::where('user_id', $user->id)->first();
-        //購入するボタンクリック
+        $this->assertSame(0, Purchase::count());
+        $this->assertSame([], $http->requests);
+    }
 
+    // 入力エラーで戻ったとき、選んでいた支払い方法が選択されたままになる
+    public function testSelectedPaymentMethodIsKeptAfterError(): void
+    {
+        $item = $this->createItem($this->createUserWithProfile(), ['price' => 300001]);
 
-
-
-        // 購入前のPurchaseテーブルのレコード数を取得
-        $purchaseCount = Purchase::count();
-
-        // 購入するボタンクリック
-        $response = $this->post(route('payment.index'), [
-            'delivery_address' => $profile->post_code . $profile->address . $profile->building,
-            'payment_method' => 'コンビニ払い',
-            'price' => $item->price,
-            'item_id' => $item->id,
-            'email' => $user->email,
-        ]);
-        $response->assertStatus(302); //正常終了コード
-
-        //dump($response);
-        $delivery_address = $profile->post_code . $profile->address . $profile->building;
-        $payment_method = "カード支払い";
-        $status = $item->status;
-        $purchaseCount = Purchase::count();
-        //決済するボタンクリック
-        $response = $this->get(route('payment.direct', [
-            'user_id' => $user->id,
-            'item_id' => $item->id,
-            'delivery_address' => $delivery_address,
-            'payment_method' => $payment_method,
-            'email' => $user->email,
-            'status' => $status
-        ]));
-        $response->assertStatus(200); //正常コード/リダイレクト
-
-        //購入品のsold表示チェック
-        $response = $this->get('/');  // 　　'/'で表示
-        $response->assertSee('sold'); //sold表示確認
-        $this->assertDatabaseHas('items', [
-            'id' => $item->id,
-            'status' => 'sold',
-        ]);
-        $response->assertSee($item->item_name); // 商品名が表示されているか
-        $response->assertSee('sold');      // ステータスが表示されているか
-
-
-        $response = $this->get('/'); //商品一覧に移動
-        $response = $this->get('/mypage/?tab=buy'); //　　購入した商品画面'?tab=buy'で表示
-
-        $response->assertSee('sold'); //sold表示確認
-        $this->assertDatabaseHas('items', [ // Itemテーブルにsoldが書き込まれているか
-            'id' => $item->id,
-            'status' => 'sold',
-        ]);
-*/
-
-        return;
+        $this->actingAs($this->buyer)
+            ->followingRedirects()
+            ->post('/purchase/' . $item->id . '/checkout', ['payment_method' => 'konbini'])
+            ->assertSee('<option value="konbini"  selected >コンビニ払い</option>', false)
+            ->assertSee('コンビニ払いは300,000円までです。');
     }
 }
-
-/*
-　　　　------------------- ダミーデータ ---------------------------------
-                 //4
-                 [
-                    'user_id' => 1,
-                    'item_image' => 'Item-Leather+Shoes+Product+Photo.jpg',
-                    'item_name' => '革靴',
-                    'brand_name' => null,
-                    'price' => 4000,
-                    'description' => 'クラシックなデザインの革靴',
-                    'condition' => '状態が悪い',
-
-                ],
-                //5
-                [
-                    'user_id' => 2,
-                    'item_image' => 'Item-Living+Room+Laptop.jpg',
-                    'item_name' => 'ノートPC',
-                    'brand_name' => null,
-                    'price' => 45000,
-                    'description' => '高性能なノートパソコン',
-                    'condition' => '良好',
-
-                ],
-                //6
-                [
-                    'user_id' => 2,
-                    'item_image' => 'Item-Music+Mic+4632231.jpg',
-                    'item_name' => 'マイク',
-                    'brand_name' => null,
-                    'price' => 8000,
-                    'description' => '高音質のレコーディング用マイク',
-                    'condition' => '目立った傷や汚れなし',
-
-                ],
-                //7
-                [
-                    'user_id' => 2,
-                    'item_image' => 'Item-Purse+fashion+pocket.jpg',
-                    'item_name' => 'ショルダーバッグ',
-                    'brand_name' => 'Nine West',
-                    'price' => 3500,
-                    'description' => 'おしゃれなショルダーバッグ',
-                    'condition' => 'やや傷や汚れあり',
-
-
-                ],
-                //8
-                [
-                    'user_id' => 3,
-                    'item_image' => 'Item-Tumbler+souvenir.jpg',
-                    'item_name' => 'タンブラー',
-                    'brand_name' => null,
-                    'price' => 500,
-                    'description' => '使いやすいタンブラー',
-                    'condition' => '状態が悪い',
-
-                ],
-                //9
-                [
-                    'user_id' => 3,
-                    'item_image' => 'Item-Waitress+with+Coffee+Grinder.jpg',
-                    'item_name' => 'コーヒーミル',
-                    'brand_name' => null,
-                    'price' => 4000,
-                    'description' => '手動のコーヒーミル',
-                    'condition' => '良好',
-
-                ],
-                //10
-                [
-                    'user_id' => 3,
-                    'item_image' => 'Item-外出メイクアップセット.jpg',
-                    'item_name' => 'メイクセット',
-                    'brand_name' => null,
-                    'price' => 2500,
-                    'description' => '便利なメイクアップセット',
-                    'condition' => '目立った傷や汚れなし',
-
-                ],*/

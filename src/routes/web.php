@@ -7,7 +7,7 @@ use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\CommentController;
-use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\StripeWebhookController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -46,7 +46,9 @@ Route::middleware(['auth', 'verified', 'profile.exists'])->group(function () {
     Route::post('/search', [ItemController::class, 'search']);
 
     //商品購入
-    Route::get('/purchase/{item_id}', [PurchaseController::class, 'purchaseItems'])->name('purchase');
+    Route::get('/purchase/complete', [PurchaseController::class, 'complete'])->name('purchase.complete');
+    Route::get('/purchase/{item_id}', [PurchaseController::class, 'purchaseItems'])->whereNumber('item_id')->name('purchase');
+    Route::post('/purchase/{item_id}/checkout', [PurchaseController::class, 'checkout'])->whereNumber('item_id')->name('purchase.checkout');
 
     //納品先住所変更
     Route::get('/purchase/address/{item_id}', [PurchaseController::class, 'redirectAddress']);
@@ -67,14 +69,7 @@ Route::middleware(['auth', 'verified', 'profile.exists'])->group(function () {
     Route::get('/like/{id}/add', [LikeController::class, 'add']);
     Route::get('/like/{id}/remove', [LikeController::class, 'remove']);
     Route::post('/item/comment', [CommentController::class, 'addComment']);
-
-    //stripe 決済
-    Route::post('/stripe', [PaymentController::class, 'index'])->name('payment.index');
-    Route::post('/payment', [PaymentController::class, 'store'])->name('payment.store');
-    Route::get('/payment/direct', [PaymentController::class, 'directPay'])->name('payment.direct');
-
-    //stripe 新API対応
-    Route::post('/checkout', [PaymentController::class, 'checkout'])->name('checkout');
-    Route::get('/checkout/success', [PaymentController::class, 'store'])->name('checkout.success');
-    Route::get('/checkout/cancel', [PaymentController::class, 'cancel'])->name('checkout.cancel');
 });
+
+//Stripe の Webhook（Stripe から呼ばれるので、ログイン不要・CSRF 除外。署名で検証する）
+Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle'])->name('stripe.webhook');

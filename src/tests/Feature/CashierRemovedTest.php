@@ -24,6 +24,7 @@ class CashierRemovedTest extends TestCase
     public function testCashierRoutesDoNotExist(): void
     {
         $this->get('/stripe/payment/pi_test')->assertNotFound();
-        $this->post('/stripe/webhook')->assertStatus(404);
+        // /stripe/webhook は自前のエンドポイントに置き換えた。署名のないリクエストは受け付けない
+        $this->post('/stripe/webhook')->assertStatus(400);
     }
 }

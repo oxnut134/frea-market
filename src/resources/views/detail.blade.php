@@ -127,6 +127,9 @@
                     <div class="detail-form_engagement_count">{{ $comments }}</div>
                 </div>
             </div>
+            @if (session('message'))
+            <div class="detail-form_message">{{ session('message') }}</div>
+            @endif
             @if($item->sale_status !== \App\Models\Item::SALE_STATUS_ON_SALE)
             <div class="detail-form_sale_status">{{ $item->sale_status_label }}</div>
             @elseif(Auth::check() && Auth::id() == $item->user_id)
