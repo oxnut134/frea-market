@@ -98,6 +98,40 @@ class LikeFunctionTest extends TestCase
             ->assertSee('<div id="count" class="detail-form_engagement_count">2</div>', false);
     }
 
+    // アイコンは「自分がいいねしているか」で決まる（ほかの人のいいねだけでは赤くならない）
+    public function testIconReflectsOwnLikeState(): void
+    {
+        $liked_icon = 'class="like-icon" src="' . asset('images/liked.png') . '"';
+        $not_liked_icon = 'class="like-icon" src="' . asset('images/not-liked.png') . '"';
+        Like::create(['item_id' => $this->item->id, 'user_id' => $this->seller->id]);
+
+        $this->actingAs($this->user)->get('/item/' . $this->item->id)
+            ->assertSee($not_liked_icon, false)
+            ->assertSee('data-liked="0"', false)
+            ->assertDontSee($liked_icon, false);
+
+        Like::create(['item_id' => $this->item->id, 'user_id' => $this->user->id]);
+
+        $this->actingAs($this->user)->get('/item/' . $this->item->id)
+            ->assertSee($liked_icon, false)
+            ->assertSee('data-liked="1"', false)
+            ->assertSee('js/like.js', false)
+            ->assertDontSee($not_liked_icon, false);
+    }
+
+    // 未ログインでは、件数があっても灰色のアイコンで、ログイン画面へのリンクになる
+    public function testGuestSeesLoginLinkInsteadOfLikeButton(): void
+    {
+        Like::create(['item_id' => $this->item->id, 'user_id' => $this->seller->id]);
+
+        $this->get('/item/' . $this->item->id)
+            ->assertStatus(200)
+            ->assertSee('<a class="detail-form_engagement_image_wrapper" href="/login">', false)
+            ->assertSee('class="like-icon" src="' . asset('images/not-liked.png') . '"', false)
+            ->assertDontSee('js-like-button', false)
+            ->assertDontSee('data-like-url', false);
+    }
+
     // GET では追加も削除もできない
     public function testGetRequestIsNotAllowed(): void
     {

@@ -56,6 +56,18 @@
     margin-left: 10%;
     text-decoration:none;
 }
+.like-icon {
+    width: 70%;
+    cursor: pointer;
+}
+/* いいねの送信中（like.js が付け外しする） */
+.js-like-button.is-sending {
+    opacity: 0.5;
+    cursor: progress;
+}
+.js-like-button.is-sending .like-icon {
+    cursor: progress;
+}
 .detail-form_engagement_image {
     width: 70%;
     /*margin:3vh 4% 0vh;*/
