@@ -13,7 +13,7 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
 - 画像：`IMAGE_DISK`（既定 `public`、本番は `s3`）。URL は `Item::image_url` / `Profile::image_url` で生成
   - 新しい環境では、シーディング後に `php artisan storage:link` と `chown -R www-data:www-data storage/app/public`
   - アップロード上限 5MB（`docker/php/php.ini` は 6M。変更したら `docker compose build php && docker compose up -d php`）
-- Stripe CLI：ホストの `C:\Program Files\Stripe\stripe`（1.43.2）。nginx がホストの 80 番なので、ホストから `stripe listen --forward-to http://localhost/...`
+- Stripe CLI：ホストの `C:\Program Files\Stripe\stripe`（1.43.2）。nginx がホストの 80 番なので、ホストから `stripe listen --forward-to http://localhost/stripe/webhook`。表示された `whsec_...` を `.env` の `STRIPE_WEBHOOK_SECRET` に入れる。この版では `stripe docs` が使えない（ドキュメントは docs.stripe.com の `.md` を直接取得）
 - 本番：Render（ルートの `Dockerfile`、`render.yaml`、`docker/render/entrypoint.sh`）。`MAIL_MAILER=log`、`IMAGE_DISK=public` のまま
 - ホストは Windows + Git Bash：sed でバックスラッシュを含む置換をすると崩れるので Edit を使う。curl で日本語を送ると Shift-JIS になるので UTF-8 のファイル経由で送る
 
@@ -34,9 +34,9 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
 - ビューで CSS / JS を読み込むときは `asset()` ではなく `@versioned()` を使う（URL にファイルの更新時刻が付き、ブラウザが古いキャッシュを使い続けない。`AppServiceProvider` の Blade ディレクティブ）
 - CSS ファイルの先頭には `@charset "UTF-8";` を書く
 
-## 決済フェーズ（進行中）
+## 決済（完了）
 
-方針：Checkout Session に一本化し、購入確定は Webhook で行う。自作の stripe-subscription-kit（TS）と同じ設計を PHP で実装する。
+方針：Checkout Session に一本化し、購入確定は Webhook で行う。自作の stripe-subscription-kit（TS）と同じ設計を PHP で実装した。ローカルでの確認手順は README の「1-6 Stripe設定」。
 
 ### 決定事項
 
@@ -54,7 +54,7 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
 - 金額はリクエストから受け取らず `items.price` から取る
 - `items.status` は廃止し、`purchases` の状態から判定する（`Item::sale_status`：`on_sale` / `trading` / `sold`）
 - `purchases.status` は `pending` / `paid` / `expired` / `failed`（CHECK 制約）。キャンセルは `expired`、`async_payment_failed` は `failed`
-- `trading` は期限内（`expires_at > now()`）の `pending` だけ — 期限切れの `pending` が「取引中」のままだと誰も確保を試みず、掃除が走らないため。コンビニ払いは Pending の受信時に `expires_at` を 3 日後へ延ばす
+- `trading` は期限内（`expires_at > now()`）の `pending` だけ — 期限切れの `pending` が「取引中」のままだと誰も確保を試みず、掃除が走らないため
 - `expires_at` と現在時刻の比較は、SQL の `NOW()` ではなく PHP の `now()` をバインドして渡す — アプリは Asia/Tokyo、本番の DB は UTC の可能性があり、`NOW()` だと 9 時間ずれるため（ローカルは DB も Asia/Tokyo）
 - `Item` のリレーションは `purchases()`（hasMany、試みも含む全履歴）と `activePurchase()`（hasOne、期限内の `pending` か `paid` の 1 件）。画面や判定では `activePurchase()` を使う。フリマとしての 1:1 は `activePurchase()` と部分ユニークインデックスで表す
 - `purchases.payment_method` は `card` / `konbini`（NOT NULL、CHECK 制約）。表示名（カード支払い / コンビニ払い）は `Purchase` モデルの定数
@@ -63,7 +63,15 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
 - マイページの「購入した商品」は `paid` と、自分の期限内の `pending`（「お支払い待ち」と表示）
 - 販売状況は商品画像に斜めの帯で重ねる（一覧・マイリスト・検索・マイページ・詳細）。共通の部品 `partials/sale_status_overlay.blade.php` と `header.css` の `sale-status_*` クラスを使い、販売中の商品には何も重ねない。詳細画面のボタン代わりの表示は別に残す
 - nginx は CSS / JS も UTF-8 で返す（`charset utf-8;` と `charset_types`。`docker/nginx/default.conf` と `docker/render/nginx.conf` の両方）— ブラウザが CSS を Shift-JIS と誤認したため
-- 旧フローの `PaymentController::store` / `directPay` は、5 で削除するまでのつなぎ（`savePaidPurchase` が `paid` の行を INSERT。2 人目の購入はユニーク違反で 500 のまま）
+- Checkout Session の期限：Stripe には「30 分 + 余裕 60 秒」を送り、DB の `expires_at` には Stripe が返した期限を入れる — Stripe は「作成から 30 分以上」を要求し、ちょうど 30 分だと通信の遅れで拒否されうるため
+- コンビニ払いの `expires_at`：Pending の受信時に「3 日後の 23:59:59 + 余裕 24 時間」へ延ばす — 期限前に払込票を発行していれば期限後も入金でき、Stripe 側のバッファーの長さが不明なため。コンビニ払いは `success_url` に戻らない
+- 自分の確保中にもう一度購入しようとした場合：決済画面の URL（`stripe_checkout_url`）が残っていればそこへ戻す。Pending の受信時に URL を消すので、支払い番号の発行後は「コンビニでのお支払いをお待ちしています…」を案内する
+- キャンセル（`?checkout=canceled`）：Session を expire できたときだけ `expired` にして「決済をキャンセルしました」を表示。Stripe が受け付けない・通信エラーのときは DB を触らない
+- 期限切れ・失敗の後に支払い成功が届いた場合は `paid` に戻さない（上のログで手動対応）。金額が `purchases.amount` と違う場合も error ログ
+- 購入できないとき（自分の出品、販売中でない、他の人が確保中）は詳細画面へ戻し、フラッシュメッセージ（`session('message')`）を表示
+- 完了画面（`/purchase/complete`）は表示だけ。DB に書かず、Stripe にも問い合わせない。カード払いで Webhook が未着なら「決済を確認しています。しばらくしてから再読み込みしてください」
+- コンビニ払いの上限 300,000 円はサーバー側で検証（出品価格に上限はない）。`/purchase/{item_id}` は数値だけに制約
+- ユニーク違反のテストは応答だけを確認する — INSERT が弾かれると、PostgreSQL ではテスト用のトランザクションがそれ以降使えないため
 - Laravel Cashier は外した — 使っておらず、署名検証なしの `/stripe/webhook` が開いていたため
 - stripe-php は `^21.3`（21.3.2、API バージョン `2026-08-26.dahlia`）— v22.0.0 はリリース直後でパッチ版がなく、決済は枯れた版を優先。v22 では Checkout の `payment_method_types` が廃止される
 - ハンドラ名は `onCheckoutPaymentSucceeded` / `onCheckoutPaymentPending` / `onCheckoutPaymentFailed` / `onCheckoutExpired` — kit のサブスク用 `onPaymentFailed` などと衝突させないため
@@ -76,41 +84,19 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
 - `StripeCheckoutService`：`createCheckoutSession` / `expireCheckoutSession` / `verifyWebhookEvent` / `handleWebhookEvent`。`AppServiceProvider` で singleton
 - 結果オブジェクト（`VerifyWebhookEventResult`、`HandleWebhookEventResult`、`CheckoutSessionResult`）と入力（`CreateCheckoutSessionParams`）、DTO（`Data/`）、インターフェース `CheckoutWebhookHandlers`
 - イベント：`completed` + `paid` → Succeeded、`completed` + `unpaid` → Pending、`async_payment_succeeded` → Succeeded、`async_payment_failed` → Failed、`expired` → Expired、それ以外は `handled: false`
-- 設定：`config/services.php` の `stripe.webhook_secret` / `checkout_expires_minutes`（30）/ `konbini_expires_after_days`（3）
-
-### 完了済みのコミット
-
-- `c9ae579` Remove Laravel Cashier
-- `9ff7719` Upgrade stripe-php to v21
-- `d9d513f` Add Stripe checkout service
-- `9def7a2` Require minimum item price of 120 yen
-- `3e0e173` Propagate Stripe errors other than rejected session expiry
-- `5417001` Track purchase status and derive item sale status
-- `363d571` Add sale status overlay on item images
-- `f4002a3` Add charset and cache busting to stylesheets
-- `6bc8b27` Fix layout of item lists
-
-### 残りのコミット計画
-
-- **5. Switch purchase flow to Checkout and webhooks**
-  - `POST /purchase/{item_id}/checkout`（確保 → Checkout Session）、成功画面 `/purchase/complete?session_id=...`（表示だけ、DB に書かない）、キャンセルは購入画面に `?checkout=canceled` で戻り `expire`
-  - `POST /stripe/webhook`（auth 外、CSRF 除外、署名不正は 400、処理中の例外は 500）、`PurchaseWebhookHandlers` が `CheckoutWebhookHandlers` を実装
-  - コンビニ払いの Pending 受信時に `expires_at` を 3 日後へ延ばす
-  - 自分の出品に対するサーバー側の拒否（購入画面・決済の前）
-  - 確保の INSERT のユニーク違反を受け止める（4 のつなぎでは 500 のまま）
-  - 購入画面は支払い方法だけを送る（hidden の price / email などを廃止）。`PurchaseRequest` は `in:card,konbini`
-  - 削除：ルート `/stripe`、`/payment`、`/payment/direct`、`/checkout`、`/checkout/success`、`/checkout/cancel`、`PaymentController`、`payment/index.blade.php`、`temporary_message.blade.php`
-  - テスト：`PurchaseFunctionTest` / `PaymentMethodDisplayedTest` / `RedirectDeliveryAddressTest` を書き直し、`StripeWebhookEndpointTest` / `CheckoutReservationTest` / `PurchaseCompletePageTest` を追加
-- **6. Document local Stripe webhook setup**：README に Stripe CLI の手順、`STRIPE_WEBHOOK_SECRET`、ダッシュボードの Webhook の API バージョンを `2026-08-26.dahlia` にすること
+- 設定：`config/services.php` の `stripe.webhook_secret` / `checkout_expires_minutes`（30）/ `checkout_expiry_buffer_seconds`（60）/ `konbini_expires_after_days`（3）/ `konbini_expiry_grace_minutes`（1440）
+- 購入フロー：`PurchaseController`（`checkout` / `complete` / キャンセル）、`StripeWebhookController`（`POST /stripe/webhook`、auth 外・CSRF 除外、署名不正は 400、処理中の例外は 500）、`app/Services/Purchase/PurchaseWebhookHandlers`
+- テストの補助：`tests/Support/InteractsWithCheckout`（偽の Stripe クライアント、署名付き Webhook の送信）
 
 ## 今後の予定
 
-- 決済フェーズの後：依存パッケージの脆弱性対応（`composer audit`：12 パッケージ 41 件、Laravel 8 のサポート終了が根本原因）
+- 次：依存パッケージの脆弱性対応（`composer audit`：12 パッケージ 41 件、Laravel 8 のサポート終了が根本原因）
 - その後、Render へのデプロイ：S3（`IMAGE_DISK=s3`、`AWS_*`、バケットの公開設定）、SMTP、Webhook エンドポイントの登録と `STRIPE_WEBHOOK_SECRET`、DB の作り直し、`entrypoint.sh` の `storage:link` / `chown` の動作確認、`PurchasesTableSeeder` を `DatabaseSeeder` から呼ぶかの判断（今は呼んでいない）
 - 仕上げ：いいね（連打対策、アイコンの切り替え条件）、検索欄の `value`、ロゴの `alt`、README
 - 確認待ち：`/search` の要ログインが仕様どおりか（今は触らない）
 - 確認待ち：商品一覧（`index`）で自分の出品を除外するか（今は触らない。`IndexFunctionTest::testWithoutMyExhibition` は skip）
 - 既知の点：画像の保存後に DB 登録が失敗するとファイルが残る
+- 既知の点：商品一覧・マイページの取得に並び順の指定がなく、表示順が変わりうる（テストは並び順に依存させない）
 
 ## これまでに完了したフェーズ
 
@@ -118,4 +104,5 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
 - テスト修正：PostgreSQL 由来の失敗 8 件を修正（GD を追加）、`PurchaseController` のプロフィール取得を `user_id` で
 - メール認証：Fortify の標準の流れに統一（`verified` ミドルウェア、認証待ち画面と再送、プロフィール未登録なら `/profile/first`）、不要な Fortify 機能とメール関連コードを削除
 - 送信中表示：`public/js/submit-guard.js` で二重送信防止と「処理中…」
+- 決済：Cashier の削除、stripe-php v21、`StripeCheckoutService`、購入状態の管理（`purchases.status`）と販売状況の表示、Checkout と Webhook への切り替え、README の手順
 - 画像：Storage のディスクに保存（ランダムなファイル名）、シード画像はシーディング時にディスクへコピー、`public/storage` はシンボリックリンクに、`laravel-lang/lang` を削除（Packagist のマルウェア報告。手元の版はクリーンと確認済み）
