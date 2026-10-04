@@ -14,16 +14,12 @@ class LikeController extends Controller
         $current_user_id = Auth::id(); // 本番ではAuth::id()を使用
         $item = Item::findOrFail($id);
 
-        $like = Like::firstOrCreate([
+        Like::firstOrCreate([
             'item_id' => $id,
             'user_id' => $current_user_id,
         ]);
 
-        if ($like->wasRecentlyCreated) {
-            $item->increment('likes_count');
-        }
-
-        return response()->json(['likes' => $item->likes_count]);
+        return response()->json(['likes' => $item->likes()->count()]);
     }
 
     public function remove($id)
@@ -31,14 +27,10 @@ class LikeController extends Controller
         $current_user_id = Auth::id(); // 本番ではAuth::id()を使用
         $item = Item::findOrFail($id);
 
-        $deleted = Like::where('item_id', $id)
+        Like::where('item_id', $id)
             ->where('user_id', $current_user_id)
             ->delete();
 
-        if ($deleted) {
-            $item->decrement('likes_count');
-        }
-
-        return response()->json(['likes' => $item->likes_count]);
+        return response()->json(['likes' => $item->likes()->count()]);
     }
 }

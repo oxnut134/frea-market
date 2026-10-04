@@ -19,10 +19,6 @@ class Item extends Model
         'condition',
     ];
 
-    protected $casts = [
-        'likes_count' => 'integer',
-    ];
-
     const SALE_STATUS_ON_SALE = 'on_sale';
     const SALE_STATUS_TRADING = 'trading';
     const SALE_STATUS_SOLD = 'sold';
