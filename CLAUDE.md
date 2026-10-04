@@ -31,6 +31,8 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
 - push は origin のみ。org には push しない
 - 決済まわりのテストで Stripe の API に実際のリクエストを送らない（`tests/Support/FakeStripeHttpClient` かサービスのモックを使う）
 - 秘密情報（.env の鍵、パスワードなど）の実際の値を、報告・reports/・コミットに書き出さない
+- ビューで CSS / JS を読み込むときは `asset()` ではなく `@versioned()` を使う（URL にファイルの更新時刻が付き、ブラウザが古いキャッシュを使い続けない。`AppServiceProvider` の Blade ディレクティブ）
+- CSS ファイルの先頭には `@charset "UTF-8";` を書く
 
 ## 決済フェーズ（進行中）
 
@@ -59,7 +61,9 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
 - `purchases` の列：`amount` は NOT NULL で CHECK `amount > 0`（PostgreSQL に unsigned がないため）、`expires_at` は NOT NULL、`stripe_checkout_url` は text / nullable、`delivery_address` は 255 文字
 - 詳細画面：`sold` は「SOLD」、`trading` は「取引中」、自分の出品は「出品中の商品です」を購入ボタンの代わりに表示（この順で判定）。それ以外は「購入手続きへ」
 - マイページの「購入した商品」は `paid` と、自分の期限内の `pending`（「お支払い待ち」と表示）
-- 一覧・マイページの「SOLD」「取引中」は、以前の `sold` と同じ位置・同じスタイル
+- 販売状況は商品画像に斜めの帯で重ねる（一覧・マイリスト・検索・マイページ・詳細）。共通の部品 `partials/sale_status_overlay.blade.php` と `header.css` の `sale-status_*` クラスを使い、販売中の商品には何も重ねない。詳細画面のボタン代わりの表示は別に残す
+- nginx は CSS / JS も UTF-8 で返す（`charset utf-8;` と `charset_types`。`docker/nginx/default.conf` と `docker/render/nginx.conf` の両方）— ブラウザが CSS を Shift-JIS と誤認したため
+- 旧フローの `PaymentController::store` / `directPay` は、5 で削除するまでのつなぎ（`savePaidPurchase` が `paid` の行を INSERT。2 人目の購入はユニーク違反で 500 のまま）
 - Laravel Cashier は外した — 使っておらず、署名検証なしの `/stripe/webhook` が開いていたため
 - stripe-php は `^21.3`（21.3.2、API バージョン `2026-08-26.dahlia`）— v22.0.0 はリリース直後でパッチ版がなく、決済は枯れた版を優先。v22 では Checkout の `payment_method_types` が廃止される
 - ハンドラ名は `onCheckoutPaymentSucceeded` / `onCheckoutPaymentPending` / `onCheckoutPaymentFailed` / `onCheckoutExpired` — kit のサブスク用 `onPaymentFailed` などと衝突させないため
@@ -81,22 +85,13 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
 - `d9d513f` Add Stripe checkout service
 - `9def7a2` Require minimum item price of 120 yen
 - `3e0e173` Propagate Stripe errors other than rejected session expiry
+- `5417001` Track purchase status and derive item sale status
+- `363d571` Add sale status overlay on item images
+- `f4002a3` Add charset and cache busting to stylesheets
+- `6bc8b27` Fix layout of item lists
 
 ### 残りのコミット計画
 
-- **4. Track purchase status and derive item sale status**（`migrate:fresh` が必要）
-  - `purchases` に `status` / `payment_method`（`card` / `konbini`）/ `amount` / `stripe_checkout_session_id`（unique）/ `stripe_checkout_url` / `stripe_payment_intent_id` / `expires_at` / `paid_at`、部分ユニークインデックス、CHECK 制約（`status`、`payment_method`、`amount > 0`）、`delivery_address` を 255 文字に
-  - `items.status` 列と `2025_07_10_073430_create_add_nullable_status_table.php` を削除、`ItemFactory` / `$fillable` から `status` を削除、`add_likes_count` の `->after('status')` を削除
-  - `Purchase`：状態・支払い方法の定数、表示名と日本語からの逆引き、`scopeActive`
-  - `Item`：`purchases()` / `activePurchase()`（既存の `purchase()` は削除）、`sale_status` / `sale_status_label`
-  - 一覧・詳細・マイページの「取引中」「SOLD」表示とボタンの出し分け、「購入した商品」の「お支払い待ち」。一覧・マイリスト・検索・マイページは `with('activePurchase')`
-  - `ItemController::index` / `UserController::getProfile` の status 再計算ループを削除
-  - 旧フローの `store` / `directPay` のつなぎの修正（5 で削除）：判定を `sale_status` に置き換え、常に新しい行を INSERT（`status = paid`、変換した `payment_method`、`amount = items.price`、`expires_at` / `paid_at` は現在時刻）。ユニーク違反の 500 は 5 までは許容
-  - `PurchasesTableSeeder`（購入者は出品者以外、`paid` / `card` / 商品の価格。`DatabaseSeeder` からは呼ばないまま — 呼ぶかはデプロイ時に決める）、`PurchaseFactory`（既定は `paid` / `card`、期限内の `pending`・期限切れの `pending`・`expired` の state）
-  - テスト：`MylistFunctionTest` / `IndexFunctionTest` はコメントアウトされた sold のテストを「SOLD」「取引中」の検証として復活、`MyPageFunctionTest` は「購入した商品」の範囲と「お支払い待ち」を検証
-  - `IndexFunctionTest::testWithoutMyExhibition` は `$new_user->save()` の誤りを直したうえで `markTestSkipped`（`index` の要件確認待ち）。`MylistFunctionTest` の有効なテストは中身に合う名前に変える
-  - `PurchaseFunctionTest` / `PaymentMethodDisplayedTest` / `RedirectDeliveryAddressTest` は最小限の修正だけ（`items.status` の検証を外し、`sold` を `SOLD` に、`payment_method` の検証を `konbini` に）。書き直しは 5
-  - `ItemSaleStatusTest` を追加：状態ごとの `sale_status`、期限の境界（直前・直後）での `trading` / `on_sale` の切り替え、詳細画面の出し分け、部分ユニークインデックスと CHECK 制約が違反を弾くこと
 - **5. Switch purchase flow to Checkout and webhooks**
   - `POST /purchase/{item_id}/checkout`（確保 → Checkout Session）、成功画面 `/purchase/complete?session_id=...`（表示だけ、DB に書かない）、キャンセルは購入画面に `?checkout=canceled` で戻り `expire`
   - `POST /stripe/webhook`（auth 外、CSRF 除外、署名不正は 400、処理中の例外は 500）、`PurchaseWebhookHandlers` が `CheckoutWebhookHandlers` を実装
@@ -111,7 +106,7 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
 ## 今後の予定
 
 - 決済フェーズの後：依存パッケージの脆弱性対応（`composer audit`：12 パッケージ 41 件、Laravel 8 のサポート終了が根本原因）
-- その後、Render へのデプロイ：S3（`IMAGE_DISK=s3`、`AWS_*`、バケットの公開設定）、SMTP、Webhook エンドポイントの登録と `STRIPE_WEBHOOK_SECRET`、DB の作り直し、`entrypoint.sh` の `storage:link` / `chown` の動作確認
+- その後、Render へのデプロイ：S3（`IMAGE_DISK=s3`、`AWS_*`、バケットの公開設定）、SMTP、Webhook エンドポイントの登録と `STRIPE_WEBHOOK_SECRET`、DB の作り直し、`entrypoint.sh` の `storage:link` / `chown` の動作確認、`PurchasesTableSeeder` を `DatabaseSeeder` から呼ぶかの判断（今は呼んでいない）
 - 仕上げ：いいね（連打対策、アイコンの切り替え条件）、検索欄の `value`、ロゴの `alt`、README
 - 確認待ち：`/search` の要ログインが仕様どおりか（今は触らない）
 - 確認待ち：商品一覧（`index`）で自分の出品を除外するか（今は触らない。`IndexFunctionTest::testWithoutMyExhibition` は skip）
