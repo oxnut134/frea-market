@@ -106,17 +106,34 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
   - テストは `RegisterEmailControlCharactersTest`（`RegisterValidationTest` は COACHTECH の一覧と対応しているので足さない）
 - Composer の設定の書式は、同梱のスキーマで確認する（コンテナ内で `composer` を `.phar` の名前でコピーし、`phar://.../res/composer-schema.json` を読む）
 
+## いいね（完了）
+
+調査と方針は `reports/2026-10-04-like-review.md`。
+
+### 決定事項
+
+- いいね数は `likes` から数える。`items.likes_count` は廃止 — 同じ事実を 2 か所に持つと、ユーザーの削除などでずれるため（`items.status` の廃止と同じ考え方）
+- 追加は `POST /like/{id}`、削除は `DELETE /like/{id}`（数値だけに制約）— GET だと CSRF の検証がかからず、リンクを踏ませるだけで操作できたため
+- 追加は `insertOrIgnore`（`ON CONFLICT DO NOTHING`）の 1 文 — `firstOrCreate` は同時に届くとユニーク違反で 500 になるため。重複は `likes(item_id, user_id)` のユニークインデックスで止める
+- 応答は `{"liked": true/false, "likes": n}`。画面のアイコンと件数は、この応答で更新する（画面側で ±1 しない）
+- アイコンは「自分がいいねしているか」で決める（初期表示は Blade で `$my_like` から）。件数では判定しない
+- 連打対策：送信中は次のクリックを無視し、半透明にする（`public/js/like.js`、`detail.css` の `is-sending`）。失敗時は表示を変えず、メッセージも出さない
+- 未ログインでは、いいねのアイコンを `/login` へのリンクにする。押した時点でログインが切れていた場合は、401 と 419 の両方で `/login` へ移す — ログアウトで CSRF トークンが作り直され、`auth` より先に CSRF の検証で止まるため
+- CSRF トークンはレイアウトの `<meta name="csrf-token">` から取る（`/sanctum/csrf-cookie` は呼ばない）
+- CSRF の検証そのものはテストで確かめられない（Laravel がテスト実行時に検証を省くため）。ブラウザか curl で確認する
+
 ## 今後の予定
 
-- 次：いいね機能の見直し（調査と方針は `reports/2026-10-04-like-review.md`）：`likes_count` の廃止、POST / DELETE への変更と `insertOrIgnore`、アイコンの判定と連打対策の 3 コミット
-- その次：Render へのデプロイ：S3（`IMAGE_DISK=s3`、`AWS_*`、バケットの公開設定）、SMTP、Webhook エンドポイントの登録と `STRIPE_WEBHOOK_SECRET`、DB の作り直し、`entrypoint.sh` の `storage:link` / `chown` の動作確認、`PurchasesTableSeeder` を `DatabaseSeeder` から呼ぶかの判断（今は呼んでいない）
+- 次：Render へのデプロイ：S3（`IMAGE_DISK=s3`、`AWS_*`、バケットの公開設定）、SMTP、Webhook エンドポイントの登録と `STRIPE_WEBHOOK_SECRET`、DB の作り直し、`entrypoint.sh` の `storage:link` / `chown` の動作確認、`PurchasesTableSeeder` を `DatabaseSeeder` から呼ぶかの判断（今は呼んでいない）
   - SMTP に切り替えるときは GHSA-5vg9-5847-vvmq を再確認する（今は `MAIL_MAILER=log` で外部に送っていない前提で残している）。README と `composer.json` の理由も合わせて直す
 - 仕上げ：検索欄の `value`、ロゴの `alt`、README（「利用技術」が古い：PHP 7.4.9、MySQL、stripe-php 9.9 など）
+- 仕上げ：テストの並び順への依存をまとめて直す — 並び順なしの `first()` / `all()` が 8 ファイルに残っている（`CommentFunctionTest`、`RegisterForExhibitionTest`、`MyPageFunctionTest`、`MyProfileDisplayedTest`、`ShowItemDetailTest`、`SearchItemsTest`、`IndexFunctionTest`、`LoginValidationTest`）。テスト中に VACUUM が走ると ID 順に返らず、まれに失敗する（`MylistFunctionTest` で発生し、`orderBy('id')` で修正済み）
 - Laravel のメジャーアップグレード（未定）：残る 5 件の勧告と、放棄されたパッケージ 2 つが解消する
 - 確認待ち：`/search` の要ログインが仕様どおりか（今は触らない）
 - 確認待ち：商品一覧（`index`）で自分の出品を除外するか（今は触らない。`IndexFunctionTest::testWithoutMyExhibition` は skip）
 - 既知の点：画像の保存後に DB 登録が失敗するとファイルが残る
 - 既知の点：商品一覧・マイページの取得に並び順の指定がなく、表示順が変わりうる（テストは並び順に依存させない）
+- 既知の点（いいねの調査で見つけた、未対応）：存在しない商品 ID の詳細画面が 500、レイアウトの `<meta name="csrf-token">` が 2 つで `<body>` が入れ子、`LikeFactory.php` のクラス名が `likeFactory`、詳細画面で `users` と `profiles` の取得が 2 回ずつ
 
 ## これまでに完了したフェーズ
 
@@ -127,3 +144,5 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
 - 決済：Cashier の削除、stripe-php v21、`StripeCheckoutService`、購入状態の管理（`purchases.status`）と販売状況の表示、Checkout と Webhook への切り替え、README の手順
 - 画像：Storage のディスクに保存（ランダムなファイル名）、シード画像はシーディング時にディスクへコピー、`public/storage` はシンボリックリンクに、`laravel-lang/lang` を削除（Packagist のマルウェア報告。手元の版はクリーンと確認済み）
 - 依存パッケージ：脆弱な 10 パッケージを更新（35 パッケージ）、`minimum-stability` を `stable` に、残る 5 件の勧告を理由付きで登録、登録メールアドレスの制御文字の検証、README への記録
+- いいね：`likes_count` の廃止、POST / DELETE と `insertOrIgnore`、自分の状態でのアイコン表示と連打対策（`like.js`）、`LikeFunctionTest` の書き直し
+- 環境：作業フォルダを WSL2 に移行（Windows のマウント越しだと 1 リクエストに約 1 秒かかったため）
