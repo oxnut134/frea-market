@@ -59,7 +59,7 @@ class MylistFunctionTest extends TestCase
             $new_user->save();
         }
 
-        $users = User::all();
+        $users = User::orderBy('id')->get();
         //$users = User::factory()->count(3)->create();
 
         $items = [
@@ -105,8 +105,8 @@ class MylistFunctionTest extends TestCase
 
             $new_item->save();
         }
-        $user = User::first(); // usersテーブルの最初のレコードを取得
-        $item = Item::first(); // itemsテーブルの最初のレコードを取得
+        $user = User::orderBy('id')->first(); // usersテーブルの最初のレコードを取得
+        $item = Item::orderBy('id')->first(); // itemsテーブルの最初のレコードを取得
 
 
         $likes = [
@@ -174,7 +174,7 @@ class MylistFunctionTest extends TestCase
             $new_user->save();
         }
 
-        $users = User::all();
+        $users = User::orderBy('id')->get();
         //$users = User::factory()->count(3)->create();
 
         $items = [
@@ -221,8 +221,8 @@ class MylistFunctionTest extends TestCase
             $new_item->save();
         }
 
-        $user = User::first(); // usersテーブルの最初のレコードを取得
-        $item = Item::first(); // itemsテーブルの最初のレコードを取得
+        $user = User::orderBy('id')->first(); // usersテーブルの最初のレコードを取得
+        $item = Item::orderBy('id')->first(); // itemsテーブルの最初のレコードを取得
 
 //        $user = User::first(); // usersテーブルの最初のレコードを取得
 //       $item = Item::first(); // itemsテーブルの最初のレコードを取得
