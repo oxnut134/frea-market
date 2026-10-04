@@ -25,6 +25,8 @@ class CreateNewUser implements CreatesNewUsers
                 'required',
                 'string',
                 'email',
+                // email ルールは引用符内の改行などを通すため、制御文字を別に弾く
+                'not_regex:/[\x00-\x1F\x7F]/',
                 'max:255',
                 Rule::unique(User::class),
             ],

@@ -64,7 +64,7 @@
         "policy": {
             "advisories": {
                 "ignore-id": {
-                    "GHSA-5vg9-5847-vvmq": "修正版は Laravel 12.60 以上。メール送信は SwiftMailer で、本番は MAIL_MAILER=log。SMTP に切り替えるときに再確認する",
+                    "GHSA-5vg9-5847-vvmq": "修正版は Laravel 12.60 以上。登録時のメールアドレスから制御文字を弾く検証で緩和。メール送信は SwiftMailer で、本番は MAIL_MAILER=log。SMTP に切り替えるときに再確認する",
                     "GHSA-crmm-hgp2-wgrp": "修正版は Laravel 12.61.1 以上。ローカルディスクの一時 URL（Storage::temporaryUrl）は使っておらず、Laravel 8 にこの機能がない",
                     "GHSA-78fx-h6xr-vch4": "修正版は Laravel 10.48.29 以上。ワイルドカード（files.*）でのファイル検証は使っておらず、画像は単一フィールドで検証している",
                     "GHSA-jh5r-qr3c-85q8": "修正版は Laravel 12.69 以上。APP_DEBUG=true のときだけ成立し、本番は false",

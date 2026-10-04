@@ -11,6 +11,12 @@ return [
     'unique' => 'この:attributeは既に登録されています。',
 //'confirmed' => ':attribute が確認欄と一致しません。',
 
+    'custom' => [
+        'email' => [
+            'not_regex' => ':attributeは有効なメールアドレス形式で入力してください。',
+        ],
+    ],
+
     // カスタム属性名
     'attributes' => [
         'email' => 'メールアドレス',
