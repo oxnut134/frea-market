@@ -199,8 +199,12 @@ MAIL_FROM_NAME="${APP_NAME}"
 コピー
 STRIPE_PUBLIC_KEY={公開可能キー}
 STRIPE_SECRET_KEY={シークレットキー}
+STRIPE_WEBHOOK_SECRET={Webhook の署名シークレット（whsec_...）}
 
 ```
+
+- キーはテストモードのもの（`pk_test_...` / `sk_test_...`）を使います。
+- `STRIPE_WEBHOOK_SECRET` は、下の「ローカルで Webhook を受け取る」で表示される値です。
 
 ### `config/services.php`に追記
 
@@ -213,13 +217,55 @@ STRIPE_SECRET_KEY={シークレットキー}
 
 ```
 
-### Laravel Cashierインストール
+### 決済の流れ
 
-```bash
-コピー
-composer require laravel/cashier
+- 「購入する」を押すと商品を確保し、Stripe の決済画面（Checkout）へ進みます。
+- 購入の確定は、Stripe から届く Webhook（`POST /stripe/webhook`）で行います。Webhook が届かないと、購入は「取引中」のまま完了しません。
+- Laravel Cashier は使いません（インストール不要）。
+
+### ローカルで Webhook を受け取る（Stripe CLI）
+
+Stripe からローカルの環境には直接届かないので、[Stripe CLI](https://docs.stripe.com/stripe-cli) で転送します。ホスト側（コンテナの外）で実行してください。
+
+1. Stripe にログインします（ブラウザで認証）。
 
 ```
+stripe login
+```
+
+2. Webhook をローカルへ転送します。確認の間は実行したままにします。
+
+```
+stripe listen --forward-to http://localhost/stripe/webhook
+```
+
+3. 起動時に表示される `whsec_...` を、`.env` の `STRIPE_WEBHOOK_SECRET` に設定します。
+
+4. 設定を読み直します。
+
+```
+docker compose exec php php artisan config:clear
+```
+
+- `STRIPE_WEBHOOK_SECRET` が未設定、または値が違う場合、Webhook はすべて 400（署名エラー）になります。
+- 転送されたイベントと応答コードは `stripe listen` の画面に表示されます。アプリ側のログは `storage/logs/laravel.log` です。
+
+### Stripe ダッシュボードの設定
+
+- **コンビニ決済の有効化**：ダッシュボードの「設定 → 決済手段」でコンビニ決済を有効にします。無効のままだと、コンビニ払いを選んだときに決済を開始できません。
+- **Webhook の API バージョン**：本番などでダッシュボードに Webhook エンドポイント（`https://{ドメイン}/stripe/webhook`）を登録するときは、API バージョンを `2026-08-26.dahlia` にします（stripe-php 21.3 が対応するバージョン）。
+- **受信するイベント**：`checkout.session.completed`、`checkout.session.async_payment_succeeded`、`checkout.session.async_payment_failed`、`checkout.session.expired`。
+
+### テスト用の入力
+
+- カード払い：カード番号 `4242 4242 4242 4242`、有効期限は未来の日付、セキュリティコードは任意。
+- コンビニ払い：決済画面の確認番号に次の値を入れると、結果を切り替えられます。
+
+| 確認番号 | 結果 |
+| --- | --- |
+| `22222222220` | すぐに入金される（SOLD になる） |
+| `11111111110` | 3 分後に入金される（その間は「取引中」） |
+| `33333333330` | すぐに期限切れになる（販売中に戻る） |
 
 ---
 
