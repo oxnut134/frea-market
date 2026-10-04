@@ -22,7 +22,6 @@
     color:#000;
 }
 .index-form_image_box {
-    width: 100%;
     display: flex;
     justify-content: flex-start;
     flex-wrap: wrap;
@@ -30,7 +29,7 @@
 }
 .index-form_image_wrapper {
     flex-direction: column;
-    width: 22%;
+    width: 23%;
     margin: 1%;
     text-decoration:none;
     color:black;
