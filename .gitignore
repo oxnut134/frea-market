@@ -1,3 +1,4 @@
 /docker/postgres/data
 /docker/mysql/data
 /reports/
+/src/.config/
