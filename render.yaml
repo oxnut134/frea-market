@@ -1,6 +1,13 @@
 databases:
   - name: frea-market-db
-    plan: free
+    plan: 0.1c-256mb
+    region: singapore
+    # Same major version as local development. Cannot be changed after creation.
+    postgresMajorVersion: "15"
+    # Without this, a paid database gets a larger default disk.
+    diskSizeGB: 1
+    # Block all external connections; the web service connects over the private network.
+    ipAllowList: []
     databaseName: laravel_db
     user: laravel_user
 
@@ -10,8 +17,17 @@ services:
     runtime: docker
     dockerfilePath: ./Dockerfile
     dockerContext: .
-    plan: free
-    healthCheckPath: /
+    plan: 0.5c-512mb
+    # Same region as the database. Cannot be changed after creation.
+    region: singapore
+    # "/" requires login and answers 302; "/login" answers 200.
+    healthCheckPath: /login
+    # Uploaded and seeded images (IMAGE_DISK=public). Everything outside this
+    # path is lost on every deploy.
+    disk:
+      name: frea-market-images
+      mountPath: /var/www/storage/app/public
+      sizeGB: 1
     envVars:
       - key: APP_NAME
         value: frea-market
@@ -19,15 +35,19 @@ services:
         value: production
       - key: APP_DEBUG
         value: "false"
+      # Render's generateValue has no "base64:" prefix, which Laravel rejects.
+      # Run `php artisan key:generate --show` locally and paste the value.
       - key: APP_KEY
-        generateValue: true
-      # Render does not provide the public https:// URL via fromService,
-      # so set this manually to your service URL after the first deploy
-      # (e.g. https://frea-market.onrender.com).
+        sync: false
+      # The public https:// URL of this service (e.g. https://frea-market.onrender.com).
+      # Entered by hand: the onrender.com name may get a suffix, and a fixed
+      # value here would be restored on every Blueprint sync.
+      # Image URLs are built from it (IMAGE_DISK=public).
       - key: APP_URL
-        value: https://frea-market.onrender.com
+        sync: false
+      # Logs go to the Render log stream; files inside the container are lost on deploy.
       - key: LOG_CHANNEL
-        value: stack
+        value: stderr
       - key: LOG_LEVEL
         value: error
       - key: DB_CONNECTION
@@ -36,17 +56,30 @@ services:
         fromDatabase:
           name: frea-market-db
           property: connectionString
+      # File sessions live outside the disk and would log everyone out on every deploy.
       - key: SESSION_DRIVER
-        value: file
+        value: database
+      - key: SESSION_SECURE_COOKIE
+        value: "true"
       - key: CACHE_DRIVER
         value: file
       - key: FILESYSTEM_DRIVER
         value: local
+      - key: IMAGE_DISK
+        value: public
       - key: QUEUE_CONNECTION
         value: sync
+      # Mail is not sent. DEMO_MODE shows the demo login button and restricts
+      # login to the demo account.
       - key: MAIL_MAILER
         value: log
+      - key: DEMO_MODE
+        value: "true"
       - key: STRIPE_PUBLIC_KEY
         sync: false
       - key: STRIPE_SECRET_KEY
+        sync: false
+      # The signing secret of the webhook endpoint registered in the Stripe
+      # dashboard (not the one printed by `stripe listen`).
+      - key: STRIPE_WEBHOOK_SECRET
         sync: false
