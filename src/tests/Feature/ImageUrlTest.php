@@ -40,7 +40,8 @@ class ImageUrlTest extends TestCase
     {
         $profile = new Profile;
 
-        $this->assertSame(asset('images/default-profile.svg'), $profile->image_url);
+        $path = 'images/default-profile.svg';
+        $this->assertSame(asset($path) . '?v=' . filemtime(public_path($path)), $profile->image_url);
     }
 
     // プロフィール編集画面はDBの内容を表示する

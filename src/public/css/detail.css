@@ -55,6 +55,8 @@
     margin-bottom: 0%;
     margin-left: 10%;
     text-decoration:none;
+    /* いいねは <a> なので、リンクの色（青）ではなくコメント数と同じ黒にする */
+    color: #000;
 }
 .like-icon {
     width: 70%;

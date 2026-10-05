@@ -29,11 +29,11 @@
                 @auth
                 <a class="detail-form_engagement_image_wrapper js-like-button" href="#" role="button"
                     data-like-url="/like/{{ $item['id'] }}" data-liked="{{ $my_like ? 1 : 0 }}"
-                    data-icon-on="{{ asset('images/liked.png') }}" data-icon-off="{{ asset('images/not-liked.png') }}">
+                    data-icon-on="@versioned('images/liked.png')" data-icon-off="@versioned('images/not-liked.png')">
                 @else
                 <a class="detail-form_engagement_image_wrapper" href="/login">
                 @endauth
-                    <img class="like-icon" src="{{ asset($my_like ? 'images/liked.png' : 'images/not-liked.png') }}" alt="いいね">
+                    <img class="like-icon" src="@versioned($my_like ? 'images/liked.png' : 'images/not-liked.png')" alt="いいね">
                     <div id="like-count">
                         <div id="count" class="detail-form_engagement_count">{{ $likes }}</div>
                     </div>
@@ -41,7 +41,7 @@
                 <script src="@versioned('js/like.js')" defer></script>
                 <!-------　コメント　------------------>
                 <div class="detail-form_engagement_image_wrapper">
-                    <img class="detail-form_engagement_image" src="{{asset('images/comment.png')}}">
+                    <img class="detail-form_engagement_image" src="@versioned('images/comment.png')">
                     <div class="detail-form_engagement_count">{{ $comments }}</div>
                 </div>
             </div>

@@ -22,7 +22,10 @@ class Profile extends Model
     public function getImageUrlAttribute()
     {
         if (empty($this->profile_image)) {
-            return asset('images/default-profile.svg');
+            // ビューの @versioned と同じく、更新時刻をバージョンとして付ける
+            $path = 'images/default-profile.svg';
+
+            return asset($path) . '?v=' . filemtime(public_path($path));
         }
 
         return Storage::disk(config('filesystems.images'))->url($this->profile_image);

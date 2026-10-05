@@ -42,6 +42,12 @@ class LikeFunctionTest extends TestCase
         return $user;
     }
 
+    // @versioned と同じ URL（更新時刻付き）
+    private function versioned(string $path): string
+    {
+        return asset($path) . '?v=' . filemtime(public_path($path));
+    }
+
     private function likeCount(): int
     {
         return Like::where('item_id', $this->item->id)->count();
@@ -101,8 +107,8 @@ class LikeFunctionTest extends TestCase
     // アイコンは「自分がいいねしているか」で決まる（ほかの人のいいねだけでは赤くならない）
     public function testIconReflectsOwnLikeState(): void
     {
-        $liked_icon = 'class="like-icon" src="' . asset('images/liked.png') . '"';
-        $not_liked_icon = 'class="like-icon" src="' . asset('images/not-liked.png') . '"';
+        $liked_icon = 'class="like-icon" src="' . $this->versioned('images/liked.png') . '"';
+        $not_liked_icon = 'class="like-icon" src="' . $this->versioned('images/not-liked.png') . '"';
         Like::create(['item_id' => $this->item->id, 'user_id' => $this->seller->id]);
 
         $this->actingAs($this->user)->get('/item/' . $this->item->id)
@@ -127,7 +133,7 @@ class LikeFunctionTest extends TestCase
         $this->get('/item/' . $this->item->id)
             ->assertStatus(200)
             ->assertSee('<a class="detail-form_engagement_image_wrapper" href="/login">', false)
-            ->assertSee('class="like-icon" src="' . asset('images/not-liked.png') . '"', false)
+            ->assertSee('class="like-icon" src="' . $this->versioned('images/not-liked.png') . '"', false)
             ->assertDontSee('js-like-button', false)
             ->assertDontSee('data-like-url', false);
     }
