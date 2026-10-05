@@ -7,8 +7,6 @@ reports
 CLAUDE.md
 README.md
 *.png
-css_backup
-frea-market.git
 
 # ローカルの DB のデータと、開発用のコンテナの設定
 docker/mysql
