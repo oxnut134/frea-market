@@ -13,6 +13,7 @@
             <div class="register-form_title">
                 <h2 class="register-form_register_logo">会員登録</h2>
             </div>
+            @include('partials.demo_notice', ['place' => 'register'])
             <div class="register-form_input_title">
                 <h3 class="register-form_input_title_logo">ユーザー名</h3>
             </div>

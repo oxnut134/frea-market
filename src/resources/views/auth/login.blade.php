@@ -13,6 +13,7 @@
             <div class="login-form_title">
                 <h2 class="login-form_login_logo">ログイン</h2>
             </div>
+            @include('partials.demo_notice', ['place' => 'login'])
             <div class="login-form_input_title">
                 <h3 class="login-form_input_title_logo">メールアドレス</h3>
             </div>

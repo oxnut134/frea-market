@@ -61,6 +61,17 @@ class ProfilesTableSeeder extends Seeder
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
+            // デモ用アカウント。画像は未設定（デフォルトのアイコンを表示）
+            [
+                'id' => 5,
+                'user_id' => 5,
+                'profile_image' => null,
+                'post_code' => '555-5555',
+                'address' => 'ueno',
+                'building' => 'zoo',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
         ], ['id'], ['user_id', 'profile_image', 'post_code', 'address', 'building', 'updated_at']);
 
         $this->resetAutoIncrement('profiles');

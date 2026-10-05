@@ -57,6 +57,16 @@ class UsersTableSeeder extends Seeder
                 'updated_at' => $now,
                 'email_verified_at' => $now,
             ],
+            // デモ用アカウント（config/demo.php）。商品は持たない
+            [
+                'id' => 5,
+                'name' => config('demo.name'),
+                'email' => config('demo.email'),
+                'password' => Hash::make(config('demo.password')),
+                'created_at' => $now,
+                'updated_at' => $now,
+                'email_verified_at' => $now,
+            ],
         ], ['id'], ['name', 'email', 'password', 'updated_at', 'email_verified_at']);
 
         $this->resetAutoIncrement('users');

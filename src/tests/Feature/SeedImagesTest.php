@@ -34,7 +34,8 @@ class SeedImagesTest extends TestCase
             $this->assertStringStartsWith('items/', $item->item_image);
             Storage::disk('public')->assertExists($item->item_image);
         }
-        foreach (Profile::all() as $profile) {
+        // デモ用アカウントのプロフィールは画像なし（デフォルトのアイコン）なので除く
+        foreach (Profile::whereNotNull('profile_image')->get() as $profile) {
             $this->assertStringStartsWith('profiles/', $profile->profile_image);
             Storage::disk('public')->assertExists($profile->profile_image);
         }
