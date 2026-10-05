@@ -1,0 +1,39 @@
+# Render のイメージ（ルートの Dockerfile）に不要なものをビルドから外す
+
+.git
+.gitignore
+.dockerignore
+reports
+CLAUDE.md
+README.md
+*.png
+css_backup
+frea-market.git
+
+# ローカルの DB のデータと、開発用のコンテナの設定
+docker/mysql
+docker/postgres
+docker/nginx
+docker/php/Dockerfile
+docker-compose.yml
+
+# ローカルの環境に固有のもの（イメージの中で作り直す）
+src/.env
+src/.env.*
+!src/.env.example
+src/vendor
+src/node_modules
+src/.phpunit.result.cache
+src/public/storage
+src/bootstrap/cache/*
+!src/bootstrap/cache/.gitignore
+src/storage/app/public/*
+!src/storage/app/public/.gitignore
+src/storage/framework/cache/data/*
+!src/storage/framework/cache/data/.gitignore
+src/storage/framework/sessions/*
+!src/storage/framework/sessions/.gitignore
+src/storage/framework/views/*
+!src/storage/framework/views/.gitignore
+src/storage/logs/*
+!src/storage/logs/.gitignore
