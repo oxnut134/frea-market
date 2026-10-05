@@ -89,7 +89,8 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'schema' => 'public',
-            'sslmode' => 'prefer',
+            // 本番（Neon）は require。ローカルの DB は暗号化なしなので、既定は prefer
+            'sslmode' => env('DB_SSLMODE', 'prefer'),
         ],
 
         'sqlsrv' => [
