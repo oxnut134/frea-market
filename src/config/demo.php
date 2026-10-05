@@ -11,4 +11,11 @@ return [
     'email' => 'demo@test.com',
     'password' => 'demo12345',
 
+    // プロフィールの初期値（ProfilesTableSeeder と demo:reset が使う）
+    'profile' => [
+        'post_code' => '555-5555',
+        'address' => 'ueno',
+        'building' => 'zoo',
+    ],
+
 ];

@@ -22,6 +22,11 @@ if ! php artisan db:seed --force; then
     echo "WARNING: db:seed failed. Starting without seeding." >&2
 fi
 
+# Reset the demo account's data on every start (the scheduler also runs this daily)
+if ! php artisan demo:reset; then
+    echo "WARNING: demo:reset failed. Starting without resetting demo data." >&2
+fi
+
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache

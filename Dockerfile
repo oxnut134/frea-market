@@ -31,8 +31,9 @@ COPY docker/php/php.ini /usr/local/etc/php/conf.d/app.ini
 COPY docker/render/nginx.conf /etc/nginx/sites-available/default
 COPY docker/render/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/render/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY docker/render/scheduler.sh /usr/local/bin/scheduler.sh
 
-RUN chmod +x /usr/local/bin/entrypoint.sh \
+RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/scheduler.sh \
     && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
