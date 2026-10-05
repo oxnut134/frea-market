@@ -28,6 +28,7 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction \
     && composer clear-cache
 
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/app.ini
+COPY docker/render/php-fpm.conf /usr/local/etc/php-fpm.d/zzz-render.conf
 COPY docker/render/nginx.conf /etc/nginx/sites-available/default
 COPY docker/render/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/render/entrypoint.sh /usr/local/bin/entrypoint.sh
