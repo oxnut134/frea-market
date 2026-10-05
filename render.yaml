@@ -1,16 +1,3 @@
-databases:
-  - name: frea-market-db
-    plan: 0.1c-256mb
-    region: singapore
-    # Same major version as local development. Cannot be changed after creation.
-    postgresMajorVersion: "15"
-    # Without this, a paid database gets a larger default disk.
-    diskSizeGB: 1
-    # Block all external connections; the web service connects over the private network.
-    ipAllowList: []
-    databaseName: laravel_db
-    user: laravel_user
-
 services:
   - type: web
     name: frea-market
@@ -18,10 +5,12 @@ services:
     dockerfilePath: ./Dockerfile
     dockerContext: .
     plan: 0.5c-512mb
-    # Same region as the database. Cannot be changed after creation.
+    # Same region as the Neon database. Cannot be changed after creation.
     region: singapore
-    # "/" requires login and answers 302; "/login" answers 200.
-    healthCheckPath: /login
+    # Answered by nginx without PHP or the database (docker/render/nginx.conf).
+    # A Laravel page would touch the session table every few seconds and keep
+    # the Neon database from scaling to zero.
+    healthCheckPath: /healthz
     # Uploaded and seeded images (IMAGE_DISK=public). Everything outside this
     # path is lost on every deploy.
     disk:
@@ -52,10 +41,13 @@ services:
         value: error
       - key: DB_CONNECTION
         value: pgsql
+      # Neon (free plan, aws-ap-southeast-1). Paste the direct connection string
+      # (the host WITHOUT "-pooler").
       - key: DATABASE_URL
-        fromDatabase:
-          name: frea-market-db
-          property: connectionString
+        sync: false
+      # Neon only accepts encrypted connections.
+      - key: DB_SSLMODE
+        value: require
       # File sessions live outside the disk and would log everyone out on every deploy.
       - key: SESSION_DRIVER
         value: database
