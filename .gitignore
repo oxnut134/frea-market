@@ -2,3 +2,4 @@
 /docker/mysql/data
 /reports/
 /src/.config/
+*:Zone.Identifier
