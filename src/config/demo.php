@@ -3,7 +3,7 @@
 return [
 
     // デモ環境として動かすか（メールを送信しない公開環境で true にする）。
-    // true のとき、デモ用アカウントの案内を表示する
+    // true のとき、デモ用アカウントの案内を表示し、デモ用アカウント以外のログインを受け付けない
     'enabled' => (bool) env('DEMO_MODE', false),
 
     // デモ用アカウント（UsersTableSeeder と ProfilesTableSeeder が作る。商品は持たない）。
