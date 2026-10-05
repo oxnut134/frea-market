@@ -2,8 +2,9 @@
 
 return [
 
-    // デモ用アカウントの案内を表示するか（メールを送信しない公開環境で true にする）
-    'notice' => (bool) env('DEMO_NOTICE', false),
+    // デモ環境として動かすか（メールを送信しない公開環境で true にする）。
+    // true のとき、デモ用アカウントの案内を表示する
+    'enabled' => (bool) env('DEMO_MODE', false),
 
     // デモ用アカウント（UsersTableSeeder と ProfilesTableSeeder が作る。商品は持たない）。
     // ログイン画面の「デモアカウントでログイン」が、この値でログインフォームを送信する

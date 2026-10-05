@@ -9,7 +9,7 @@ use App\Models\Profile;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 
-// デモ用アカウントとその案内（DEMO_NOTICE）
+// デモ用アカウントとその案内（DEMO_MODE）
 class DemoNoticeTest extends TestCase
 {
     use RefreshDatabase;
@@ -21,7 +21,7 @@ class DemoNoticeTest extends TestCase
     // 既定（無効）では、どの画面にも表示しない
     public function testNoticeIsHiddenByDefault(): void
     {
-        $this->assertFalse(config('demo.notice'));
+        $this->assertFalse(config('demo.enabled'));
 
         $this->get('/login')->assertStatus(200)
             ->assertDontSee(self::LOGIN_LABEL)
@@ -39,7 +39,7 @@ class DemoNoticeTest extends TestCase
     // ログイン画面：デモ用アカウントのアドレスとパスワードを持つボタンを 1 つだけ表示する
     public function testLoginPageShowsDemoLoginButton(): void
     {
-        config(['demo.notice' => true]);
+        config(['demo.enabled' => true]);
 
         $response = $this->get('/login')->assertStatus(200)
             ->assertSee(
@@ -57,7 +57,7 @@ class DemoNoticeTest extends TestCase
     // 会員登録画面：説明とログイン画面へのリンクだけを表示する（ボタンとパスワードは載せない）
     public function testRegisterPageShowsNoticeWithLinkToLogin(): void
     {
-        config(['demo.notice' => true]);
+        config(['demo.enabled' => true]);
 
         $this->get('/register')->assertStatus(200)
             ->assertSee(self::MESSAGE)
@@ -69,7 +69,7 @@ class DemoNoticeTest extends TestCase
     // 認証待ち画面：説明を表示し、ログアウトのボタンの文言を変える
     public function testVerifyPageShowsNoticeAndLogoutLabel(): void
     {
-        config(['demo.notice' => true]);
+        config(['demo.enabled' => true]);
 
         $this->actingAs(User::factory()->unverified()->create())->get('/email/verify')->assertStatus(200)
             ->assertSee(self::MESSAGE)

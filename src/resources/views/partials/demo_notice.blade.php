@@ -1,5 +1,5 @@
-{{-- デモ用アカウントの案内（DEMO_NOTICE=true のときだけ表示）。$place：login / register / verify --}}
-@if (config('demo.notice'))
+{{-- デモ用アカウントの案内（DEMO_MODE=true のときだけ表示）。$place：login / register / verify --}}
+@if (config('demo.enabled'))
 <link rel="stylesheet" href="@versioned('css/demo-notice.css')">
 @if ($place === 'login')
 <div class="demo-login">

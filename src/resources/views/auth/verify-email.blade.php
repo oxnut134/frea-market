@@ -32,7 +32,7 @@
                     </form>
                     <form style="display:flex;justify-content:center;" action="{{ route('logout') }}" method="post">
                         @csrf
-                        <button style="margin-top:2vh;border:none;background-color:#fff;font-size:14px;">{{ config('demo.notice') ? 'ログアウトしてデモ用アカウントでログインする' : 'ログアウト' }}</button>
+                        <button style="margin-top:2vh;border:none;background-color:#fff;font-size:14px;">{{ config('demo.enabled') ? 'ログアウトしてデモ用アカウントでログインする' : 'ログアウト' }}</button>
                     </form>
                 </div>
             </div>

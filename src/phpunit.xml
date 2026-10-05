@@ -38,6 +38,6 @@
 		<server name="STRIPE_SECRET_KEY" value="sk_test_dummy" />
 		<server name="STRIPE_WEBHOOK_SECRET" value="whsec_test_dummy" />
 		<!-- ローカルの .env で有効にしていても、テストでは既定（無効）から始める -->
-		<server name="DEMO_NOTICE" value="false" />
+		<server name="DEMO_MODE" value="false" />
 	</php>
 </phpunit>
