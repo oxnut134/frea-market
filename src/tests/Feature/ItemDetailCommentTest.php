@@ -128,4 +128,45 @@ class ItemDetailCommentTest extends TestCase
         $response->assertDontSee('viewerName');
         $response->assertDontSee('profiles/viewer.png', false);
     }
+
+    // 未ログインでも、見出しと最新のコメント、その投稿者が見られる
+    public function testGuestSeesLatestCommentAndItsAuthor(): void
+    {
+        $this->comment($this->commenter('olderName'), 'older comment', now()->subMinutes(10));
+        $commenter = $this->commenter('commenterName', ['profile_image' => 'profiles/commenter.png']);
+        $this->comment($commenter, 'looks good', now()->subMinutes(5));
+
+        $response = $this->get('/item/' . $this->item->id);
+
+        $response->assertStatus(200);
+        $this->assertGuest();
+        $response->assertSee('コメント(2)');
+        $response->assertSee('looks good');
+        $response->assertSee('<div class="detail-form_user_name">commenterName</div>', false);
+        $response->assertSee($commenter->profile->image_url, false);
+        $response->assertDontSee('older comment');
+    }
+
+    // 未ログインでは、入力欄と送信ボタンの代わりに、ログインして同じ商品に戻るリンクが出る
+    public function testGuestSeesLoginLinkInsteadOfCommentForm(): void
+    {
+        $response = $this->get('/item/' . $this->item->id);
+
+        $response->assertSee('コメント(0)');
+        $response->assertSee('<a class="detail-form_login_to_comment_link" href="/item/' . $this->item->id . '/login">ログインしてコメントする</a>', false);
+        $response->assertDontSee('<textarea', false);
+        $response->assertDontSee('action="/item/comment"', false);
+        $response->assertDontSee('コメントを送信する');
+    }
+
+    // ログイン済みでは、入力欄と送信ボタンが出て、リンクは出ない
+    public function testLoggedInUserSeesCommentForm(): void
+    {
+        $response = $this->getDetail();
+
+        $response->assertSee('action="/item/comment"', false);
+        $response->assertSee('<textarea', false);
+        $response->assertSee('コメントを送信する');
+        $response->assertDontSee('ログインしてコメントする');
+    }
 }

@@ -73,7 +73,7 @@
                 <span class="detail-form_Item_condition_column_name">商品の状態</span>
                 <span class="detail-form_Item_condition">{{ $item->condition }}</span>
             </div>
-            @auth
+            {{-- 件数と最新の 1 件は、ログインしていなくても見られる。送信はログインしてから --}}
             <h2>{{ 'コメント(' . $comments . ')'}}</h2>
             @if($first_comment)
             <div class="detail-form_user_picture_wrapper">
@@ -82,6 +82,7 @@
             </div>
             <div class="detail-form_user_comment">{{ $first_comment->comment }}</div>
             @endif
+            @auth
             <form action="/item/comment" name="comment" method="post">
                 @csrf
                 <input type="hidden" name="item_id" value="{{ $item['id'] }}">
@@ -97,6 +98,8 @@
                 @endif
                 <button class="detail-form_your_comment_post_button">コメントを送信する</button>
             </form>
+            @else
+            <a class="detail-form_login_to_comment_link" href="/item/{{ $item['id'] }}/login">ログインしてコメントする</a>
             @endauth
         </div>
     </div>
