@@ -31,6 +31,7 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
 - コミット前に差分を見せる
 - コミットメッセージは英語で簡潔に 1 行のみ（本文なし、Co-Authored-By なし）
 - 各コミットの前後で `php artisan test` を実行し、件数を報告する
+- 画面の動き（ユーザーから見える仕様）は `main` に合わせる。ただし、セキュリティやバグの修正（配送先をサーバー側でプロフィールから組み立てる、プロフィールを `user_id` で引く、など）は、`main` と実装が違っても残す
 - 依頼範囲外の変更が必要な場合は、実施前に理由を説明する
 - `migrate:fresh` やイメージの再ビルドが必要な場合は明示する（既存マイグレーションの修正で対応してよい。本番データは作り直せる）
 - 危険の兆候（不審なコード、想定外のパッケージなど）や判断に迷う点があれば、中断して報告する
@@ -40,6 +41,36 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
 - 秘密情報（.env の鍵、パスワードなど）の実際の値を、報告・reports/・コミットに書き出さない
 - ビューで CSS / JS / `public/images` の画像を読み込むときは `asset()` ではなく `@versioned()` を使う（URL にファイルの更新時刻が付き、ブラウザが古いキャッシュを使い続けない。`AppServiceProvider` の Blade ディレクティブ）
 - CSS ファイルの先頭には `@charset "UTF-8";` を書く
+
+## README の書き方
+
+- このアプリそのものの説明として、今の仕様を現在形で書く（概要、デモ、画面と操作、仕様、技術構成、ER 図、環境構築、テスト、本番の構成、既知の点）。「作り直した」「修正した」「以前は〜だった」のような、変更の経緯は書かない — 読む人は、初めてこのアプリを見る採用担当者やエンジニア
+- 仕様は、コードとテストで確かめてから書く
+- 依存パッケージの勧告の詳しい説明は `docs/dependency-advisories.md`。README の「既知の点」からリンクする
+- COACHTECH の模擬案件が土台であることは、末尾の一文だけ
+- ER 図と構成図、購入の流れの図は Mermaid。スキーマや構成を変えたら、図も直す
+
+### COACHTECH のテストケース一覧との対応
+
+README には載せない。ファイル名を残してきたのは、この対応を保つため（作り直すテストは、ファイル名を残して中身を書き直す）。
+
+| # | テストケース | テストファイル（`src/tests/Feature/`） |
+|---|---|---|
+| ① | 会員登録機能 | `RegisterValidationTest.php` |
+| ② | ログイン機能 | `LoginValidationTest.php` |
+| ③ | ログアウト機能 | `LogoutValidationTest.php` |
+| ④ | 商品一覧取得 | `IndexFunctionTest.php` |
+| ⑤ | マイリスト一覧取得 | `MylistFunctionTest.php` |
+| ⑥ | 商品検索機能 | `SearchItemsTest.php` |
+| ⑦ | 商品詳細情報取得 | `ShowItemDetailTest.php` |
+| ⑧ | いいね機能 | `LikeFunctionTest.php` |
+| ⑨ | コメント送信機能 | `CommentFunctionTest.php` |
+| ⑩ | 商品購入機能 | `PurchaseFunctionTest.php` |
+| ⑪ | 支払い方法選択機能 | `PaymentMethodDisplayedTest.php` |
+| ⑫ | 配送先変更機能 | `RedirectDeliveryAddressTest.php` |
+| ⑬ | ユーザー情報取得 | `MyPageFunctionTest.php` |
+| ⑭ | ユーザー情報変更 | `MyProfileDisplayedTest.php` |
+| ⑮ | 出品商品情報登録 | `RegisterForExhibitionTest.php` |
 
 ## 決済（完了）
 
@@ -98,7 +129,7 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
 
 ## 依存パッケージ（完了）
 
-`composer audit` の 41 件のうち 36 件を更新で解消。残る 5 件（`laravel/framework` 4 件、`league/flysystem` 1 件）は Laravel 9 以上が必要で、メジャーアップグレードは範囲外。理由は README の「依存パッケージの脆弱性」と `composer.json` に記録した。
+`composer audit` の 41 件のうち 36 件を更新で解消。残る 5 件（`laravel/framework` 4 件、`league/flysystem` 1 件）は Laravel 9 以上が必要で、メジャーアップグレードは範囲外。理由は `docs/dependency-advisories.md` と `composer.json` に記録した。
 
 ### 決定事項
 
@@ -184,7 +215,7 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
 
 ## 今後の予定
 
-- 次：README を、記述の方針を変えて書き直す（今は、登録の開放で事実と合わなくなった部分だけを直してある）。スクリーンショットを 1〜2 枚足す（「デモ」の節にコメントで場所を確保してある）
+- 次：README にスクリーンショットを 4 枚入れる（`docs/images/` の `items.png`、`item-detail.png`、`purchase.png`、`mypage.png`。README にコメントで場所を確保してある。デモの初期化の直後に撮る）
 - 次：デプロイ時のログの「CRIT unknown problem killing scheduler: PermissionError」の調査と修正（supervisord がスケジューラーのプロセスを止めるときのエラー。原因は未調査）
 - 次：本番での確認
   - 登録の回数制限が利用者ごとに数えられているか — 同じ回線から 6 回目が弾かれたあと、別の回線（スマートフォンの回線など）から登録できること。別の回線でも弾かれるなら、`CF-Connecting-IP` が届いていない
@@ -194,10 +225,12 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
   - 本番でのコンビニ払い（`basil` で届く `async_payment_succeeded` など）
   - Markdown だけの push で、Render がデプロイしないこと
 - 最後に `portfolio` を `main` にマージする（プルリクエスト経由）— GitHub の既定のブランチは `main` で、書き直した README は `portfolio` にあるため。それまで README のクローン手順は `-b portfolio` のまま。マージしたら手順から `-b portfolio` を外す
-- メールを実際に送る場合：GHSA-5vg9-5847-vvmq を再確認する（今は `MAIL_MAILER=log` で外部に送っていない前提で残している）。README と `composer.json` の理由も合わせて直す。`DEMO_MODE` を `false` にすると、メール認証が戻り、デモ用の案内・制限・初期化がすべて止まる。印のあるユーザーは残るので、手で消す
+- メールを実際に送る場合：GHSA-5vg9-5847-vvmq を再確認する（今は `MAIL_MAILER=log` で外部に送っていない前提で残している）。`docs/dependency-advisories.md` と `composer.json` の理由も合わせて直す。`DEMO_MODE` を `false` にすると、メール認証が戻り、デモ用の案内・制限・初期化がすべて止まる。印のあるユーザーは残るので、手で消す
 - 仕上げ：検索欄の `value`、ロゴの `alt`
 - 仕上げ：テストの並び順への依存をまとめて直す — 並び順なしの `first()` / `all()` が 7 ファイルに残っている（`CommentFunctionTest`、`RegisterForExhibitionTest`、`MyPageFunctionTest`、`MyProfileDisplayedTest`、`SearchItemsTest`、`IndexFunctionTest`、`LoginValidationTest`）。テスト中に VACUUM が走ると ID 順に返らず、まれに失敗する（`MylistFunctionTest` と `ShowItemDetailTest` で発生し、`orderBy('id')` で修正済み。テストを足すと、テーブルの中の並びが変わって表に出ることがある）
 - Laravel のメジャーアップグレード（未定）：残る 5 件の勧告と、放棄されたパッケージ 2 つが解消する
+- 検討：配送先を購入ごとにする（プロフィールを書き換えず、セッションに `item_id` ごとに保存する。決済時は、サーバー側でセッションかプロフィールから組み立てる）
+- 検討：未ログインで `/frea` を開いたときの動きの確認（`auth` の外にあり、`ItemController::index` を呼ぶ。一覧が出るなら、仕様の抜け道）
 - 確認待ち：`/search` の要ログインが仕様どおりか（今は触らない）
 - 確認待ち：商品一覧（`index`）で自分の出品を除外するか（今は触らない。`IndexFunctionTest::testWithoutMyExhibition` は skip）
 - 既知の点：画像の保存後に DB 登録が失敗するとファイルが残る
@@ -217,4 +250,4 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
 - 環境：作業フォルダを WSL2 に移行（Windows のマウント越しだと 1 リクエストに約 1 秒かかったため）
 - 不要ファイルの整理：Git に入っていた MySQL のデータフォルダ（`docker/mysql/data/`）の追跡除外、入れ子のリポジトリ・CSS のバックアップ・画像の複製などの削除、`.dockerignore`
 - デモ：デモ用アカウントとログイン画面のボタン、会員登録の開放（メール認証の省略、「デモで登録した」印、登録と出品の上限）、シードのユーザーのログイン拒否、毎日 4:00 とデプロイ時の初期化（`demo:reset`）
-- デプロイ：Render（有料）と Neon（無料）に公開。起動スクリプトの修正、`sessions` テーブル、`/healthz` と `robots.txt`、`DB_SSLMODE`、php-fpm の待ち受けアドレス、README の全面的な書き直し（ER 図と構成図は Mermaid）、DB のエラーの記録から値を外す、ビルドフィルター
+- デプロイ：Render（有料）と Neon（無料）に公開。起動スクリプトの修正、`sessions` テーブル、`/healthz` と `robots.txt`、`DB_SSLMODE`、php-fpm の待ち受けアドレス、README の全面的な書き直し（アプリそのものの説明として。図は Mermaid）、DB のエラーの記録から値を外す、ビルドフィルター
