@@ -178,15 +178,18 @@ README には載せない。ファイル名を残してきたのは、この対�
 ### 決定事項
 
 - `DEMO_MODE`（`config('demo.enabled')`、既定は `false`）が、デモ環境の動きをまとめて切り替える：案内の表示、会員登録でのメール認証の省略、シードのユーザーのログイン拒否、登録と出品の上限、初期化。本番だけ `true`。`phpunit.xml` で `false` に固定（ローカルの `.env` に左右されないように）
-- デモ用アカウントは 1 つ（ID 5、`demo@test.com`、メール認証済み、プロフィールあり、商品なし）。アドレス・パスワード・プロフィールの初期値は `config/demo.php`。`UsersTableSeeder` と `ProfilesTableSeeder` が作る
+- デモ用アカウントは 1 つ（ID 5、`demo@test.com`、メール認証済み、プロフィールと画像あり、商品なし）。アドレス・パスワード・プロフィールと画像の初期値は `config/demo.php`。`UsersTableSeeder` と `ProfilesTableSeeder` が作る
+  - 画像は `database/seeders/images/profiles/demo.png`（256×256 の PNG。淡い緑の円に、縁取りのある再生ボタン）— ほかの 4 人（動物の顔）と違う「お試し用のアカウント」だとわかる絵にした。描き方は 4 枚とそろえてある。php コンテナの GD で、4 倍の大きさで描いて縮小した（描画のスクリプトは、リポジトリに入れていない。GD に FreeType がなく、文字は描けない）
 - ログイン画面には「デモアカウントでログイン」のボタンを置く。`public/js/demo-login.js` がログインフォームに値を入れて送信する。サーバー側に専用のログインの入口は作らない（通常の `POST /login`）
 - 会員登録：デモ環境では、登録と同時に `email_verified_at` を入れる（`CreateNewUser`）。認証メールは未認証のユーザーにだけ送られるので、作られなくなる。登録画面には「架空のアドレスと、普段使っていないパスワードで」「認証メールは送信しません。毎日 4:00 に削除」の案内を出す（`partials/demo_notice.blade.php`）。認証待ち画面には、デモ用の表示を出さない
 - 「デモで登録した」印：デモ環境で登録したユーザーにだけ `users.registered_in_demo = true` を付ける（既定は `false`、`$fillable` に入れない）。初期化での削除、人数の上限、出品数の上限（5 件）の対象は、この印があるユーザーだけ（`App\Services\Demo\DemoLimits`）— メールアドレスからの推測で決めると、`DEMO_MODE` を誤って有効にしたときに本物の利用者が全員消えるため。印の付け忘れ、シーディングの失敗、設定の誤りがあっても、誰も消えない側に倒れる
 - ログインの制限：デモ環境では、シードの 4 人（`config('demo.seeded_emails')`）のログインを拒否する — パスワードがリポジトリで公開されているため。デモ用アカウントと、登録したユーザーはログインできる。Fortify のログインの処理（`Fortify::authenticateThrough`）の中で、パスワードの照合より前に判定する（`RejectSeededAccountsInDemoMode`）。`seeded_emails` を使うのはここだけ。シーダーと一覧の一致はテストで確かめている
 - 上限（デモ環境だけ。`config('demo.limits')`）：同じ IP アドレスからの登録は 1 時間に 5 回（登録できた回数だけ数える）、登録したユーザーは 100 人まで、出品は登録したユーザーが 5 件・デモ用アカウントが 20 件まで — メール認証という関門がなくなり、画像でディスク（1 GB）が埋まりうるため
 - 利用者の IP アドレスは、`DEMO_CLIENT_IP_HEADER`（本番は `CF-Connecting-IP`）のヘッダーから取る。なければ `$request->ip()` — Render の手前に Cloudflare があり、`X-Forwarded-For` が「利用者, プロキシ」の形だと、`$request->ip()` はプロキシのアドレスになるため（`TrustProxies` は接続元だけを信頼する）。Render の公式ドキュメントでは確かめられず、ほかの開発者の報告による。ローカルでは設定しない（利用者がヘッダーを偽れるため）。既存のログインの回数制限は `$request->ip()` のまま
-- 初期化は `php artisan demo:reset`。起動時（`entrypoint.sh`）と、毎日 4:00（Asia/Tokyo）に実行する。`DEMO_MODE` が無効なら何もしない
+- 初期化は `php artisan demo:reset`。起動時（`entrypoint.sh`。シーディングより前）と、毎日 4:00（Asia/Tokyo）に実行する。`DEMO_MODE` が無効なら何もしない
   - デモ用アカウント：購入（`paid` / `expired` / `failed` と、期限を過ぎた `pending`）、いいね、コメント、出品（付いているいいね・コメント・購入・画像ごと）を消す。名前とプロフィールは初期値に戻す
+  - デモ用アカウントの画像は、初期の画像（`config('demo.profile_image')`）に戻す。アップロードされた画像は消すが、初期の画像そのものは消さない。ディスクになければ、シーダーと同じ `seedImage()` でコピーし直す — 見に来た人が画像を差し替えると、プロフィールの更新が、初期の画像のファイルを「古い画像」として消すため
+  - 起動時は、シーディングより前に実行する — シーダーが先に Demo の `profile_image` を初期値で上書きすると、`demo:reset` は消すべきファイルの名前がわからず、アップロードされた画像がディスクに残り続けるため（本番用のイメージで再現して確かめた）。DB が空の最初の起動では、Demo がまだいないので何も消さず、そのあとのシーディングが Demo と画像を作る
   - デモで登録したユーザー：同じものを消したうえで、ユーザーごと削除する（プロフィール、画像、セッションも）
   - 残すもの：期限内の `pending`（あとから支払いの通知が届くため）と、それが付いている出品、それを持つユーザー。片付いたあとの初期化で消える
   - 印のないユーザー（シードのユーザー、デモ環境でない時期に登録したユーザー、以前の認証待ちで止まったユーザー）には触らない。Stripe は呼ばない。トランザクションは使わない
@@ -214,7 +217,7 @@ README には載せない。ファイル名を残してきたのは、この対�
 - セッションは `database`（`sessions` テーブル）— `file` はデプロイのたびに消え、`cookie` は入力エラー時の入力値で 4KB を超えうるため。`SESSION_SECURE_COOKIE=true`（Laravel 8 は未設定だと `secure` を付けない）
 - `APP_KEY` は手入力（`php artisan key:generate --show` の値）— Render の `generateValue` は `base64:` が付かず、Laravel が受け付けないため
 - `APP_URL` も手入力 — 画像の URL（`public` ディスク）に使われる。`render.yaml` に固定の値を書くと、Blueprint の同期で戻るため
-- `entrypoint.sh`：`APP_KEY` が空なら止める。マイグレーションの失敗は止める。シーディングと `demo:reset` の失敗は警告だけで続ける。`chown` は `storage` と `bootstrap/cache` の全体に、キャッシュ生成のあとで
+- `entrypoint.sh`：`APP_KEY` が空なら止める。マイグレーションの失敗は止める。`demo:reset` とシーディング（この順）の失敗は警告だけで続ける。`chown` は `storage` と `bootstrap/cache` の全体に、キャッシュ生成のあとで
 - 永続ディスク：デプロイのたびに短い停止がある。残るのはマウント先の下だけ。ビルドとデプロイ前コマンドからは見えない（シーディングは起動時のまま）
 - シード画像は、ディスクにあればコピーされない。リポジトリの画像を差し替えたら、Render のシェルでディスク上の古い画像を消してから再デプロイする
 - php-fpm は `127.0.0.1:9000` だけで待ち受ける（`docker/render/php-fpm.conf` を `zzz-render.conf` としてコピー）— ベースイメージの `zz-docker.conf` がすべてのアドレスで待ち受けるため。開発用は別コンテナの nginx からつなぐので変えない
@@ -244,13 +247,11 @@ README には載せない。ファイル名を残してきたのは、この対�
   - ログイン画面から会員登録に進んだ場合は、元の商品には戻らない（登録後は認証待ちかプロフィールの登録へ送られ、そのあとは `/`）
 - 未ログインのヘッダーに「ログイン」を出す（`layouts/header.blade.php`）。リンク先は `@yield('login_url', '/login')` で、詳細画面だけ `/item/{item_id}/login` に差し替える。ログイン画面には出さない — `/frea` を入り口として案内すると、ログインへ進む導線がなかったため
 - テストは `ItemDetailCommentTest`、`ReturnToItemAfterLoginTest`、`GuestHeaderLoginLinkTest`。`CommentFunctionTest::testCantPostCommentBeforeLogin` は、コメントアウトを外して生かした（項目名を `comment` に、`item_id` も送る）。同じファイルの `testCantPostCommentAfterLogin` と、`MylistFunctionTest::testCheckNotAuthorizedUser` は、コメントアウトのまま
+- 確認済み（本番、ブラウザ）：未ログインの詳細の「ログインしてコメントする」の見た目、未ログインのヘッダーの「ログイン」の位置、ログイン中に別のタブでログアウトしてからいいねを押すと、ログイン後に同じ商品へ戻ること（`like.js` の 401 / 419）
 
 ## 今後の予定
 
 - 次：README にスクリーンショットを 4 枚入れる（`docs/images/` の `items.png`、`item-detail.png`、`purchase.png`、`mypage.png`。README にコメントで場所を確保してある。デモの初期化の直後に撮る）
-- 次：ブラウザでの確認（テストと curl では確かめられないもの）
-  - 未ログインの詳細の「ログインしてコメントする」が、送信ボタンと同じ見た目で出ること。未ログインのヘッダーの「ログイン」が、右端にロゴとそろって出ること
-  - ログイン中に詳細を開き、別のタブでログアウトしてから、いいねのアイコンを押す。ログイン画面に移り、ログインすると同じ商品に戻ること（`like.js` の 401 / 419）
 - 次：デプロイ時のログの「CRIT unknown problem killing scheduler: PermissionError」の調査と修正（supervisord がスケジューラーのプロセスを止めるときのエラー。原因は未調査）
 - 次：本番での確認
   - 登録の回数制限が利用者ごとに数えられているか — 同じ回線から 6 回目が弾かれたあと、別の回線（スマートフォンの回線など）から登録できること。別の回線でも弾かれるなら、`CF-Connecting-IP` が届いていない
@@ -258,13 +259,13 @@ README には載せない。ファイル名を残してきたのは、この対�
     - 4:00 を待たずに確かめる（Render のシェルで。`runuser` が使えるかは未確認）：スケジューラーの環境は `runuser -u www-data -- sh -c 'for d in /proc/[0-9]*; do grep -q scheduler.sh $d/cmdline 2>/dev/null && tr "\0" "\n" < $d/environ | grep -E "^(HOME|USER)="; done'`。ジョブの実行は `cd /var/www && runuser -u www-data -- env HOME=/var/www php artisan schedule:test`（実際に初期化される）
   - Neon の使用量を公開から 1 週間見る（目安は 1 日あたり約 3.3 CU 時間まで）。Neon がアクセスのない間に眠ること。多ければ、セッションをファイルにして永続ディスクに置く — 今のマウント先（`storage/app/public`）は外から見えるので、マウント先を `storage/app` に変えて、公開しないフォルダに置く必要がある
   - 再デプロイ後に、アップロードした画像とログインが残ること
+  - 永続ディスクに、どこからも参照されていない画像が残っていないか（Render のシェルで `ls /var/www/storage/app/public/profiles`）— 起動時の順番を直す前のデプロイで、Demo がアップロードした画像が残った可能性がある。あれば手で消す
   - 本番でのコンビニ払い（`basil` で届く `async_payment_succeeded` など）
   - Markdown だけの push で、Render がデプロイしないこと
 - 最後に `portfolio` を `main` にマージする（プルリクエスト経由）— GitHub の既定のブランチは `main` で、書き直した README は `portfolio` にあるため。それまで README のクローン手順は `-b portfolio` のまま。マージしたら手順から `-b portfolio` を外す
 - メールを実際に送る場合：GHSA-5vg9-5847-vvmq を再確認する（今は `MAIL_MAILER=log` で外部に送っていない前提で残している）。`docs/dependency-advisories.md` と `composer.json` の理由も合わせて直す。`DEMO_MODE` を `false` にすると、メール認証が戻り、デモ用の案内・制限・初期化がすべて止まる。印のあるユーザーは残るので、手で消す
 - 仕上げ：検索欄の `value`、ロゴの `alt`
 - 仕上げ：`ProfileRequest` と `ProfileFirstRequest` の郵便番号の正規表現の `$` を `\z` にする（`$` は末尾の改行を通す。`RedirectRequest` は修正済み）— `TrimStrings` が先に改行を取り除くので、実害はない
-- 仕上げ：テストの並び順への依存をまとめて直す — 並び順なしの `first()` / `all()` が 7 ファイルに残っている（`CommentFunctionTest`、`RegisterForExhibitionTest`、`MyPageFunctionTest`、`MyProfileDisplayedTest`、`SearchItemsTest`、`IndexFunctionTest`、`LoginValidationTest`）。テスト中に VACUUM が走ると ID 順に返らず、まれに失敗する（`MylistFunctionTest` と `ShowItemDetailTest` で発生し、`orderBy('id')` で修正済み。テストを足すと、テーブルの中の並びが変わって表に出ることがある）
 - Laravel のメジャーアップグレード（未定）：残る 5 件の勧告と、放棄されたパッケージ 2 つが解消する
 - 検討：4:00 の 1 分を逃すと、翌日まで初期化されない（その時刻の再起動や、一時的な接続の失敗など）。今は、次のデプロイか翌日の 4:00 で片付く。直すなら、時刻を変えてもう一度実行する（初期化は何度実行してもよい）か、前回の実行時刻を持って遅れを取り戻す
 - 確認待ち：`/search` の要ログインが仕様どおりか（今は触らない）
@@ -288,4 +289,6 @@ README には載せない。ファイル名を残してきたのは、この対�
 - デモ：デモ用アカウントとログイン画面のボタン、会員登録の開放（メール認証の省略、「デモで登録した」印、登録と出品の上限）、シードのユーザーのログイン拒否、毎日 4:00 とデプロイ時の初期化（`demo:reset`）、スケジューラーの `HOME` の修正（4:00 の初期化が DB につなげなかった）
 - 配送先：購入画面で変更した住所を、プロフィールではなくセッションに商品ごとに持つ（その購入にだけ使う）、変更画面の入力の検証、入力エラー時に入力した値を残す
 - 未ログインでの閲覧：最新のコメントの投稿者の表示の修正、未ログインの詳細でのコメントの表示と「ログインしてコメントする」、詳細からのログイン後に同じ商品へ戻す入り口（`/item/{item_id}/login`）、未ログインのヘッダーの「ログイン」、README での `/frea` の案内
+- デモ用アカウントの画像：画像の追加（シーダーと `demo:reset` で初期の画像に戻す）、起動時の順番を `demo:reset` → シーディングに
+- テストの並び順：並び順なしの `first()` / `all()` に `orderBy('id')` を足した（8 ファイル、62 か所。コメントアウトされているコードの中も）— テストを足すとテーブルの中の並びが変わり、`MyProfileDisplayedTest` が毎回落ちるようになったため。`where(...)->first()` の形は、1 件に絞っているので触っていない。テストで `first()` / `all()` を使うときは、並び順を指定する
 - デプロイ：Render（有料）と Neon（無料）に公開。起動スクリプトの修正、`sessions` テーブル、`/healthz` と `robots.txt`、`DB_SSLMODE`、php-fpm の待ち受けアドレス、README の全面的な書き直し（アプリそのものの説明として。図は Mermaid）、DB のエラーの記録から値を外す、ビルドフィルター
