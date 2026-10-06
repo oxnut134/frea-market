@@ -4,6 +4,9 @@
 <link rel="stylesheet" href="@versioned('css/detail.css')">
 @endsection
 
+{{-- ヘッダーの「ログイン」から、ログイン後にこの商品へ戻る --}}
+@section('login_url', '/item/' . $item['id'] . '/login')
+
 @section('content')
 <!--<head><meta name="csrf-token" content="{{ csrf_token() }}"></head>-->
 

@@ -38,6 +38,9 @@
                 <a class="frea-market_header_link" href="/mypage" style="width:35%;text-decoration:none;">マイページ</a>
                 <a class="frea-market_header_button_to_exhibit" href="/sell" style="width:15%">出品</a>
             </div>
+            @elseif (! request()->routeIs('login'))
+            {{-- 未ログイン：ログイン画面へのリンク。戻り先を持つ画面は、login_url で差し替える --}}
+            <a class="frea-market_header_login_link" href="@yield('login_url', '/login')">ログイン</a>
             @endif
             <meta name="csrf-token" content="{{ csrf_token() }}">
         </header>

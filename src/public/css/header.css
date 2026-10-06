@@ -37,6 +37,15 @@ input {
     font-family: "Gothic";
     margin-right: 1.5%;
 }
+/* 未ログインのヘッダーの「ログイン」。ロゴの反対側（右端）に置く */
+.frea-market_header_login_link {
+    margin-left: auto;
+    margin-right: 3%;
+    color: #fff;
+    font-size: 17px;
+    font-family: "Gothic";
+    text-decoration: none;
+}
 .frea-market_header_button_to_exhibit {
     width: 7%;
     height: 5vh;
