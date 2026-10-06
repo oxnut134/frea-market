@@ -1,6 +1,6 @@
 // 詳細画面のいいね。アイコンと件数は、サーバーの応答（liked / likes）で更新する
 document.addEventListener('DOMContentLoaded', function () {
-    // 未ログインのときはログイン画面へのリンクなので、何もしない
+    // 未ログインのときは、ログインして同じ商品に戻るリンクなので、何もしない
     const button = document.querySelector('.js-like-button');
     if (!button) return;
 
@@ -26,11 +26,11 @@ document.addEventListener('DOMContentLoaded', function () {
             credentials: 'same-origin',
         })
             .then(function (response) {
-                // ログインが切れていたら、ログイン画面へ案内する。
+                // ログインが切れていたら、ログイン画面へ案内する（ログイン後は、同じ商品に戻る）。
                 // ログアウトやセッション切れでは CSRF トークンも作り直され、
                 // auth より先に CSRF の検証で止まるので、401 ではなく 419 が返る
                 if (response.status === 401 || response.status === 419) {
-                    window.location.href = '/login';
+                    window.location.href = button.dataset.loginUrl;
                     return null;
                 }
                 if (!response.ok) {

@@ -65,6 +65,9 @@ Route::middleware(['auth', 'verified', 'profile.exists'])->group(function () {
     Route::get('/sell', [ItemController::class, 'exhibitItems']);
     Route::post('/sell', [ItemController::class, 'upItem']);
 
+    //ログインしてから商品詳細に戻るための入り口（未ログインなら /login を経由して、ここに戻ってくる）
+    Route::get('/item/{item_id}/login', [ItemController::class, 'returnToItemAfterLogin'])->whereNumber('item_id')->name('item.login');
+
     //いいね＆コメント
     Route::post('/like/{id}', [LikeController::class, 'add'])->whereNumber('id');
     Route::delete('/like/{id}', [LikeController::class, 'remove'])->whereNumber('id');

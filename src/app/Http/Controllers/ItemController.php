@@ -114,6 +114,15 @@ class ItemController extends Controller
         );
     }
 
+    // 未ログインの詳細画面から、ログインして同じ商品に戻るための入り口。
+    // auth の中に置いてあるので、未ログインなら /login へ送られ、ログイン後にここへ戻ってくる
+    public function returnToItemAfterLogin($item_id)
+    {
+        $item = Item::findOrFail($item_id);
+
+        return redirect('/item/' . $item->id);
+    }
+
     public function exhibitItems()
     {
         $categories = Category::all();

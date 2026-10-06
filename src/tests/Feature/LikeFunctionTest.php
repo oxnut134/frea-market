@@ -125,14 +125,14 @@ class LikeFunctionTest extends TestCase
             ->assertDontSee($not_liked_icon, false);
     }
 
-    // 未ログインでは、件数があっても灰色のアイコンで、ログイン画面へのリンクになる
+    // 未ログインでは、件数があっても灰色のアイコンで、ログインして同じ商品に戻るリンクになる
     public function testGuestSeesLoginLinkInsteadOfLikeButton(): void
     {
         Like::create(['item_id' => $this->item->id, 'user_id' => $this->seller->id]);
 
         $this->get('/item/' . $this->item->id)
             ->assertStatus(200)
-            ->assertSee('<a class="detail-form_engagement_image_wrapper" href="/login">', false)
+            ->assertSee('<a class="detail-form_engagement_image_wrapper" href="/item/' . $this->item->id . '/login">', false)
             ->assertSee('class="like-icon" src="' . $this->versioned('images/not-liked.png') . '"', false)
             ->assertDontSee('js-like-button', false)
             ->assertDontSee('data-like-url', false);

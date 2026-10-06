@@ -29,9 +29,10 @@
                 @auth
                 <a class="detail-form_engagement_image_wrapper js-like-button" href="#" role="button"
                     data-like-url="/like/{{ $item['id'] }}" data-liked="{{ $my_like ? 1 : 0 }}"
+                    data-login-url="/item/{{ $item['id'] }}/login"
                     data-icon-on="@versioned('images/liked.png')" data-icon-off="@versioned('images/not-liked.png')">
                 @else
-                <a class="detail-form_engagement_image_wrapper" href="/login">
+                <a class="detail-form_engagement_image_wrapper" href="/item/{{ $item['id'] }}/login">
                 @endauth
                     <img class="like-icon" src="@versioned($my_like ? 'images/liked.png' : 'images/not-liked.png')" alt="いいね">
                     <div id="like-count">
