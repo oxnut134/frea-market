@@ -17,14 +17,18 @@ php artisan storage:link
 # A failed migration stops the start: do not serve with a mismatched schema
 php artisan migrate --force
 
-# A failed seeding does not: the site can run without re-seeding
-if ! php artisan db:seed --force; then
-    echo "WARNING: db:seed failed. Starting without seeding." >&2
-fi
-
-# Reset the demo account's data on every start (the scheduler also runs this daily)
+# Reset the demo account's data on every start (the scheduler also runs this daily).
+# This runs before seeding: the seeder puts the demo profile back to its initial
+# image, and after that demo:reset no longer knows which uploaded file to delete,
+# so the file would stay on the disk forever. On an empty database (first start)
+# there is no demo account yet and nothing is reset.
 if ! php artisan demo:reset; then
     echo "WARNING: demo:reset failed. Starting without resetting demo data." >&2
+fi
+
+# A failed seeding does not stop the start: the site can run without re-seeding
+if ! php artisan db:seed --force; then
+    echo "WARNING: db:seed failed. Starting without seeding." >&2
 fi
 
 php artisan config:cache
