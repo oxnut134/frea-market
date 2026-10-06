@@ -56,7 +56,7 @@ class DemoNoticeTest extends TestCase
 
         $this->get('/register')->assertStatus(200)
             ->assertSee(self::MESSAGE)
-            ->assertSee('メールは送信しません。登録したデータは毎日 4:00 に削除されます。')
+            ->assertSee('認証メールは送信しません。登録したデータは毎日 4:00 に削除されます。')
             ->assertDontSee('js-demo-login')
             ->assertDontSee(config('demo.password'));
     }

@@ -9,7 +9,7 @@
 @else
 <div class="demo-notice">
     <p class="demo-notice_text">このデモ環境では、架空のメールアドレス（例：yourname@example.com）と、普段使っていないパスワードで登録してください。</p>
-    <p class="demo-notice_text">メールは送信しません。登録したデータは毎日 4:00 に削除されます。</p>
+    <p class="demo-notice_text">認証メールは送信しません。登録したデータは毎日 4:00 に削除されます。</p>
 </div>
 @endif
 @endif
