@@ -35,6 +35,8 @@ class DemoRegistrationTest extends TestCase
 
         $user = User::where('email', 'yourname@example.com')->firstOrFail();
         $this->assertNotNull($user->email_verified_at);
+        // 「デモで登録した」印が付く（毎日の初期化で削除する対象になる）
+        $this->assertTrue($user->registered_in_demo);
         $this->assertAuthenticatedAs($user);
         Notification::assertNothingSent();
     }
@@ -63,6 +65,24 @@ class DemoRegistrationTest extends TestCase
 
         $user = User::where('email', 'yourname@example.com')->firstOrFail();
         $this->assertNull($user->email_verified_at);
+        // 印は付かない（あとで DEMO_MODE を有効にしても、初期化で削除されない）
+        $this->assertFalse($user->registered_in_demo);
         Notification::assertSentTo($user, VerifyEmail::class);
+    }
+
+    // 印は、フォームの入力からは付けられない
+    public function testRegisteredInDemoCannotBeSetFromInput(): void
+    {
+        Notification::fake();
+
+        $this->post('/register', [
+            'name' => 'test',
+            'email' => 'yourname@example.com',
+            'password' => 'abc12345',
+            'password_confirmation' => 'abc12345',
+            'registered_in_demo' => 1,
+        ]);
+
+        $this->assertFalse(User::where('email', 'yourname@example.com')->firstOrFail()->registered_in_demo);
     }
 }

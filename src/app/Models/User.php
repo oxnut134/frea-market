@@ -33,4 +33,9 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $hidden = [
         'password',
     ];
+
+    // registered_in_demo は $fillable に入れない（フォームの入力から立てられないように）
+    protected $casts = [
+        'registered_in_demo' => 'boolean',
+    ];
 }

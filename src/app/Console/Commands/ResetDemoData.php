@@ -18,8 +18,8 @@ use App\Services\Demo\DemoLimits;
 // デモ環境（DEMO_MODE=true）でだけ動く。
 //
 // - デモ用アカウント（config/demo.php）：購入・いいね・コメント・出品を消し、プロフィールを初期値に戻す
-// - 新しく登録したユーザー：同じものを消したうえで、ユーザーごと削除する
-// - シードのユーザー（config('demo.seeded_emails')）の操作には触らない
+// - デモで登録したユーザー（users.registered_in_demo）：同じものを消したうえで、ユーザーごと削除する
+// - それ以外のユーザー（シードのユーザーなど、印のないユーザー）の操作には触らない
 //
 // 期限内の確保（支払い待ち）だけは、あとから支払いの通知が届くので残す。
 // それが付いている出品と、それを持つユーザーも今回は残し、片付いたあとの実行で消す
@@ -27,7 +27,7 @@ class ResetDemoData extends Command
 {
     protected $signature = 'demo:reset';
 
-    protected $description = 'デモ用アカウントの操作を初期状態に戻し、新しく登録したユーザーを削除する';
+    protected $description = 'デモ用アカウントの操作を初期状態に戻し、デモで登録したユーザーを削除する';
 
     public function handle()
     {
@@ -42,7 +42,7 @@ class ResetDemoData extends Command
         $disk = Storage::disk(config('filesystems.images'));
 
         $demo = User::where('email', config('demo.email'))->first();
-        // 新しく登録したユーザー：デモ用アカウントでも、シードのユーザーでもないもの
+        // デモで登録したユーザー（印のあるユーザーだけ）
         $registered = DemoLimits::registeredUsers()->pluck('id');
         $targets = $registered->merge($demo ? [$demo->id] : []);
 
@@ -78,7 +78,7 @@ class ResetDemoData extends Command
             }
         }
 
-        // 新しく登録したユーザー：購入（ここまでで残るのは期限内の確保だけ）も出品も残っていなければ、
+        // デモで登録したユーザー：購入（ここまでで残るのは期限内の確保だけ）も出品も残っていなければ、
         // ユーザーごと削除する。プロフィールは外部キーの連鎖で消える
         $profile_images = Profile::whereIn('user_id', $registered)->pluck('profile_image', 'user_id');
         $users = User::whereIn('id', $registered)

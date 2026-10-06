@@ -37,7 +37,7 @@ class ExhibitRequest extends FormRequest
              'price' => ['required','integer','min:120'],
         ];
     }
-    // デモ環境では、デモ用アカウントと新しく登録したユーザーの出品数に上限を設ける（画像でディスクが埋まるのを防ぐ）
+    // デモ環境では、デモ用アカウントとデモで登録したユーザーの出品数に上限を設ける（画像でディスクが埋まるのを防ぐ）
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {

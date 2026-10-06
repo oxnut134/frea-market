@@ -43,9 +43,9 @@ class DemoLimitsTest extends TestCase
         ]);
     }
 
-    private function loginWithProfile(string $email): User
+    private function loginWithProfile(string $email, bool $registered_in_demo = false): User
     {
-        $user = User::factory()->create(['email' => $email]);
+        $user = User::factory()->create(['email' => $email, 'registered_in_demo' => $registered_in_demo]);
         Profile::create(['user_id' => $user->id, 'post_code' => '111-1111', 'address' => 'Tokyo']);
         $this->actingAs($user);
 
@@ -165,18 +165,20 @@ class DemoLimitsTest extends TestCase
 
     // ---------------- 登録したユーザーの人数 ----------------
 
-    // 登録したユーザーが上限に達したら、受け付けない。デモ用アカウントとシードのユーザーは人数に数えない
+    // デモで登録したユーザーが上限に達したら、受け付けない。印のないユーザー（デモ用アカウント、シードのユーザーなど）は数えない
     public function testRegistrationStopsWhenUserLimitIsReached(): void
     {
         config(['demo.enabled' => true, 'demo.limits.users' => 2]);
         User::factory()->create(['email' => config('demo.email')]);
         User::factory()->create(['email' => 'cat@test.com']);
+        User::factory()->create(['email' => 'real-user@example.com']);
 
         $this->register(['REMOTE_ADDR' => '203.0.113.1'])->assertSessionDoesntHaveErrors();
         $this->register(['REMOTE_ADDR' => '203.0.113.2'])->assertSessionDoesntHaveErrors();
         $this->register(['REMOTE_ADDR' => '203.0.113.3'])->assertSessionHasErrors(['email' => self::FULL]);
 
-        $this->assertSame(4, User::count());
+        $this->assertSame(5, User::count());
+        $this->assertSame(2, User::where('registered_in_demo', true)->count());
     }
 
     // 無効（ローカル）：回数にも人数にも上限はない
@@ -192,11 +194,11 @@ class DemoLimitsTest extends TestCase
 
     // ---------------- 1 人あたりの出品数 ----------------
 
-    // 登録したユーザーの出品は 5 件まで。6 件目は保存されず、画像も残らない
+    // デモで登録したユーザーの出品は 5 件まで。6 件目は保存されず、画像も残らない
     public function testRegisteredUserCanExhibitUpToLimit(): void
     {
         config(['demo.enabled' => true]);
-        $user = $this->loginWithProfile('yourname@example.com');
+        $user = $this->loginWithProfile('yourname@example.com', true);
 
         for ($i = 0; $i < 5; $i++) {
             $this->exhibit()->assertSessionDoesntHaveErrors();
@@ -225,22 +227,24 @@ class DemoLimitsTest extends TestCase
         $this->assertSame(20, Item::where('user_id', $user->id)->count());
     }
 
-    // シードのユーザーには、出品数の上限はない
-    public function testSeededUsersAreNotLimited(): void
+    // 印のないユーザー（シードのユーザーや、デモ環境でない時期に登録したユーザー）には、出品数の上限はない
+    public function testUsersWithoutMarkAreNotLimited(): void
     {
         config(['demo.enabled' => true]);
-        $user = $this->loginWithProfile('cat@test.com');
 
-        for ($i = 0; $i < 21; $i++) {
-            $this->exhibit()->assertSessionDoesntHaveErrors();
+        foreach (['cat@test.com', 'real-user@example.com'] as $email) {
+            $user = $this->loginWithProfile($email);
+            for ($i = 0; $i < 6; $i++) {
+                $this->exhibit()->assertSessionDoesntHaveErrors();
+            }
+            $this->assertSame(6, Item::where('user_id', $user->id)->count());
         }
-        $this->assertSame(21, Item::where('user_id', $user->id)->count());
     }
 
     // 無効（ローカル）：出品数に上限はない
     public function testItemsAreNotLimitedWhenDemoModeIsOff(): void
     {
-        $user = $this->loginWithProfile('yourname@example.com');
+        $user = $this->loginWithProfile('yourname@example.com', true);
 
         for ($i = 0; $i < 6; $i++) {
             $this->exhibit()->assertSessionDoesntHaveErrors();

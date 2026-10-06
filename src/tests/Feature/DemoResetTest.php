@@ -36,10 +36,39 @@ class DemoResetTest extends TestCase
         $this->item = $this->createItem($this->seller);
     }
 
-    // 新しく登録したユーザー（シードにいないアドレス）
+    // デモで登録したユーザー（「デモで登録した」印がある）
     private function createRegisteredUser(array $user = []): User
     {
-        return $this->createUser(array_merge(['email' => 'yourname@example.com'], $user));
+        return $this->createUser(array_merge(['email' => 'yourname@example.com', 'registered_in_demo' => true], $user));
+    }
+
+    // 印のないユーザーに、購入・いいね・コメント・出品・プロフィール画像を持たせる
+    private function giveEverything(User $user): array
+    {
+        $profile_image = UploadedFile::fake()->image('me.png')->store('profiles', 'public');
+        Profile::where('user_id', $user->id)->update(['profile_image' => $profile_image]);
+        $item_image = UploadedFile::fake()->image('bag.jpg')->store('items', 'public');
+        $exhibited = $this->createItem($user, ['item_image' => $item_image]);
+        $bought = $this->createItem($this->seller);
+        Purchase::factory()->create(['user_id' => $user->id, 'item_id' => $bought->id]);
+        Like::create(['user_id' => $user->id, 'item_id' => $this->item->id]);
+        $this->addComment($user, $this->item);
+
+        return [$profile_image, $item_image, $exhibited];
+    }
+
+    private function assertEverythingIsKept(User $user, array $data): void
+    {
+        [$profile_image, $item_image, $exhibited] = $data;
+
+        $this->assertNotNull(User::find($user->id));
+        $this->assertSame($profile_image, Profile::where('user_id', $user->id)->value('profile_image'));
+        $this->assertNotNull(Item::find($exhibited->id));
+        $this->assertSame(1, Purchase::where('user_id', $user->id)->count());
+        $this->assertSame(1, Like::where('user_id', $user->id)->count());
+        $this->assertSame(1, Comment::where('user_id', $user->id)->count());
+        Storage::disk('public')->assertExists($profile_image);
+        Storage::disk('public')->assertExists($item_image);
     }
 
     private function createUser(array $user = [], array $profile = []): User
@@ -190,7 +219,7 @@ class DemoResetTest extends TestCase
         Storage::disk('public')->assertExists($image);
     }
 
-    // 新しく登録したユーザーは、購入・いいね・コメント・出品・プロフィール・画像・セッションごと削除する
+    // デモで登録したユーザーは、購入・いいね・コメント・出品・プロフィール・画像・セッションごと削除する
     public function testRegisteredUserIsDeletedWithEverything(): void
     {
         $user = $this->createRegisteredUser();
@@ -221,17 +250,101 @@ class DemoResetTest extends TestCase
         $this->assertSame('on_sale', $this->item->fresh()->sale_status);
     }
 
-    // メール認証が済んでいない登録（以前の、認証待ちで止まったユーザー）も削除する
-    public function testUnverifiedRegisteredUserIsDeleted(): void
+    // ---------------- 印のないユーザーは、誰も消えない ----------------
+
+    // 印のないユーザーは、シードのアドレスでなくても削除しない。操作にも触らない
+    // （デモ環境でない時期に登録した利用者を、DEMO_MODE を誤って有効にしても消さないため）
+    public function testUserWithoutMarkIsKeptWithEverything(): void
+    {
+        $user = $this->createUser(['email' => 'real-user@example.com']);
+        $this->assertFalse($user->fresh()->registered_in_demo);
+        $data = $this->giveEverything($user);
+
+        $this->reset();
+
+        $this->assertEverythingIsKept($user, $data);
+    }
+
+    // 認証待ちで止まったユーザー（印がない）も削除しない
+    public function testUnverifiedUserWithoutMarkIsKept(): void
     {
         $user = User::factory()->unverified()->create(['email' => 'stuck@example.com']);
 
         $this->reset();
 
-        $this->assertNull(User::find($user->id));
+        $this->assertNotNull(User::find($user->id));
     }
 
-    // 期限内の確保がある登録ユーザーは、確保ごと残す。ほかの操作は消し、確保が片付いたあとの実行で削除する
+    // シーディングが失敗してシードのユーザーが 1 人もいなくても、印のないユーザーは誰も消えない
+    public function testNobodyIsDeletedWhenSeededUsersAreMissing(): void
+    {
+        $user = $this->createUser(['email' => 'real-user@example.com']);
+        $data = $this->giveEverything($user);
+        // デモ用アカウントを消す。Cat は「シードのアドレスを持つ」こと以外、ふつうのユーザーと同じ
+        $this->demo->delete();
+        $before = User::orderBy('id')->pluck('id')->all();
+
+        $this->reset();
+
+        $this->assertSame($before, User::orderBy('id')->pluck('id')->all());
+        $this->assertEverythingIsKept($user, $data);
+    }
+
+    // シードのアドレスの一覧が空でも（設定の誤り）、印のないユーザーは誰も消えない
+    public function testNobodyIsDeletedWhenSeededEmailListIsEmpty(): void
+    {
+        config(['demo.seeded_emails' => []]);
+        $user = $this->createUser(['email' => 'real-user@example.com']);
+        $data = $this->giveEverything($user);
+        $before = User::orderBy('id')->pluck('id')->all();
+
+        $this->reset();
+
+        $this->assertSame($before, User::orderBy('id')->pluck('id')->all());
+        $this->assertEverythingIsKept($user, $data);
+        // シードのユーザー（Cat）の出品も残る
+        $this->assertNotNull(Item::find($this->item->id));
+    }
+
+    // デモ環境でない時期に登録したユーザーは、あとで DEMO_MODE を有効にして実行しても消えない
+    public function testUserRegisteredOutsideDemoModeSurvivesReset(): void
+    {
+        config(['demo.enabled' => false]);
+        $this->post('/register', [
+            'name' => 'real',
+            'email' => 'real-user@example.com',
+            'password' => 'abc12345',
+            'password_confirmation' => 'abc12345',
+        ]);
+        $this->post('/logout');
+        $user = User::where('email', 'real-user@example.com')->firstOrFail();
+
+        config(['demo.enabled' => true]);
+        $this->reset();
+
+        $this->assertNotNull(User::find($user->id));
+    }
+
+    // デモ環境で登録したユーザーは、次の初期化で消える（登録から削除までの流れ）
+    public function testUserRegisteredInDemoModeIsDeletedByReset(): void
+    {
+        $this->post('/register', [
+            'name' => 'visitor',
+            'email' => 'visitor@example.com',
+            'password' => 'abc12345',
+            'password_confirmation' => 'abc12345',
+        ]);
+        $this->post('/logout');
+        $this->assertTrue(User::where('email', 'visitor@example.com')->exists());
+
+        $this->reset();
+
+        $this->assertFalse(User::where('email', 'visitor@example.com')->exists());
+    }
+
+    // ---------------- 期限内の確保 ----------------
+
+    // 期限内の確保がある、デモで登録したユーザーは、確保ごと残す。ほかの操作は消し、確保が片付いたあとの実行で削除する
     public function testRegisteredUserWithPendingPurchaseIsKeptUntilSettled(): void
     {
         $user = $this->createRegisteredUser();
@@ -256,7 +369,7 @@ class DemoResetTest extends TestCase
         Storage::disk('public')->assertMissing($profile_image);
     }
 
-    // 出品に、ほかの人の期限内の確保が付いている登録ユーザーは、出品ごと残す
+    // 出品に、ほかの人の期限内の確保が付いている、デモで登録したユーザーは、出品ごと残す
     public function testRegisteredUserWhoseItemHasPendingPurchaseIsKept(): void
     {
         $user = $this->createRegisteredUser();

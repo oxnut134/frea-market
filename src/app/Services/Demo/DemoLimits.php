@@ -10,23 +10,20 @@ use App\Models\Item;
 use App\Models\User;
 
 // デモ環境（DEMO_MODE=true）で、誰でも登録できるようにしたことへの歯止め。
-// 「新しく登録したユーザー」の定義と、登録の回数・人数・出品数の上限をまとめる
+// 「デモで登録したユーザー」の定義と、登録の回数・人数・出品数の上限をまとめる
 class DemoLimits
 {
-    // デモ用アカウントとシードのユーザーのアドレス。これ以外が「新しく登録したユーザー」
-    public static function knownEmails(): array
-    {
-        return array_map([Str::class, 'lower'], array_merge([config('demo.email')], config('demo.seeded_emails')));
-    }
-
+    // デモで登録したユーザー：デモ環境での会員登録のときに印（users.registered_in_demo）を付けたもの。
+    // 毎日の初期化で削除する対象なので、メールアドレスなどからの推測では決めない。
+    // 印がなければ対象にしない（シーディングの失敗や設定の誤りがあっても、誰も消えない側に倒す）
     public static function registeredUsers()
     {
-        return User::whereNotIn('email', self::knownEmails());
+        return User::where('registered_in_demo', true);
     }
 
     public static function isRegisteredUser(User $user): bool
     {
-        return ! in_array(Str::lower($user->email), self::knownEmails(), true);
+        return $user->registered_in_demo === true;
     }
 
     // 利用者の IP アドレス。公開環境の手前にはプロキシがあり、$request->ip() が利用者のものとは限らないので、
@@ -57,7 +54,7 @@ class DemoLimits
         RateLimiter::hit(self::registrationKey($request), 3600);
     }
 
-    // 出品数の上限（画像でディスクが埋まるのを防ぐ）。シードのユーザーには上限がない（null）
+    // 出品数の上限（画像でディスクが埋まるのを防ぐ）。それ以外のユーザーには上限がない（null）
     public static function itemLimitFor(User $user): ?int
     {
         if (Str::lower($user->email) === Str::lower(config('demo.email'))) {

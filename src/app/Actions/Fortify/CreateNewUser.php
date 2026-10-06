@@ -46,9 +46,10 @@ class CreateNewUser implements CreatesNewUsers
         ]);
 
         // デモ環境ではメールを送らないので、登録と同時に認証済みにする。
-        // 認証メールは未認証のユーザーにだけ送られるので、これで作られなくなる
+        // 認証メールは未認証のユーザーにだけ送られるので、これで作られなくなる。
+        // あわせて「デモで登録した」印を付ける。毎日の初期化で削除するのは、この印があるユーザーだけ
         if (config('demo.enabled')) {
-            $user->forceFill(['email_verified_at' => now()])->save();
+            $user->forceFill(['email_verified_at' => now(), 'registered_in_demo' => true])->save();
             DemoLimits::recordRegistration(request());
         }
 
