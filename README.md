@@ -14,8 +14,9 @@ COACHTECH の模擬案件として仕様書に沿って作ったものを土台�
 4. 決済が終わると、商品に「SOLD」と表示されます。
 
 - 実際の請求は発生しません（Stripe のテストモードです）。
-- デモのデータは毎日 4:00 に初期化されます。購入した商品は、販売中に戻ります。
-- このデモ環境ではメールを送信しないため、新規登録しても認証を完了できません。ログインできるのはデモアカウントだけです。
+- デモのデータは毎日 4:00 に初期化されます。購入した商品は販売中に戻り、会員登録したアカウントは削除されます。
+- 会員登録して試すこともできます。認証メールは送信しないので、架空のメールアドレス（例：yourname@example.com）と、普段使っていないパスワードで登録してください。
+- 購入すると、登録したメールアドレスが Stripe のテスト環境に記録されます。
 - しばらくアクセスがないと、最初の表示に数秒かかります（データベースが停止状態から起動するためです）。
 - コンビニ払いを試す場合の入力は、[テスト用の入力](#テスト用の入力)を見てください。
 
@@ -102,8 +103,11 @@ flowchart LR
 ### デモ環境を用意した
 
 - デモアカウントを 1 つ用意し、ログイン画面のボタンからログインできます。普段と同じログインの処理を通していて、専用の入口は作っていません。
-- デモ環境では、デモアカウント以外はログインできません。
-- デモアカウントの購入・いいね・コメント・出品は、毎日 4:00 とデプロイのたびに初期状態へ戻します。支払い待ちの購入だけは、あとから入金の通知が届くので残します。
+- 会員登録もできます。デモ環境ではメールを送らないので、メール認証を省いてすぐ使えるようにしています。
+- 登録を開放した代わりに、歯止めを入れています。同じ IP アドレスからの登録は 1 時間に 5 回まで、登録できる人数は 100 人まで、出品は 1 アカウント 5 件まで（デモアカウントは 20 件まで）です。
+- シードのユーザー（パスワードがリポジトリで公開されています）は、デモ環境ではログインできません。
+- デモアカウントの購入・いいね・コメント・出品は、毎日 4:00 とデプロイのたびに初期状態へ戻します。デモ環境で登録したアカウントは、データごと削除します。支払い待ちの購入だけは、あとから入金の通知が届くので残します。
+- 削除する対象は、登録のときに付けた印（`users.registered_in_demo`）で決めます。メールアドレスなどからの推測では決めないので、設定を誤っても、印のないユーザーは消えません。
 
 ### 本番で止まりにくいようにした
 
@@ -278,7 +282,7 @@ STRIPE_WEBHOOK_SECRET={Webhook の署名シークレット（whsec_...）}
 
 ### デモ用の表示をローカルで確かめる
 
-`src/.env` に `DEMO_MODE=true` を足すと、ログイン画面に「デモアカウントでログイン」が表示され、デモアカウント以外はログインできなくなります。既定は無効です。
+`src/.env` に `DEMO_MODE=true` を足すと、ログイン画面に「デモアカウントでログイン」が表示され、会員登録でメール認証が省かれ、シードのユーザーはログインできなくなります。既定は無効です。
 
 ## テスト
 
@@ -289,7 +293,7 @@ docker compose exec pgsql createdb -U laravel_user frea_test
 docker compose exec php php artisan test
 ```
 
-192 件あります（ほかに、仕様の確認待ちで skip にしているものが 1 件）。決済のテストは Stripe に接続せず、偽の HTTP クライアントと、署名を付けた Webhook を使います。
+224 件あります（ほかに、仕様の確認待ちで skip にしているものが 1 件）。決済のテストは Stripe に接続せず、偽の HTTP クライアントと、署名を付けた Webhook を使います。
 
 <details>
 <summary>COACHTECH のテストケース一覧との対応</summary>
@@ -321,8 +325,8 @@ docker compose exec php php artisan test
 | 決済と Webhook | `CheckoutReservationTest`、`StripeWebhookEndpointTest`、`PurchaseCompletePageTest`、`ItemSaleStatusTest`、`ExhibitPriceValidationTest`、`CashierRemovedTest`、`StripeCheckoutServiceBindingTest`、`tests/Unit/Services/Stripe/` の 3 ファイル |
 | 認証 | `EmailVerificationTest`、`EnsureProfileExistsTest`、`RegisterEmailControlCharactersTest` |
 | 画像 | `ImageUploadTest`、`ImageUrlTest`、`SeedImagesTest` |
-| デモ | `DemoNoticeTest`、`DemoLoginRestrictionTest`、`DemoResetTest` |
-| 本番の設定 | `DatabaseSessionTest`、`DatabaseSslModeTest`、`RobotsTxtTest`、`StylesheetCharsetAndVersionTest` |
+| デモ | `DemoNoticeTest`、`DemoRegistrationTest`、`DemoLoginRestrictionTest`、`DemoLimitsTest`、`DemoResetTest` |
+| 本番の設定 | `DatabaseSessionTest`、`DatabaseSslModeTest`、`QueryExceptionLoggingTest`、`RobotsTxtTest`、`StylesheetCharsetAndVersionTest` |
 
 ## 本番の構成
 
@@ -364,7 +368,7 @@ Stripe ダッシュボードで、`https://{公開 URL}/stripe/webhook` を登�
 
 ### デモの初期化
 
-`php artisan demo:reset` が、デモアカウントの購入・いいね・コメント・出品・プロフィールを初期状態に戻します。デプロイのたびと、毎日 4:00（日本時間）に実行されます。実行すると、ログに `Demo data was reset` と出ます。
+`php artisan demo:reset` が、デモアカウントの購入・いいね・コメント・出品・プロフィールを初期状態に戻し、デモ環境で登録したアカウントをデータごと削除します。デプロイのたびと、毎日 4:00（日本時間）に実行されます。実行すると、ログに `Demo data was reset` と出ます。`DEMO_MODE` が無効のときは、何もしません。
 
 ### 無料枠と制約
 
@@ -375,7 +379,7 @@ Stripe ダッシュボードで、`https://{公開 URL}/stripe/webhook` を登�
 ## 既知の点
 
 - **Laravel 8 はサポートが終了しています。** メジャーアップグレードは、今回の範囲外としました。下の 5 件の勧告と、放棄されたパッケージ 2 つは、アップグレードで解消します。
-- **本番ではメールを送信していません**（`MAIL_MAILER=log`）。新規登録の認証を完了できないので、デモアカウントを用意しています。
+- **本番ではメールを送信していません**（`MAIL_MAILER=log`）。そのため、デモ環境では会員登録のメール認証を省いています。メール認証そのものは実装してあり、ローカルでは MailHog で確かめられます。
 - 出品を取り消す機能、パスワードを変更する機能はありません。
 - 画像を保存したあとに DB への登録が失敗すると、画像のファイルが残ります。
 - 存在しない商品の詳細画面を開くと、404 ではなく 500 になります。
