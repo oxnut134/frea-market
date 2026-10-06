@@ -229,7 +229,7 @@ class PurchaseController extends Controller
     {
         //dd($request);
 
-        $item = Item::find($item_id);
+        $item = Item::findOrFail($item_id);
 
         $login_user_id = Auth::id(); // 1は本番ではAuth::id();
         $profile = Profile::where('user_id', $login_user_id)->first();
@@ -252,6 +252,9 @@ class PurchaseController extends Controller
     }
     public function returnPurchase(RedirectRequest $request)
     {
+        // 存在しない商品は 404（数値でない ID は、DB に問い合わせる前に弾く）
+        abort_unless(ctype_digit((string) $request->item_id), 404);
+        $item = Item::findOrFail($request->item_id);
 
         $profile = Profile::where('user_id', Auth::id())->first();
 
@@ -259,9 +262,6 @@ class PurchaseController extends Controller
         $profile->address = $request->address;
         $profile->building = $request->building;
         $profile->save();
-
-        $item = Item::find($request->item_id);
-
 
         return redirect()->route('purchase', ['item_id' => $item->id]);
     }

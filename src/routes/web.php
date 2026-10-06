@@ -51,7 +51,7 @@ Route::middleware(['auth', 'verified', 'profile.exists'])->group(function () {
     Route::post('/purchase/{item_id}/checkout', [PurchaseController::class, 'checkout'])->whereNumber('item_id')->name('purchase.checkout');
 
     //納品先住所変更
-    Route::get('/purchase/address/{item_id}', [PurchaseController::class, 'redirectAddress']);
+    Route::get('/purchase/address/{item_id}', [PurchaseController::class, 'redirectAddress'])->whereNumber('item_id');
     Route::post('/purchase/address/return', [PurchaseController::class, 'returnPurchase'])->name('purchase.redirect');
 
     //プロフィール（マイページ）
