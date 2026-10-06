@@ -74,12 +74,12 @@
             </div>
             @auth
             <h2>{{ 'コメント(' . $comments . ')'}}</h2>
+            @if($first_comment)
             <div class="detail-form_user_picture_wrapper">
-                <img class="detail-form_user_picture" src="{{ $profile_image_url }}" alt="プロフィール画像">
-                <div class="detail-form_user_name">{{ $user_name }}</div>
+                <img class="detail-form_user_picture" src="{{ $commenter_image_url }}" alt="プロフィール画像">
+                <div class="detail-form_user_name">{{ $commenter_name }}</div>
             </div>
-            @if(isset($first_comment['comment']) )
-            <div class="detail-form_user_comment">{{ $first_comment['comment'] }}</div>
+            <div class="detail-form_user_comment">{{ $first_comment->comment }}</div>
             @endif
             <form action="/item/comment" name="comment" method="post">
                 @csrf

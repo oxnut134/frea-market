@@ -38,4 +38,9 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $casts = [
         'registered_in_demo' => 'boolean',
     ];
+
+    public function profile()
+    {
+        return $this->hasOne(Profile::class);
+    }
 }

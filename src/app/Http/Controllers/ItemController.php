@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\Item;
 use App\Models\Like;
 use App\Models\Comment;
-use App\Models\User;
 use App\Models\Profile;
 use App\Models\Category;
 use App\Models\ItemCategory;
@@ -83,50 +82,36 @@ class ItemController extends Controller
         //コメント数取得
 
         $comment_count = Comment::where('item_id', $id)->count();
-        $first_comment = Comment::where('item_id', $id)->orderBy('created_at', 'desc')->first();
+        // 最新の 1 件（同じ時刻なら、あとから書かれたもの）
+        $first_comment = Comment::with('user.profile')
+            ->where('item_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
+            ->first();
 
-        $auth_id = Auth::id();
-        $user = User::find($auth_id);
-        $profile = Profile::where('user_id', $auth_id)->first();
+        // 最新のコメントを書いた人の名前と画像（見ている本人のものではない）。
+        // プロフィールがなければ、既定のアイコン
+        $commenter = $first_comment ? $first_comment->user : null;
 
         //中間テーブル経由で関係するカテゴリーをすべて取得
         //          Itemモデルの当該レコード->モデルItemのﾘﾚｰｼｮﾝMethod名
         $categories = $item->category;
         //dd($categories);
 
-        $auth_id = Auth::id();
-        if ($auth_id != NULL) {
-            $user = User::find($auth_id);
-            $profile = Profile::where('user_id', $auth_id)->first();
-            //dd($first_comment);
-            return view(
-                'detail',
+        return view(
+            'detail',
 
-                [
-                    'item' => $item,
-                    'likes' => $like_count,
-                    'my_like' => $my_like,
-                    'comments' => $comment_count,
-                    'first_comment' => $first_comment,
-                    'user_name' => $user->name,
-                    'profile_image_url' => $profile->image_url,
-                    'categories' => $categories //配列渡し
-                ]
-            );
-        } else {
-            return view(
-                'detail',
-
-                [
-                    'item' => $item,
-                    'likes' => $like_count,
-                    'my_like' => $my_like,
-                    'comments' => $comment_count,
-                    'first_comment' => $first_comment,
-                    'categories' => $categories //配列渡し
-                ]
-            );
-        }
+            [
+                'item' => $item,
+                'likes' => $like_count,
+                'my_like' => $my_like,
+                'comments' => $comment_count,
+                'first_comment' => $first_comment,
+                'commenter_name' => $commenter ? $commenter->name : null,
+                'commenter_image_url' => $commenter ? ($commenter->profile ?? new Profile)->image_url : null,
+                'categories' => $categories //配列渡し
+            ]
+        );
     }
 
     public function exhibitItems()
