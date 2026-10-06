@@ -18,7 +18,7 @@
 .demo-login_button:hover {
     background-color: #eee;
 }
-/* 会員登録・認証待ちの画面の説明 */
+/* 会員登録画面の説明 */
 .demo-notice {
     width: 60%;
     margin: 0 auto 3vh;
@@ -36,7 +36,4 @@
 }
 .demo-notice_text:last-child {
     margin-bottom: 0;
-}
-.demo-notice_link {
-    color: #06c;
 }

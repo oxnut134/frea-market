@@ -33,10 +33,18 @@ class CreateNewUser implements CreatesNewUsers
             'password' => $this->passwordRules(),
         ])->validate();
 
-        return User::create([
+        $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => Hash::make($input['password']),
         ]);
+
+        // デモ環境ではメールを送らないので、登録と同時に認証済みにする。
+        // 認証メールは未認証のユーザーにだけ送られるので、これで作られなくなる
+        if (config('demo.enabled')) {
+            $user->forceFill(['email_verified_at' => now()])->save();
+        }
+
+        return $user;
     }
 }

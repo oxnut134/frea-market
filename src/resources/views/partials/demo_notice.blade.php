@@ -1,4 +1,4 @@
-{{-- デモ用アカウントの案内（DEMO_MODE=true のときだけ表示）。$place：login / register / verify --}}
+{{-- デモ環境の案内（DEMO_MODE=true のときだけ表示）。$place：login / register --}}
 @if (config('demo.enabled'))
 <link rel="stylesheet" href="@versioned('css/demo-notice.css')">
 @if ($place === 'login')
@@ -8,10 +8,8 @@
 <script src="@versioned('js/demo-login.js')" defer></script>
 @else
 <div class="demo-notice">
-    <p class="demo-notice_text">このデモ環境ではメールを送信しないため、新規登録しても認証を完了できません。デモ用アカウントをご利用ください。</p>
-    @if ($place === 'register')
-    <a class="demo-notice_link" href="/login">ログイン画面のデモアカウントでログインする</a>
-    @endif
+    <p class="demo-notice_text">このデモ環境では、架空のメールアドレス（例：yourname@example.com）と、普段使っていないパスワードで登録してください。</p>
+    <p class="demo-notice_text">メールは送信しません。登録したデータは毎日 4:00 に削除されます。</p>
 </div>
 @endif
 @endif

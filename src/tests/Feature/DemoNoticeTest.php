@@ -14,9 +14,8 @@ class DemoNoticeTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const MESSAGE = 'このデモ環境ではメールを送信しないため';
+    private const MESSAGE = 'このデモ環境では、架空のメールアドレス（例：yourname@example.com）と、普段使っていないパスワードで登録してください。';
     private const LOGIN_LABEL = 'デモアカウントでログイン';
-    private const LOGOUT_LABEL = 'ログアウトしてデモ用アカウントでログインする';
 
     // 既定（無効）では、どの画面にも表示しない
     public function testNoticeIsHiddenByDefault(): void
@@ -30,10 +29,6 @@ class DemoNoticeTest extends TestCase
             ->assertDontSee(config('demo.email'))
             ->assertDontSee(config('demo.password'));
         $this->get('/register')->assertStatus(200)->assertDontSee(self::MESSAGE);
-        $this->actingAs(User::factory()->unverified()->create())->get('/email/verify')->assertStatus(200)
-            ->assertDontSee(self::MESSAGE)
-            ->assertDontSee(self::LOGOUT_LABEL)
-            ->assertSee('ログアウト');
     }
 
     // ログイン画面：デモ用アカウントのアドレスとパスワードを持つボタンを 1 つだけ表示する
@@ -54,28 +49,27 @@ class DemoNoticeTest extends TestCase
         $this->assertSame(1, substr_count($response->getContent(), 'js-demo-login'));
     }
 
-    // 会員登録画面：説明とログイン画面へのリンクだけを表示する（ボタンとパスワードは載せない）
-    public function testRegisterPageShowsNoticeWithLinkToLogin(): void
+    // 会員登録画面：架空のアドレスで登録すること、メールを送らないこと、毎日削除されることを案内する
+    public function testRegisterPageShowsHowToRegister(): void
     {
         config(['demo.enabled' => true]);
 
         $this->get('/register')->assertStatus(200)
             ->assertSee(self::MESSAGE)
-            ->assertSee('<a class="demo-notice_link" href="/login">', false)
+            ->assertSee('メールは送信しません。登録したデータは毎日 4:00 に削除されます。')
             ->assertDontSee('js-demo-login')
             ->assertDontSee(config('demo.password'));
     }
 
-    // 認証待ち画面：説明を表示し、ログアウトのボタンの文言を変える
-    public function testVerifyPageShowsNoticeAndLogoutLabel(): void
+    // 認証待ち画面には、デモ用の表示を出さない（デモ環境では登録と同時に認証済みになり、この画面は使わない）
+    public function testVerifyPageHasNoDemoNotice(): void
     {
         config(['demo.enabled' => true]);
 
         $this->actingAs(User::factory()->unverified()->create())->get('/email/verify')->assertStatus(200)
-            ->assertSee(self::MESSAGE)
-            ->assertSee(self::LOGOUT_LABEL)
-            ->assertDontSee('js-demo-login')
-            ->assertDontSee(config('demo.password'));
+            ->assertSee('認証メールを再送する')
+            ->assertDontSee('demo-notice')
+            ->assertDontSee('js-demo-login');
     }
 
     // シードのデモ用アカウント：メール認証済み、プロフィール登録済みで、商品を持たない

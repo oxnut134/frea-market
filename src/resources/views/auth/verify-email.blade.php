@@ -20,7 +20,6 @@
         <div style="display:flex;justify-content:center;">
             <div>
                 <h3>メールを確認していただき認証を完了してください。</h3>
-                @include('partials.demo_notice', ['place' => 'verify'])
                 <div style="display:flex;flex-direction:column;justify-content:center;">
                     <div style="border-radius:5px;padding: 10px 20px; font-size: 16px;background-color:gray;color:#fff;text-decoration:none;display:flex;justify-content:center;">メールにあるボタンをクリックしてください。</div>
                     @if (session('status') == 'verification-link-sent')
@@ -32,7 +31,7 @@
                     </form>
                     <form style="display:flex;justify-content:center;" action="{{ route('logout') }}" method="post">
                         @csrf
-                        <button style="margin-top:2vh;border:none;background-color:#fff;font-size:14px;">{{ config('demo.enabled') ? 'ログアウトしてデモ用アカウントでログインする' : 'ログアウト' }}</button>
+                        <button style="margin-top:2vh;border:none;background-color:#fff;font-size:14px;">ログアウト</button>
                     </form>
                 </div>
             </div>
