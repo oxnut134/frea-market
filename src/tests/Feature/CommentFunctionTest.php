@@ -25,7 +25,6 @@ class CommentFunctionTest extends TestCase
      */
     use RefreshDatabase;
 
-    /*
 //----------------------- 1st method ---------------------------------
 
     public function testCantPostCommentBeforeLogin()
@@ -168,22 +167,25 @@ class CommentFunctionTest extends TestCase
 
         // コメント送信リクエスト
         $response = $this->post("/item/comment", [
-            'content' => 'test',
+            'item_id' => $item->id,
+            'comment' => 'test',
         ]);
 
-        // ステータスコード確認
+        // ステータスコード確認（ログイン画面へ送られる）
         $response->assertStatus(302);
+        $response->assertRedirect('/login');
+        $this->assertGuest();
 
         // コメントのデータベースに保存なしを確認
         $this->assertDatabaseMissing('comments', [
             'item_id' => $item->id,
             'comment' => 'test',
         ]);
+        $this->assertEquals(0, Comment::count());
 
 
                 return;
            }
-*/
     //------------------------- 2 nd method  ---------------------------------
     /*
 
