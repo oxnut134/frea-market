@@ -46,4 +46,8 @@ return [
         'building' => 'zoo',
     ],
 
+    // プロフィール画像の初期値（database/seeders/images の下のパス。画像用のディスクでも同じパスになる）。
+    // 見に来た人が差し替えても、demo:reset でこの画像に戻す
+    'profile_image' => 'profiles/demo.png',
+
 ];

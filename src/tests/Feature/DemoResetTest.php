@@ -180,7 +180,7 @@ class DemoResetTest extends TestCase
         Storage::disk('public')->assertMissing($image);
     }
 
-    // 名前とプロフィールを初期値に戻し、アップロードした画像を消す
+    // 名前とプロフィールを初期値に戻し、アップロードした画像を消す。画像は初期の画像に戻る
     public function testProfileIsRestored(): void
     {
         $image = UploadedFile::fake()->image('me.png')->store('profiles', 'public');
@@ -191,9 +191,49 @@ class DemoResetTest extends TestCase
 
         $this->assertSame(config('demo.name'), $this->demo->fresh()->name);
         $profile = Profile::where('user_id', $this->demo->id)->firstOrFail();
-        $this->assertNull($profile->profile_image);
+        $this->assertSame(config('demo.profile_image'), $profile->profile_image);
         $this->assertSame(config('demo.profile'), $profile->only(['post_code', 'address', 'building']));
         Storage::disk('public')->assertMissing($image);
+        // 初期の画像は、ディスクになければコピーされる
+        Storage::disk('public')->assertExists(config('demo.profile_image'));
+    }
+
+    // 初期の画像のままなら、その画像は消さない（何度実行しても残る）
+    public function testInitialProfileImageIsKept(): void
+    {
+        $this->reset();
+        Storage::disk('public')->put(config('demo.profile_image'), 'marker');
+
+        $this->reset();
+        $this->reset();
+
+        $this->assertSame(config('demo.profile_image'), Profile::where('user_id', $this->demo->id)->value('profile_image'));
+        // コピーし直してもいない
+        $this->assertSame('marker', Storage::disk('public')->get(config('demo.profile_image')));
+    }
+
+    // 画面から画像を差し替えると、初期の画像のファイルは消される。初期化で、ファイルごと元に戻る
+    public function testInitialProfileImageIsRestoredAfterReplacedOnProfilePage(): void
+    {
+        $this->reset();
+        Storage::disk('public')->assertExists(config('demo.profile_image'));
+
+        $this->actingAs($this->demo)->post('/mypage/profile', [
+            'user_name' => config('demo.name'),
+            'post_code' => '555-5555',
+            'address' => 'ueno',
+            'building' => 'zoo',
+            'profile_image' => UploadedFile::fake()->image('me.png'),
+        ])->assertRedirect(route('mypage'));
+        $uploaded = Profile::where('user_id', $this->demo->id)->value('profile_image');
+        $this->assertNotSame(config('demo.profile_image'), $uploaded);
+        Storage::disk('public')->assertMissing(config('demo.profile_image'));
+
+        $this->reset();
+
+        $this->assertSame(config('demo.profile_image'), Profile::where('user_id', $this->demo->id)->value('profile_image'));
+        Storage::disk('public')->assertExists(config('demo.profile_image'));
+        Storage::disk('public')->assertMissing($uploaded);
     }
 
     // シードのユーザーの操作には触らない

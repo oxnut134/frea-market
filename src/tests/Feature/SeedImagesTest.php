@@ -27,18 +27,20 @@ class SeedImagesTest extends TestCase
         $this->seed(DatabaseSeeder::class);
 
         $this->assertCount(10, Storage::disk('public')->files('items'));
-        $this->assertCount(4, Storage::disk('public')->files('profiles'));
+        // シードの 4 人と、デモ用アカウント
+        $this->assertCount(5, Storage::disk('public')->files('profiles'));
 
         // DBのパスが指すファイルがすべて存在する
         foreach (Item::all() as $item) {
             $this->assertStringStartsWith('items/', $item->item_image);
             Storage::disk('public')->assertExists($item->item_image);
         }
-        // デモ用アカウントのプロフィールは画像なし（デフォルトのアイコン）なので除く
-        foreach (Profile::whereNotNull('profile_image')->get() as $profile) {
+        $this->assertSame(0, Profile::whereNull('profile_image')->count());
+        foreach (Profile::all() as $profile) {
             $this->assertStringStartsWith('profiles/', $profile->profile_image);
             Storage::disk('public')->assertExists($profile->profile_image);
         }
+        $this->assertSame(config('demo.profile_image'), Profile::where('user_id', 5)->value('profile_image'));
     }
 
     // ファイル名はURLで問題にならない文字だけを使う

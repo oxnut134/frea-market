@@ -12,12 +12,13 @@ use App\Models\Profile;
 use App\Models\Purchase;
 use App\Models\User;
 use App\Services\Demo\DemoLimits;
+use Database\Seeders\Concerns\SeedsImages;
 
 // デモ環境を初期状態に戻す。
 // 起動時（docker/render/entrypoint.sh）と、毎日 4:00（Console\Kernel）に実行する。
 // デモ環境（DEMO_MODE=true）でだけ動く。
 //
-// - デモ用アカウント（config/demo.php）：購入・いいね・コメント・出品を消し、プロフィールを初期値に戻す
+// - デモ用アカウント（config/demo.php）：購入・いいね・コメント・出品を消し、プロフィール（画像も）を初期値に戻す
 // - デモで登録したユーザー（users.registered_in_demo）：同じものを消したうえで、ユーザーごと削除する
 // - それ以外のユーザー（シードのユーザーなど、印のないユーザー）の操作には触らない
 //
@@ -25,6 +26,8 @@ use App\Services\Demo\DemoLimits;
 // それが付いている出品と、それを持つユーザーも今回は残し、片付いたあとの実行で消す
 class ResetDemoData extends Command
 {
+    use SeedsImages;
+
     protected $signature = 'demo:reset';
 
     protected $description = 'デモ用アカウントの操作を初期状態に戻し、デモで登録したユーザーを削除する';
@@ -68,12 +71,14 @@ class ResetDemoData extends Command
         $kept_items = Item::whereIn('id', $images->keys())->pluck('id');
         $disk->delete($images->except($kept_items->all())->filter()->values()->all());
 
-        // デモ用アカウントのプロフィール：名前と住所を初期値に戻し、アップロードした画像を消す
+        // デモ用アカウントのプロフィール：名前・住所・画像を初期値に戻し、アップロードした画像を消す。
+        // 画像を差し替えると、初期の画像のファイルは「古い画像」として消されているので、なければコピーし直す
         if ($demo) {
             $profile_image = Profile::where('user_id', $demo->id)->value('profile_image');
+            $initial_image = $this->seedImage(config('demo.profile_image'));
             User::where('id', $demo->id)->update(['name' => config('demo.name')]);
-            Profile::updateOrCreate(['user_id' => $demo->id], ['profile_image' => null] + config('demo.profile'));
-            if ($profile_image) {
+            Profile::updateOrCreate(['user_id' => $demo->id], ['profile_image' => $initial_image] + config('demo.profile'));
+            if ($profile_image && $profile_image !== $initial_image) {
                 $disk->delete($profile_image);
             }
         }

@@ -61,11 +61,11 @@ class ProfilesTableSeeder extends Seeder
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
-            // デモ用アカウント。画像は未設定（デフォルトのアイコンを表示）
+            // デモ用アカウント（初期値は config/demo.php）
             [
                 'id' => 5,
                 'user_id' => 5,
-                'profile_image' => null,
+                'profile_image' => $this->seedImage(config('demo.profile_image')),
                 'post_code' => config('demo.profile.post_code'),
                 'address' => config('demo.profile.address'),
                 'building' => config('demo.profile.building'),
