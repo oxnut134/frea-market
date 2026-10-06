@@ -12,7 +12,7 @@ use Laravel\Fortify\Actions\EnsureLoginIsNotThrottled;
 use Laravel\Fortify\Actions\PrepareAuthenticatedSession;
 use Laravel\Fortify\Fortify;
 use App\Actions\Fortify\CreateNewUser;
-use App\Actions\Fortify\RestrictLoginToDemoAccount;
+use App\Actions\Fortify\RejectSeededAccountsInDemoMode;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -40,12 +40,12 @@ class FortifyServiceProvider extends ServiceProvider
             return view('auth.verify-email');
         });
 
-        // ログインの処理。Fortify の標準の並びに、デモ環境での制限（RestrictLoginToDemoAccount）を足したもの
+        // ログインの処理。Fortify の標準の並びに、デモ環境での制限（RejectSeededAccountsInDemoMode）を足したもの
         Fortify::authenticateThrough(function (Request $request) {
             return [
                 config('fortify.limiters.login') ? null : EnsureLoginIsNotThrottled::class,
                 config('fortify.lowercase_usernames') ? CanonicalizeUsername::class : null,
-                RestrictLoginToDemoAccount::class,
+                RejectSeededAccountsInDemoMode::class,
                 AttemptToAuthenticate::class,
                 PrepareAuthenticatedSession::class,
             ];

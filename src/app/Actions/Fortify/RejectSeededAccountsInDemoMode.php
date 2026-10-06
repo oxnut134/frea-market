@@ -6,9 +6,10 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Fortify;
 
-// デモ環境（DEMO_MODE=true）では、デモ用アカウント以外のログインを受け付けない。
+// デモ環境（DEMO_MODE=true）では、シードのユーザー（config('demo.seeded_emails')）のログインを受け付けない。
+// パスワードがリポジトリで公開されているため。デモ用アカウントと、新しく登録したユーザーはログインできる。
 // ログインの処理（FortifyServiceProvider のパイプライン）の中で、パスワードの照合より前に判定する
-class RestrictLoginToDemoAccount
+class RejectSeededAccountsInDemoMode
 {
     public function handle($request, $next)
     {
@@ -17,9 +18,9 @@ class RestrictLoginToDemoAccount
         }
 
         $email = Str::lower((string) $request->input(Fortify::username()));
-        if ($email !== Str::lower(config('demo.email'))) {
+        if (in_array($email, array_map([Str::class, 'lower'], config('demo.seeded_emails')), true)) {
             throw ValidationException::withMessages([
-                Fortify::username() => [trans('auth.demo_only')],
+                Fortify::username() => [trans('auth.demo_unavailable')],
             ]);
         }
 
