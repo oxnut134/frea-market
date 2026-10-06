@@ -26,6 +26,9 @@ class PurchaseController extends Controller
     // PostgreSQL の一意制約違反
     const SQLSTATE_UNIQUE_VIOLATION = '23505';
 
+    // 購入画面で変更した配送先を入れるセッションのキー（この下に item_id ごと）
+    const DELIVERY_ADDRESS_SESSION_KEY = 'delivery_addresses';
+
     public function purchaseItems(Request $request, StripeCheckoutService $stripe, $item_id)
     {
         $item = Item::findOrFail($item_id);
@@ -51,15 +54,15 @@ class PurchaseController extends Controller
             $own_pending = $active;
         }
 
-        $profile = Profile::where('user_id', $login_user_id)->first();
+        $delivery = $this->deliveryAddress($item->id, $login_user_id);
 
         return view(
             'purchase',
             [
                 'item' => $item,
-                'post_code' => $profile->post_code,
-                'address' => $profile->address,
-                'building' => $profile->building,
+                'post_code' => $delivery['post_code'],
+                'address' => $delivery['address'],
+                'building' => $delivery['building'],
                 'payment_methods' => Purchase::PAYMENT_METHOD_LABELS,
                 'own_pending' => $own_pending,
                 'canceled' => $canceled,
@@ -87,11 +90,7 @@ class PurchaseController extends Controller
         $now = now();
 
         // 自分が確保中（期限内）なら、新しく確保せずに続きへ進む
-        $own_pending = Purchase::where('item_id', $item->id)
-            ->where('user_id', $user->id)
-            ->where('status', Purchase::STATUS_PENDING)
-            ->where('expires_at', '>', $now)
-            ->first();
+        $own_pending = $this->ownPendingPurchase($item->id, $user->id, $now);
         if ($own_pending) {
             if ($own_pending->stripe_checkout_url) {
                 return redirect()->away($own_pending->stripe_checkout_url);
@@ -109,7 +108,7 @@ class PurchaseController extends Controller
 
         // 確保する。金額と送付先はリクエストから受け取らず、ここで決める。
         // 期限は仮のもの（Stripe の呼び出しと解除が両方失敗しても、掃除の対象になるように）
-        $profile = Profile::where('user_id', $user->id)->first();
+        $delivery = $this->deliveryAddress($item->id, $user->id);
         $expires_minutes = (int) config('services.stripe.checkout_expires_minutes');
         try {
             $purchase = Purchase::create([
@@ -118,7 +117,7 @@ class PurchaseController extends Controller
                 'status' => Purchase::STATUS_PENDING,
                 'payment_method' => $payment_method,
                 'amount' => $item->price,
-                'delivery_address' => $profile->post_code . $profile->address . $profile->building,
+                'delivery_address' => $delivery['post_code'] . $delivery['address'] . $delivery['building'],
                 'expires_at' => $now->copy()->addMinutes($expires_minutes),
             ]);
         } catch (QueryException $e) {
@@ -173,7 +172,8 @@ class PurchaseController extends Controller
         return redirect()->away($session->url);
     }
 
-    // 決済後に戻ってくる画面。表示するだけで、購入の確定は Webhook で行う
+    // 決済後に戻ってくる画面。表示するだけで、購入の確定は Webhook で行う。
+    // この購入のために変更した配送先は、ここでセッションから消す
     public function complete(Request $request)
     {
         $session_id = $request->query('session_id');
@@ -183,6 +183,9 @@ class PurchaseController extends Controller
             ->where('user_id', Auth::id())
             ->first();
         abort_unless($purchase, 404);
+
+        // 確保時には消さない（キャンセルや決済の開始の失敗でやり直すときに、変更した配送先を使うため）
+        $request->session()->forget(self::DELIVERY_ADDRESS_SESSION_KEY . '.' . $purchase->item_id);
 
         return view('purchase_complete', [
             'purchase' => $purchase,
@@ -232,10 +235,13 @@ class PurchaseController extends Controller
         $item = Item::findOrFail($item_id);
 
         $login_user_id = Auth::id(); // 1は本番ではAuth::id();
-        $profile = Profile::where('user_id', $login_user_id)->first();
-        $post_code = $profile->post_code;
-        $address = $profile->address;
-        $building = $profile->building;
+
+        // 確保中の購入の配送先は変えられない
+        if ($this->ownPendingPurchase($item->id, $login_user_id, now())) {
+            return redirect()->route('purchase', ['item_id' => $item->id]);
+        }
+
+        $delivery = $this->deliveryAddress($item->id, $login_user_id);
         //dd($payment_method);
         //$purchase = Purchase::where('user_id',$login_user_id)->first();
         $email = User::find($login_user_id)->email;
@@ -243,9 +249,9 @@ class PurchaseController extends Controller
             'redirect',
             [
                 'item' => $item,
-                'post_code' => $post_code,
-                'address' => $address,
-                'building' => $building,
+                'post_code' => $delivery['post_code'],
+                'address' => $delivery['address'],
+                'building' => $delivery['building'],
                 'email' => $email,
             ]
         );
@@ -256,13 +262,45 @@ class PurchaseController extends Controller
         abort_unless(ctype_digit((string) $request->item_id), 404);
         $item = Item::findOrFail($request->item_id);
 
-        $profile = Profile::where('user_id', Auth::id())->first();
+        // 確保中の購入の配送先は変えられない
+        if ($this->ownPendingPurchase($item->id, Auth::id(), now())) {
+            return redirect()->route('purchase', ['item_id' => $item->id]);
+        }
 
-        $profile->post_code = $request->post_code;
-        $profile->address = $request->address;
-        $profile->building = $request->building;
-        $profile->save();
+        // プロフィールは書き換えず、この商品の購入にだけ使う
+        $request->session()->put(self::DELIVERY_ADDRESS_SESSION_KEY . '.' . $item->id, [
+            'post_code' => $request->post_code,
+            'address' => $request->address,
+            'building' => $request->building,
+        ]);
 
         return redirect()->route('purchase', ['item_id' => $item->id]);
+    }
+
+    // 自分の確保中（期限内）の購入
+    private function ownPendingPurchase($item_id, $user_id, $now)
+    {
+        return Purchase::where('item_id', $item_id)
+            ->where('user_id', $user_id)
+            ->where('status', Purchase::STATUS_PENDING)
+            ->where('expires_at', '>', $now)
+            ->first();
+    }
+
+    // 配送先。購入画面で変更していればその住所、していなければプロフィールの住所
+    private function deliveryAddress($item_id, $user_id)
+    {
+        $changed = session(self::DELIVERY_ADDRESS_SESSION_KEY . '.' . $item_id);
+        if (is_array($changed)) {
+            return $changed;
+        }
+
+        $profile = Profile::where('user_id', $user_id)->first();
+
+        return [
+            'post_code' => $profile->post_code,
+            'address' => $profile->address,
+            'building' => $profile->building,
+        ];
     }
 }

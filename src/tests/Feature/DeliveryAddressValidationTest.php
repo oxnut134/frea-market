@@ -39,6 +39,7 @@ class DeliveryAddressValidationTest extends TestCase
 
     private function assertAddressUnchanged(): void
     {
+        $this->assertFalse(session()->has('delivery_addresses'));
         $this->assertSame('111-1111', Profile::where('user_id', $this->buyer->id)->value('post_code'));
     }
 
