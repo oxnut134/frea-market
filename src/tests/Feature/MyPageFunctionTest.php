@@ -60,7 +60,7 @@ class MyPageFunctionTest extends TestCase
             $new_user->save();
         }
 
-        $users = User::all();
+        $users = User::orderBy('id')->get();
         //$users = User::factory()->count(3)->create();
 
         $items = [
@@ -130,8 +130,8 @@ class MyPageFunctionTest extends TestCase
         }
 
 
-        $user = User::first(); // usersテーブルの最初のレコードを取得
-        $item = Item::first(); // itemsテーブルの最初のレコードを取得
+        $user = User::orderBy('id')->first(); // usersテーブルの最初のレコードを取得
+        $item = Item::orderBy('id')->first(); // itemsテーブルの最初のレコードを取得
         //最初のアイテムにいいね
         $likes = [
             'user_id' => $user['id'], // 最初のユーザーのIDをリンク
@@ -142,8 +142,8 @@ class MyPageFunctionTest extends TestCase
 
 
         //コメント
-        $user = User::first(); // usersテーブルの最初のレコードを取得
-        $item = Item::first(); // itemsテーブルの最初のレコードを取得
+        $user = User::orderBy('id')->first(); // usersテーブルの最初のレコードを取得
+        $item = Item::orderBy('id')->first(); // itemsテーブルの最初のレコードを取得
 
         $comments = [
             [
@@ -161,8 +161,8 @@ class MyPageFunctionTest extends TestCase
         Comment::insert($comments); // commentsテーブルに一括保存
 
         //カテゴリー
-        $category = Category::first(); // categoriesテーブルの最初のレコードを取得
-        $item = Item::first(); // itemsテーブルの最初のレコードを取得
+        $category = Category::orderBy('id')->first(); // categoriesテーブルの最初のレコードを取得
+        $item = Item::orderBy('id')->first(); // itemsテーブルの最初のレコードを取得
 
         $item_category = [
             [
@@ -178,7 +178,7 @@ class MyPageFunctionTest extends TestCase
         ItemCategory::insert($item_category); // item_categoryテーブルに一括を保存
 
         //プロファイル登録
-        $user = User::first(); // usersテーブルの最初のレコードを取得
+        $user = User::orderBy('id')->first(); // usersテーブルの最初のレコードを取得
         $profiles = [
             [
                 'user_id' => $user['id'], // ユーザーのIDをリンク
@@ -196,8 +196,8 @@ class MyPageFunctionTest extends TestCase
         $this->actingAs($user);
         $response = $this->get('/');
         $response = $this->get('/mypage');
-        $user = User::first(); // usersテーブルの最初のレコードを取得
-        $item = Item::first(); // itemsテーブルの最初のレコードを取得
+        $user = User::orderBy('id')->first(); // usersテーブルの最初のレコードを取得
+        $item = Item::orderBy('id')->first(); // itemsテーブルの最初のレコードを取得
         $profile = Profile::where('user_id', $user->id)->first();
         $purchase = Purchase::where('user_id', $user->id)
             ->where('item_id', $item->id)

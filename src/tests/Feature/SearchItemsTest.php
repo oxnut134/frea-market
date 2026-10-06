@@ -55,7 +55,7 @@ class SearchItemsTest extends TestCase
             User::create($user);
         }
 
-        $users = User::all();
+        $users = User::orderBy('id')->get();
         //$users = User::factory()->count(3)->create();
 
         $items = [
@@ -102,10 +102,10 @@ class SearchItemsTest extends TestCase
         foreach ($items as $item) {
             (new Item)->forceFill($item)->save(); // item_image は $fillable 対象外のため
         }
-        $user = User::first(); // usersテーブルの最初のレコードを取得
+        $user = User::orderBy('id')->first(); // usersテーブルの最初のレコードを取得
         $user->forceFill(['email_verified_at' => now()])->save(); // メール認証済みにする
         Profile::create(['user_id' => $user->id, 'profile_image' => 'person.png', 'post_code' => '111-1111', 'address' => 'Tokyo']);
-        $item = Item::first(); // itemsテーブルの最初のレコードを取得
+        $item = Item::orderBy('id')->first(); // itemsテーブルの最初のレコードを取得
 
         // /search は auth ミドルウェア配下のためログインする
         $this->actingAs($user);
@@ -164,7 +164,7 @@ class SearchItemsTest extends TestCase
             User::create($user);
         }
 
-        $users = User::all();
+        $users = User::orderBy('id')->get();
         //$users = User::factory()->count(3)->create();
 
         $items = [
@@ -227,8 +227,8 @@ class SearchItemsTest extends TestCase
 
 
 
-        $user = User::first(); // usersテーブルの最初のレコードを取得
-        $item = Item::first(); // itemsテーブルの最初のレコードを取得
+        $user = User::orderBy('id')->first(); // usersテーブルの最初のレコードを取得
+        $item = Item::orderBy('id')->first(); // itemsテーブルの最初のレコードを取得
 
         $likes = [
             [

@@ -114,10 +114,10 @@ class IndexFunctionTest extends TestCase
         }
 
         // 2. ユーザーとしてログイン
-        //$user = User::first();
+        //$user = User::orderBy('id')->first();
         //$this->actingAs($user);
             // 2. ユーザーとしてログイン
-    $user = User::first(); // 最初のユーザーを取得
+    $user = User::orderBy('id')->first(); // 最初のユーザーを取得
     $this->actingAs($user);
 
 
@@ -175,7 +175,7 @@ var_dump("2nd_Method: testGetAllItems");
             $new_user->save();
         }
 
-        $users = User::all();
+        $users = User::orderBy('id')->get();
         //$users = User::factory()->count(3)->create();
 
         $items = [
@@ -291,7 +291,7 @@ var_dump("3rd_Method: testGetAllItems");
             $new_user->save();
         }
 
-        $users = User::all();
+        $users = User::orderBy('id')->get();
         //$users = User::factory()->count(3)->create();
 
         $items = [

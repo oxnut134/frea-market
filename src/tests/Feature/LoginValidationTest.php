@@ -56,7 +56,7 @@ class LoginValidationTest extends TestCase
             'password' => bcrypt('abc12345'),
         ]);
 
-        $user = User::all();
+        $user = User::orderBy('id')->get();
 
         $response = $this->post('/login', [
             'email' => 'phptest@test.com', // 正しいメールアドレス

@@ -61,7 +61,7 @@ class RegisterForExhibitionTest extends TestCase
             $new_user->save();
         }
 
-        $users = User::all();
+        $users = User::orderBy('id')->get();
         //$users = User::factory()->count(3)->create();
 
         $items = [
@@ -131,8 +131,8 @@ class RegisterForExhibitionTest extends TestCase
         }
 
 
-        $user = User::first(); // usersテーブルの最初のレコードを取得
-        $item = Item::first(); // itemsテーブルの最初のレコードを取得
+        $user = User::orderBy('id')->first(); // usersテーブルの最初のレコードを取得
+        $item = Item::orderBy('id')->first(); // itemsテーブルの最初のレコードを取得
         //最初のアイテムにいいね
         $likes = [
             'user_id' => $user['id'], // 最初のユーザーのIDをリンク
@@ -143,8 +143,8 @@ class RegisterForExhibitionTest extends TestCase
 
 
         //コメント
-        $user = User::first(); // usersテーブルの最初のレコードを取得
-        $item = Item::first(); // itemsテーブルの最初のレコードを取得
+        $user = User::orderBy('id')->first(); // usersテーブルの最初のレコードを取得
+        $item = Item::orderBy('id')->first(); // itemsテーブルの最初のレコードを取得
 
         $comments = [
             [
@@ -162,8 +162,8 @@ class RegisterForExhibitionTest extends TestCase
         Comment::insert($comments); // commentsテーブルに一括保存
 
         //カテゴリー
-        $category = Category::first(); // categoriesテーブルの最初のレコードを取得
-        $item = Item::first(); // itemsテーブルの最初のレコードを取得
+        $category = Category::orderBy('id')->first(); // categoriesテーブルの最初のレコードを取得
+        $item = Item::orderBy('id')->first(); // itemsテーブルの最初のレコードを取得
 
         $item_category = [
             [
@@ -179,7 +179,7 @@ class RegisterForExhibitionTest extends TestCase
         ItemCategory::insert($item_category); // item_categoryテーブルに一括を保存
 
         //プロファイル登録
-        $user = User::first(); // usersテーブルの最初のレコードを取得
+        $user = User::orderBy('id')->first(); // usersテーブルの最初のレコードを取得
         $profiles = [
             [
                 'user_id' => $user['id'], // ユーザーのIDをリンク
@@ -197,8 +197,8 @@ class RegisterForExhibitionTest extends TestCase
         /*$this->actingAs($user);//  ログイン
         $response = $this->get('/');
         $response = $this->get('/mypage');
-        $user = User::first(); // usersテーブルの最初のレコードを取得
-        $item = Item::first(); // itemsテーブルの最初のレコードを取得
+        $user = User::orderBy('id')->first(); // usersテーブルの最初のレコードを取得
+        $item = Item::orderBy('id')->first(); // itemsテーブルの最初のレコードを取得
         $profile = Profile::where('user_id', $user->id)->first();
         $purchase = Purchase::where('user_id', $user->id)
             ->where('item_id', $item->id)
@@ -225,15 +225,15 @@ class RegisterForExhibitionTest extends TestCase
 
         Storage::fake('public'); // 画像の保存先をテスト用のディスクに差し替える
 
-        $user = User::first();
+        $user = User::orderBy('id')->first();
         $this->actingAs($user); //  ログイン
         $response = $this->get('/');
         $response->assertStatus(200); //リダイレクト/正常
         $response = $this->get('/sell');
         $response->assertStatus(200); //リダイレクト/正常
-        $item = Item::first(); // itemsテーブルの最初のレコードを取得
+        $item = Item::orderBy('id')->first(); // itemsテーブルの最初のレコードを取得
         $profile = Profile::where('user_id', $user->id)->first();
-        $category = Category::first();
+        $category = Category::orderBy('id')->first();
 
         //入力。登録ボタンクリック
         $response = $this->post('/sell', [

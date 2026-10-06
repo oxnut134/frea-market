@@ -127,7 +127,7 @@ class MylistFunctionTest extends TestCase
 
         $user = User::where('email', 'cat@test.com')->first();
         Profile::create(['user_id' => $user->id, 'profile_image' => 'person.png', 'post_code' => '111-1111', 'address' => 'Tokyo']); // プロフィール登録済みでないと一覧を表示できない
-        $like = Like::first();
+        $like = Like::orderBy('id')->first();
         $response = $this->actingAs($user)->get('/?tab=mylist');
         $response->assertSee(
             Like::where('item_id', $item->id)
