@@ -15,24 +15,31 @@ use App\Models\Profile;
 use App\Models\Purchase;
 use App\Models\User;
 
-// demo:reset（デモ用アカウントの操作を初期状態に戻す）
+// demo:reset（デモ用アカウントの操作を初期状態に戻し、新しく登録したユーザーを削除する）
 class DemoResetTest extends TestCase
 {
     use RefreshDatabase;
 
     private $demo;
-    private $seller;
-    private $item;
+    private $seller; // シードのユーザー（Cat）。初期化の対象外
+    private $item;   // Cat の出品
 
     protected function setUp(): void
     {
         parent::setUp();
 
         Storage::fake('public');
+        config(['demo.enabled' => true]);
 
         $this->demo = $this->createUser(['name' => config('demo.name'), 'email' => config('demo.email')], config('demo.profile'));
-        $this->seller = $this->createUser();
+        $this->seller = $this->createUser(['email' => 'cat@test.com']);
         $this->item = $this->createItem($this->seller);
+    }
+
+    // 新しく登録したユーザー（シードにいないアドレス）
+    private function createRegisteredUser(array $user = []): User
+    {
+        return $this->createUser(array_merge(['email' => 'yourname@example.com'], $user));
     }
 
     private function createUser(array $user = [], array $profile = []): User
@@ -160,10 +167,10 @@ class DemoResetTest extends TestCase
         Storage::disk('public')->assertMissing($image);
     }
 
-    // デモ用アカウント以外のユーザーの操作には触らない
-    public function testOtherUsersDataIsKept(): void
+    // シードのユーザーの操作には触らない
+    public function testSeededUsersDataIsKept(): void
     {
-        $other = $this->createUser(['name' => 'other']);
+        $other = $this->createUser(['name' => 'other', 'email' => 'dog@test.com']);
         $image = UploadedFile::fake()->image('other.png')->store('profiles', 'public');
         Profile::where('user_id', $other->id)->update(['profile_image' => $image]);
         $second = $this->createItem($this->seller);
@@ -181,6 +188,125 @@ class DemoResetTest extends TestCase
         $this->assertSame('other', $other->fresh()->name);
         $this->assertSame($image, Profile::where('user_id', $other->id)->value('profile_image'));
         Storage::disk('public')->assertExists($image);
+    }
+
+    // 新しく登録したユーザーは、購入・いいね・コメント・出品・プロフィール・画像・セッションごと削除する
+    public function testRegisteredUserIsDeletedWithEverything(): void
+    {
+        $user = $this->createRegisteredUser();
+        $profile_image = UploadedFile::fake()->image('me.png')->store('profiles', 'public');
+        Profile::where('user_id', $user->id)->update(['profile_image' => $profile_image]);
+        $item_image = UploadedFile::fake()->image('bag.jpg')->store('items', 'public');
+        $exhibited = $this->createItem($user, ['item_image' => $item_image]);
+        Purchase::factory()->create(['user_id' => $user->id, 'item_id' => $this->item->id]);
+        Like::create(['user_id' => $user->id, 'item_id' => $this->item->id]);
+        $this->addComment($user, $this->item);
+        DB::table('sessions')->insert([
+            ['id' => 'registered-session', 'user_id' => $user->id, 'payload' => '', 'last_activity' => time()],
+            ['id' => 'seller-session', 'user_id' => $this->seller->id, 'payload' => '', 'last_activity' => time()],
+        ]);
+
+        $this->reset();
+
+        $this->assertNull(User::find($user->id));
+        $this->assertSame(0, Profile::where('user_id', $user->id)->count());
+        $this->assertNull(Item::find($exhibited->id));
+        $this->assertSame(0, Purchase::count());
+        $this->assertSame(0, Like::count());
+        $this->assertSame(0, Comment::count());
+        Storage::disk('public')->assertMissing($profile_image);
+        Storage::disk('public')->assertMissing($item_image);
+        $this->assertSame(['seller-session'], DB::table('sessions')->pluck('id')->all());
+        // 購入が消えたので、商品は販売中に戻る
+        $this->assertSame('on_sale', $this->item->fresh()->sale_status);
+    }
+
+    // メール認証が済んでいない登録（以前の、認証待ちで止まったユーザー）も削除する
+    public function testUnverifiedRegisteredUserIsDeleted(): void
+    {
+        $user = User::factory()->unverified()->create(['email' => 'stuck@example.com']);
+
+        $this->reset();
+
+        $this->assertNull(User::find($user->id));
+    }
+
+    // 期限内の確保がある登録ユーザーは、確保ごと残す。ほかの操作は消し、確保が片付いたあとの実行で削除する
+    public function testRegisteredUserWithPendingPurchaseIsKeptUntilSettled(): void
+    {
+        $user = $this->createRegisteredUser();
+        $profile_image = UploadedFile::fake()->image('me.png')->store('profiles', 'public');
+        Profile::where('user_id', $user->id)->update(['profile_image' => $profile_image]);
+        $waiting = Purchase::factory()->pending()->create(['user_id' => $user->id, 'item_id' => $this->item->id]);
+        Like::create(['user_id' => $user->id, 'item_id' => $this->item->id]);
+
+        $this->reset();
+
+        $this->assertNotNull(User::find($user->id));
+        $this->assertNotNull(Purchase::find($waiting->id));
+        $this->assertSame(1, Profile::where('user_id', $user->id)->count());
+        Storage::disk('public')->assertExists($profile_image);
+        $this->assertSame(0, Like::count());
+
+        $waiting->update(['status' => Purchase::STATUS_PAID, 'paid_at' => now()]);
+        $this->reset();
+
+        $this->assertNull(User::find($user->id));
+        $this->assertSame(0, Purchase::count());
+        Storage::disk('public')->assertMissing($profile_image);
+    }
+
+    // 出品に、ほかの人の期限内の確保が付いている登録ユーザーは、出品ごと残す
+    public function testRegisteredUserWhoseItemHasPendingPurchaseIsKept(): void
+    {
+        $user = $this->createRegisteredUser();
+        $item_image = UploadedFile::fake()->image('bag.jpg')->store('items', 'public');
+        $exhibited = $this->createItem($user, ['item_image' => $item_image]);
+        $waiting = Purchase::factory()->pending()->create(['user_id' => $this->demo->id, 'item_id' => $exhibited->id]);
+
+        $this->reset();
+
+        $this->assertNotNull(User::find($user->id));
+        $this->assertNotNull(Item::find($exhibited->id));
+        $this->assertNotNull(Purchase::find($waiting->id));
+        Storage::disk('public')->assertExists($item_image);
+
+        $waiting->update(['status' => Purchase::STATUS_EXPIRED]);
+        $this->reset();
+
+        $this->assertNull(User::find($user->id));
+        $this->assertNull(Item::find($exhibited->id));
+        Storage::disk('public')->assertMissing($item_image);
+    }
+
+    // デモ用アカウントとシードのユーザーは、ユーザーとしては削除しない
+    public function testDemoAndSeededUsersAreNotDeleted(): void
+    {
+        foreach (array_slice(config('demo.seeded_emails'), 1) as $email) {
+            $this->createUser(['email' => $email]);
+        }
+        $this->createRegisteredUser();
+
+        $this->reset();
+
+        $expected = array_merge(config('demo.seeded_emails'), [config('demo.email')]);
+        sort($expected);
+        $this->assertSame($expected, User::orderBy('email')->pluck('email')->all());
+    }
+
+    // デモ環境でなければ、何も消さない（通常の環境で、登録したユーザーを消さないように）
+    public function testNothingIsResetWhenDemoModeIsOff(): void
+    {
+        config(['demo.enabled' => false]);
+        $user = $this->createRegisteredUser();
+        Like::create(['user_id' => $this->demo->id, 'item_id' => $this->item->id]);
+        $this->demo->update(['name' => 'changed']);
+
+        $this->reset();
+
+        $this->assertNotNull(User::find($user->id));
+        $this->assertSame(1, Like::count());
+        $this->assertSame('changed', $this->demo->fresh()->name);
     }
 
     // 続けて実行しても、デモ用アカウントがいなくても、エラーにならない
