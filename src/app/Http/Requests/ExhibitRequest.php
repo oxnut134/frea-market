@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Services\Demo\DemoLimits;
 
 class ExhibitRequest extends FormRequest
 {
@@ -36,6 +37,16 @@ class ExhibitRequest extends FormRequest
              'price' => ['required','integer','min:120'],
         ];
     }
+    // デモ環境では、デモ用アカウントと新しく登録したユーザーの出品数に上限を設ける（画像でディスクが埋まるのを防ぐ）
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            if (config('demo.enabled') && DemoLimits::hasReachedItemLimit($this->user())) {
+                $validator->errors()->add('item_image', trans('demo.item_limit', ['max' => DemoLimits::itemLimitFor($this->user())]));
+            }
+        });
+    }
+
     public function messages()
     {
 

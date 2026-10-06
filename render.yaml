@@ -67,6 +67,10 @@ services:
         value: log
       - key: DEMO_MODE
         value: "true"
+      # The visitor's address for the registration rate limit. Behind Render's
+      # proxy, X-Forwarded-For ends with the proxy's own address.
+      - key: DEMO_CLIENT_IP_HEADER
+        value: CF-Connecting-IP
       - key: STRIPE_PUBLIC_KEY
         sync: false
       - key: STRIPE_SECRET_KEY

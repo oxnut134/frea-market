@@ -11,6 +11,7 @@ use App\Models\Like;
 use App\Models\Profile;
 use App\Models\Purchase;
 use App\Models\User;
+use App\Services\Demo\DemoLimits;
 
 // デモ環境を初期状態に戻す。
 // 起動時（docker/render/entrypoint.sh）と、毎日 4:00（Console\Kernel）に実行する。
@@ -42,7 +43,7 @@ class ResetDemoData extends Command
 
         $demo = User::where('email', config('demo.email'))->first();
         // 新しく登録したユーザー：デモ用アカウントでも、シードのユーザーでもないもの
-        $registered = User::whereNotIn('email', array_merge([config('demo.email')], config('demo.seeded_emails')))->pluck('id');
+        $registered = DemoLimits::registeredUsers()->pluck('id');
         $targets = $registered->merge($demo ? [$demo->id] : []);
 
         // 期限内の確保（支払い待ち）

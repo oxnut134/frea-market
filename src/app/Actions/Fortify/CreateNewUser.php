@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
+use App\Services\Demo\DemoLimits;
 
 class CreateNewUser implements CreatesNewUsers
 {
@@ -19,6 +20,11 @@ class CreateNewUser implements CreatesNewUsers
      */
     public function create(array $input): User
     {
+        // デモ環境ではメール認証を省くので、登録の回数と人数に上限を設ける
+        if (config('demo.enabled')) {
+            DemoLimits::ensureCanRegister(request());
+        }
+
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
             'email' => [
@@ -43,6 +49,7 @@ class CreateNewUser implements CreatesNewUsers
         // 認証メールは未認証のユーザーにだけ送られるので、これで作られなくなる
         if (config('demo.enabled')) {
             $user->forceFill(['email_verified_at' => now()])->save();
+            DemoLimits::recordRegistration(request());
         }
 
         return $user;
