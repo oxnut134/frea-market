@@ -23,6 +23,8 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
   - `MAIL_MAILER=log`、`DEMO_MODE=true`、`DEMO_CLIENT_IP_HEADER=CF-Connecting-IP`、`SESSION_DRIVER=database`、`LOG_CHANNEL=stderr`、`DB_SSLMODE=require`
   - Markdown だけの push ではデプロイされない（ビルドフィルター）
 - 本番用のイメージの確認：ローカルで `docker build` して、使い捨ての `postgres:15` と空のボリューム（`/var/www/storage/app/public`）を別のネットワークに立てて起動する。開発用の DB には触れない。`render.yaml`、`entrypoint.sh`、nginx・php-fpm・supervisord の設定はテストで確かめられないので、変えたらこの方法で確かめる
+  - DB は SSL ありで立て、`DB_SSLMODE=require` でつなぐ（`postgres:15` の中で `openssl` で自己署名の証明書を作り、`-c ssl=on -c ssl_cert_file=... -c ssl_key_file=...` で起動する）— 本番の Neon は SSL 必須で、SSL なしでは、スケジューラーが DB につなげない不具合を再現できなかったため
+  - スケジュールのジョブは、4:00 を待たずに `php artisan schedule:test` で実行できる。スケジューラーと同じ条件にするには、www-data で、動いているスケジューラーの環境（`/proc/{pid}/environ`）を使う。ほかのユーザーのプロセスの環境は root でも読めないので、www-data として読む
 
 ## 作業ルール
 
@@ -190,6 +192,10 @@ README には載せない。ファイル名を残してきたのは、この対�
   - 出力は件数だけ（`Demo data was reset: {...,"users":n}`）。メールアドレスは出さない
 - スケジュールは `$schedule->call()` で登録する — `$schedule->command()` は別プロセスで実行して出力を `/dev/null` に捨てるので、実行結果がログに残らないため。結果の 1 行は標準出力に出し、`LOG_LEVEL` に関係なく Render のログで確かめられる
 - スケジューラーは `docker/render/scheduler.sh`（supervisord から www-data で起動。1 分ごとに `schedule:run`）— `schedule:work` は毎分「No scheduled commands are ready to run.」を出してログを埋めるため。その 1 行だけを落とし、ほかの出力とエラーは通す。`schedule:run -q` は、中で呼ぶコマンドの出力まで消えるので使わない
+- スケジューラーには `HOME` と `USER` も指定する（`supervisord.conf` の `environment=HOME="/var/www",USER="www-data"`）— supervisord の `user=` は uid を変えるだけで、`HOME` は root の `/root` のまま引き継がれる。SSL で DB につなぐとき、libpq は `$HOME/.postgresql/postgresql.crt` を探し、www-data は `/root` を読めないので、接続に失敗する（`could not open certificate file ... Permission denied`）。2026-10-07 の 4:00 の初期化が、これで失敗した
+  - 起動時の初期化は root で動くので通る。Web も動く — php-fpm は、ワーカーの `HOME` を実行ユーザーのホーム（`/var/www`）に設定し直すため（環境変数は引き継いでいる。ベースイメージの `docker.conf` が `clear_env = no`）
+  - ジョブが動くと、ログに `[日時] Running scheduled command: demo:reset` と `Demo data was reset: {...}` の 2 行が出る。初期化の中で例外が起きると、1 行目のあとにエラーのログが出る。supervisord 自身の行は UTC（コンテナの OS は UTC。アプリと PHP は Asia/Tokyo）
+  - `supervisorctl` は使えない（設定に制御用のソケットがない）。プロセスは `/proc` で見る
 - `PurchasesTableSeeder` は `DatabaseSeeder` から呼ばない — ID 1 の購入を上書きするので、利用者の購入を壊すか、部分ユニークインデックスに弾かれてシーディングが失敗するため
 - 購入のとき、ユーザーのメールアドレスを `customer_email` として Stripe に渡している（デモ環境でもそのまま）。本物のアドレスで登録して購入すると、Stripe のテスト環境に記録される。README に書いてある
 
@@ -228,7 +234,8 @@ README には載せない。ファイル名を残してきたのは、この対�
 - 次：デプロイ時のログの「CRIT unknown problem killing scheduler: PermissionError」の調査と修正（supervisord がスケジューラーのプロセスを止めるときのエラー。原因は未調査）
 - 次：本番での確認
   - 登録の回数制限が利用者ごとに数えられているか — 同じ回線から 6 回目が弾かれたあと、別の回線（スマートフォンの回線など）から登録できること。別の回線でも弾かれるなら、`CF-Connecting-IP` が届いていない
-  - 翌朝 4:00 過ぎのログに `Demo data was reset` が出ること（デモで登録したユーザーが消えること）
+  - 4:00 の初期化が通ること — 2026-10-07 は DB への接続で失敗した（スケジューラーの `HOME`。修正済み）。翌朝 4:00（日本時間。UTC では前日の 19:00）のログに `Running scheduled command: demo:reset` と `Demo data was reset` が出て、デモで登録したユーザーが消えること
+    - 4:00 を待たずに確かめる（Render のシェルで。`runuser` が使えるかは未確認）：スケジューラーの環境は `runuser -u www-data -- sh -c 'for d in /proc/[0-9]*; do grep -q scheduler.sh $d/cmdline 2>/dev/null && tr "\0" "\n" < $d/environ | grep -E "^(HOME|USER)="; done'`。ジョブの実行は `cd /var/www && runuser -u www-data -- env HOME=/var/www php artisan schedule:test`（実際に初期化される）
   - Neon の使用量を公開から 1 週間見る（目安は 1 日あたり約 3.3 CU 時間まで）。Neon がアクセスのない間に眠ること。多ければ、セッションをファイルにして永続ディスクに置く — 今のマウント先（`storage/app/public`）は外から見えるので、マウント先を `storage/app` に変えて、公開しないフォルダに置く必要がある
   - 再デプロイ後に、アップロードした画像とログインが残ること
   - 本番でのコンビニ払い（`basil` で届く `async_payment_succeeded` など）
@@ -239,6 +246,7 @@ README には載せない。ファイル名を残してきたのは、この対�
 - 仕上げ：`ProfileRequest` と `ProfileFirstRequest` の郵便番号の正規表現の `$` を `\z` にする（`$` は末尾の改行を通す。`RedirectRequest` は修正済み）— `TrimStrings` が先に改行を取り除くので、実害はない
 - 仕上げ：テストの並び順への依存をまとめて直す — 並び順なしの `first()` / `all()` が 7 ファイルに残っている（`CommentFunctionTest`、`RegisterForExhibitionTest`、`MyPageFunctionTest`、`MyProfileDisplayedTest`、`SearchItemsTest`、`IndexFunctionTest`、`LoginValidationTest`）。テスト中に VACUUM が走ると ID 順に返らず、まれに失敗する（`MylistFunctionTest` と `ShowItemDetailTest` で発生し、`orderBy('id')` で修正済み。テストを足すと、テーブルの中の並びが変わって表に出ることがある）
 - Laravel のメジャーアップグレード（未定）：残る 5 件の勧告と、放棄されたパッケージ 2 つが解消する
+- 検討：4:00 の 1 分を逃すと、翌日まで初期化されない（その時刻の再起動や、一時的な接続の失敗など）。今は、次のデプロイか翌日の 4:00 で片付く。直すなら、時刻を変えてもう一度実行する（初期化は何度実行してもよい）か、前回の実行時刻を持って遅れを取り戻す
 - 検討：未ログインで `/frea` を開いたときの動きの確認（`auth` の外にあり、`ItemController::index` を呼ぶ。一覧が出るなら、仕様の抜け道）
 - 確認待ち：`/search` の要ログインが仕様どおりか（今は触らない）
 - 確認待ち：商品一覧（`index`）で自分の出品を除外するか（今は触らない。`IndexFunctionTest::testWithoutMyExhibition` は skip）
@@ -258,6 +266,6 @@ README には載せない。ファイル名を残してきたのは、この対�
 - いいね：`likes_count` の廃止、POST / DELETE と `insertOrIgnore`、自分の状態でのアイコン表示と連打対策（`like.js`）、`LikeFunctionTest` の書き直し
 - 環境：作業フォルダを WSL2 に移行（Windows のマウント越しだと 1 リクエストに約 1 秒かかったため）
 - 不要ファイルの整理：Git に入っていた MySQL のデータフォルダ（`docker/mysql/data/`）の追跡除外、入れ子のリポジトリ・CSS のバックアップ・画像の複製などの削除、`.dockerignore`
-- デモ：デモ用アカウントとログイン画面のボタン、会員登録の開放（メール認証の省略、「デモで登録した」印、登録と出品の上限）、シードのユーザーのログイン拒否、毎日 4:00 とデプロイ時の初期化（`demo:reset`）
+- デモ：デモ用アカウントとログイン画面のボタン、会員登録の開放（メール認証の省略、「デモで登録した」印、登録と出品の上限）、シードのユーザーのログイン拒否、毎日 4:00 とデプロイ時の初期化（`demo:reset`）、スケジューラーの `HOME` の修正（4:00 の初期化が DB につなげなかった）
 - 配送先：購入画面で変更した住所を、プロフィールではなくセッションに商品ごとに持つ（その購入にだけ使う）、変更画面の入力の検証、入力エラー時に入力した値を残す
 - デプロイ：Render（有料）と Neon（無料）に公開。起動スクリプトの修正、`sessions` テーブル、`/healthz` と `robots.txt`、`DB_SSLMODE`、php-fpm の待ち受けアドレス、README の全面的な書き直し（アプリそのものの説明として。図は Mermaid）、DB のエラーの記録から値を外す、ビルドフィルター
