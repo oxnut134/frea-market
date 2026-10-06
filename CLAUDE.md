@@ -13,11 +13,16 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
 - テスト：`docker compose exec php php artisan test`。DB は `phpunit.xml` の `pgsql_test` / `frea_test`。Stripe の鍵と Webhook シークレットも `phpunit.xml` のダミー値を使う
   - `frea_test` は自動では作られない。新しい環境では `docker compose exec pgsql createdb -U laravel_user frea_test` で作る
 - メール：ローカルは MailHog（http://localhost:8025）
-- 画像：`IMAGE_DISK`（既定 `public`、本番は `s3`）。URL は `Item::image_url` / `Profile::image_url` で生成
+- 画像：`IMAGE_DISK`（既定 `public`。本番も `public` で、永続ディスクに保存）。URL は `Item::image_url` / `Profile::image_url` で生成
   - 新しい環境では、シーディング後に `php artisan storage:link` と `chown -R www-data:www-data storage/app/public`
   - アップロード上限 5MB（`docker/php/php.ini` は 6M。変更したら `docker compose build php && docker compose up -d php`）
 - Stripe CLI：WSL2 側の `/usr/bin/stripe`（1.51.1）を使う。Windows 側の `C:\Program Files\Stripe\stripe`（1.43.2）は使わない。ログインは未実施（`stripe login`）。nginx が WSL2 の 80 番なので、`stripe listen --forward-to http://localhost/stripe/webhook`（WSL2 では未確認）。表示された `whsec_...` を `.env` の `STRIPE_WEBHOOK_SECRET` に入れる。`stripe docs` が使えるかは未確認（使えなければ docs.stripe.com の `.md` を直接取得）
-- 本番：Render（ルートの `Dockerfile`、`render.yaml`、`docker/render/entrypoint.sh`）。`MAIL_MAILER=log`、`IMAGE_DISK=public` のまま
+- 本番：https://frea-market.onrender.com 。Render（Docker、Starter、シンガポール、永続ディスク 1 GB を `/var/www/storage/app/public` に）と Neon（無料プラン、PostgreSQL 15、シンガポール、`-pooler` の付かない直接接続）
+  - 設定はルートの `Dockerfile`、`render.yaml`、`docker/render/`（`entrypoint.sh`、`nginx.conf`、`php-fpm.conf`、`supervisord.conf`、`scheduler.sh`）。`portfolio` への push で自動デプロイ
+  - 手入力の環境変数は 6 つ（`APP_KEY`、`APP_URL`、`DATABASE_URL`、`STRIPE_PUBLIC_KEY`、`STRIPE_SECRET_KEY`、`STRIPE_WEBHOOK_SECRET`）。値は Render のダッシュボードにだけ置く
+  - `MAIL_MAILER=log`、`DEMO_MODE=true`、`DEMO_CLIENT_IP_HEADER=CF-Connecting-IP`、`SESSION_DRIVER=database`、`LOG_CHANNEL=stderr`、`DB_SSLMODE=require`
+  - Markdown だけの push ではデプロイされない（ビルドフィルター）
+- 本番用のイメージの確認：ローカルで `docker build` して、使い捨ての `postgres:15` と空のボリューム（`/var/www/storage/app/public`）を別のネットワークに立てて起動する。開発用の DB には触れない。`render.yaml`、`entrypoint.sh`、nginx・php-fpm・supervisord の設定はテストで確かめられないので、変えたらこの方法で確かめる
 
 ## 作業ルール
 
@@ -33,12 +38,12 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
 - push は origin のみ。org には push しない
 - 決済まわりのテストで Stripe の API に実際のリクエストを送らない（`tests/Support/FakeStripeHttpClient` かサービスのモックを使う）
 - 秘密情報（.env の鍵、パスワードなど）の実際の値を、報告・reports/・コミットに書き出さない
-- ビューで CSS / JS を読み込むときは `asset()` ではなく `@versioned()` を使う（URL にファイルの更新時刻が付き、ブラウザが古いキャッシュを使い続けない。`AppServiceProvider` の Blade ディレクティブ）
+- ビューで CSS / JS / `public/images` の画像を読み込むときは `asset()` ではなく `@versioned()` を使う（URL にファイルの更新時刻が付き、ブラウザが古いキャッシュを使い続けない。`AppServiceProvider` の Blade ディレクティブ）
 - CSS ファイルの先頭には `@charset "UTF-8";` を書く
 
 ## 決済（完了）
 
-方針：Checkout Session に一本化し、購入確定は Webhook で行う。自作の stripe-subscription-kit（TS）と同じ設計を PHP で実装した。ローカルでの確認手順は README の「1-6 Stripe設定」。
+方針：Checkout Session に一本化し、購入確定は Webhook で行う。自作の stripe-subscription-kit（TS）と同じ設計を PHP で実装した。ローカルでの確認手順は README の「Stripe の設定」。
 
 ### 決定事項
 
@@ -76,6 +81,7 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
 - ユニーク違反のテストは応答だけを確認する — INSERT が弾かれると、PostgreSQL ではテスト用のトランザクションがそれ以降使えないため
 - Laravel Cashier は外した — 使っておらず、署名検証なしの `/stripe/webhook` が開いていたため
 - stripe-php は `^21.3`（21.3.2、API バージョン `2026-08-26.dahlia`）— v22.0.0 はリリース直後でパッチ版がなく、決済は枯れた版を優先。v22 では Checkout の `payment_method_types` が廃止される
+- 本番の Webhook エンドポイントの API バージョンは `2025-05-28.basil` — Stripe のダッシュボードで `dahlia` を選べなかったため。カード払い（`checkout.session.completed`）は本番で正常に処理できた。アプリから Stripe への呼び出しは、stripe-php が固定する `2026-08-26.dahlia` のまま
 - ハンドラ名は `onCheckoutPaymentSucceeded` / `onCheckoutPaymentPending` / `onCheckoutPaymentFailed` / `onCheckoutExpired` — kit のサブスク用 `onPaymentFailed` などと衝突させないため
 - `expireCheckoutSession` は Stripe が受け付けなかった場合（`InvalidRequestException`）だけ `false`。通信エラー・認証エラー・429 は上に伝える
 - 出品の最低価格は 120 円 — Stripe のコンビニ払いの下限（120〜300,000 円）。範囲外はコンビニ払いを選べない
@@ -122,12 +128,75 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
 - CSRF トークンはレイアウトの `<meta name="csrf-token">` から取る（`/sanctum/csrf-cookie` は呼ばない）
 - CSRF の検証そのものはテストで確かめられない（Laravel がテスト実行時に検証を省くため）。ブラウザか curl で確認する
 
+## デモ（完了）
+
+本番ではメールを送らない（`MAIL_MAILER=log`）。見に来た人は、デモ用アカウントでログインするか、架空のアドレスで会員登録して使う。
+
+### 決定事項
+
+- `DEMO_MODE`（`config('demo.enabled')`、既定は `false`）が、デモ環境の動きをまとめて切り替える：案内の表示、会員登録でのメール認証の省略、シードのユーザーのログイン拒否、登録と出品の上限、初期化。本番だけ `true`。`phpunit.xml` で `false` に固定（ローカルの `.env` に左右されないように）
+- デモ用アカウントは 1 つ（ID 5、`demo@test.com`、メール認証済み、プロフィールあり、商品なし）。アドレス・パスワード・プロフィールの初期値は `config/demo.php`。`UsersTableSeeder` と `ProfilesTableSeeder` が作る
+- ログイン画面には「デモアカウントでログイン」のボタンを置く。`public/js/demo-login.js` がログインフォームに値を入れて送信する。サーバー側に専用のログインの入口は作らない（通常の `POST /login`）
+- 会員登録：デモ環境では、登録と同時に `email_verified_at` を入れる（`CreateNewUser`）。認証メールは未認証のユーザーにだけ送られるので、作られなくなる。登録画面には「架空のアドレスと、普段使っていないパスワードで」「認証メールは送信しません。毎日 4:00 に削除」の案内を出す（`partials/demo_notice.blade.php`）。認証待ち画面には、デモ用の表示を出さない
+- 「デモで登録した」印：デモ環境で登録したユーザーにだけ `users.registered_in_demo = true` を付ける（既定は `false`、`$fillable` に入れない）。初期化での削除、人数の上限、出品数の上限（5 件）の対象は、この印があるユーザーだけ（`App\Services\Demo\DemoLimits`）— メールアドレスからの推測で決めると、`DEMO_MODE` を誤って有効にしたときに本物の利用者が全員消えるため。印の付け忘れ、シーディングの失敗、設定の誤りがあっても、誰も消えない側に倒れる
+- ログインの制限：デモ環境では、シードの 4 人（`config('demo.seeded_emails')`）のログインを拒否する — パスワードがリポジトリで公開されているため。デモ用アカウントと、登録したユーザーはログインできる。Fortify のログインの処理（`Fortify::authenticateThrough`）の中で、パスワードの照合より前に判定する（`RejectSeededAccountsInDemoMode`）。`seeded_emails` を使うのはここだけ。シーダーと一覧の一致はテストで確かめている
+- 上限（デモ環境だけ。`config('demo.limits')`）：同じ IP アドレスからの登録は 1 時間に 5 回（登録できた回数だけ数える）、登録したユーザーは 100 人まで、出品は登録したユーザーが 5 件・デモ用アカウントが 20 件まで — メール認証という関門がなくなり、画像でディスク（1 GB）が埋まりうるため
+- 利用者の IP アドレスは、`DEMO_CLIENT_IP_HEADER`（本番は `CF-Connecting-IP`）のヘッダーから取る。なければ `$request->ip()` — Render の手前に Cloudflare があり、`X-Forwarded-For` が「利用者, プロキシ」の形だと、`$request->ip()` はプロキシのアドレスになるため（`TrustProxies` は接続元だけを信頼する）。Render の公式ドキュメントでは確かめられず、ほかの開発者の報告による。ローカルでは設定しない（利用者がヘッダーを偽れるため）。既存のログインの回数制限は `$request->ip()` のまま
+- 初期化は `php artisan demo:reset`。起動時（`entrypoint.sh`）と、毎日 4:00（Asia/Tokyo）に実行する。`DEMO_MODE` が無効なら何もしない
+  - デモ用アカウント：購入（`paid` / `expired` / `failed` と、期限を過ぎた `pending`）、いいね、コメント、出品（付いているいいね・コメント・購入・画像ごと）を消す。名前とプロフィールは初期値に戻す
+  - デモで登録したユーザー：同じものを消したうえで、ユーザーごと削除する（プロフィール、画像、セッションも）
+  - 残すもの：期限内の `pending`（あとから支払いの通知が届くため）と、それが付いている出品、それを持つユーザー。片付いたあとの初期化で消える
+  - 印のないユーザー（シードのユーザー、デモ環境でない時期に登録したユーザー、以前の認証待ちで止まったユーザー）には触らない。Stripe は呼ばない。トランザクションは使わない
+  - 出力は件数だけ（`Demo data was reset: {...,"users":n}`）。メールアドレスは出さない
+- スケジュールは `$schedule->call()` で登録する — `$schedule->command()` は別プロセスで実行して出力を `/dev/null` に捨てるので、実行結果がログに残らないため。結果の 1 行は標準出力に出し、`LOG_LEVEL` に関係なく Render のログで確かめられる
+- スケジューラーは `docker/render/scheduler.sh`（supervisord から www-data で起動。1 分ごとに `schedule:run`）— `schedule:work` は毎分「No scheduled commands are ready to run.」を出してログを埋めるため。その 1 行だけを落とし、ほかの出力とエラーは通す。`schedule:run -q` は、中で呼ぶコマンドの出力まで消えるので使わない
+- `PurchasesTableSeeder` は `DatabaseSeeder` から呼ばない — ID 1 の購入を上書きするので、利用者の購入を壊すか、部分ユニークインデックスに弾かれてシーディングが失敗するため
+- 購入のとき、ユーザーのメールアドレスを `customer_email` として Stripe に渡している（デモ環境でもそのまま）。本物のアドレスで登録して購入すると、Stripe のテスト環境に記録される。README に書いてある
+
+## デプロイ（完了）
+
+調査と計画は `reports/2026-10-05-render-paid-deploy-plan.md`（Supabase と Northflank の調査は `reports/2026-10-05-render-supabase-deploy-plan.md`）。
+
+### 決定事項
+
+- 公開先は Render の有料（Web）と Neon の無料（DB）— Render の無料は 15 分で止まり、Supabase の無料は使わないと一時停止されて手で再開が必要なため。Neon は眠っても、アクセスがあれば自動で起きる
+- Neon の無料枠は月 100 CU 時間（0.25 CU で 400 時間）で、超えると次の請求期間まで DB が止まる。5 分アクセスがないと眠る。計算サイズの上限は、Neon の画面で 0.25 CU に固定する
+- ヘルスチェックは `/healthz`（`docker/render/nginx.conf` で nginx が直接 200 を返す）— Laravel を通すとセッションで DB に触れ、数秒ごとのヘルスチェックで DB が眠れなくなるため。`robots.txt` はすべてのクローラーを断る
+- DB を起こさないもの：ヘルスチェック、`robots.txt`、スケジューラーの毎分の実行、存在しないパスへのアクセス。起こすもの：Laravel の画面を通るアクセス（未ログインでもセッションで触る）、毎日 4:00 の初期化、デプロイ
+- `sslmode` は `env('DB_SSLMODE', 'prefer')`（`pgsql` だけ）。本番は `require`。`DATABASE_URL` の `?sslmode=` は設定より優先される
+- セッションは `database`（`sessions` テーブル）— `file` はデプロイのたびに消え、`cookie` は入力エラー時の入力値で 4KB を超えうるため。`SESSION_SECURE_COOKIE=true`（Laravel 8 は未設定だと `secure` を付けない）
+- `APP_KEY` は手入力（`php artisan key:generate --show` の値）— Render の `generateValue` は `base64:` が付かず、Laravel が受け付けないため
+- `APP_URL` も手入力 — 画像の URL（`public` ディスク）に使われる。`render.yaml` に固定の値を書くと、Blueprint の同期で戻るため
+- `entrypoint.sh`：`APP_KEY` が空なら止める。マイグレーションの失敗は止める。シーディングと `demo:reset` の失敗は警告だけで続ける。`chown` は `storage` と `bootstrap/cache` の全体に、キャッシュ生成のあとで
+- 永続ディスク：デプロイのたびに短い停止がある。残るのはマウント先の下だけ。ビルドとデプロイ前コマンドからは見えない（シーディングは起動時のまま）
+- シード画像は、ディスクにあればコピーされない。リポジトリの画像を差し替えたら、Render のシェルでディスク上の古い画像を消してから再デプロイする
+- php-fpm は `127.0.0.1:9000` だけで待ち受ける（`docker/render/php-fpm.conf` を `zzz-render.conf` としてコピー）— ベースイメージの `zz-docker.conf` がすべてのアドレスで待ち受けるため。開発用は別コンテナの nginx からつなぐので変えない
+- `.dockerignore` で、ローカルの `.env`、`vendor`、DB のデータ、`storage` の中身をイメージに入れない
+- DB のエラー（`QueryException`）は、値を埋め込んだ SQL とスタックトレースをログに出さない（`app/Exceptions/Handler.php`）— ログインや会員登録の SQL には、メールアドレスやパスワードのハッシュが入るため。PostgreSQL の `DETAIL:` の行（`Key (email)=(...)`）も落とす。記録するのは、DB のエラーの文、値を `?` のままにした SQL、`app/` の呼び出し位置（ファイルと行）だけ
+- ビルドフィルター：Markdown だけの変更（`*.md`、`**/*.md`）では、Render はデプロイしない（`render.yaml` の `buildFilter.ignoredPaths`）— デプロイのたびに短い停止があり、デモのデータも初期化されるため。手動のデプロイは、フィルターに関係なく動く
+- Render は `X-Forwarded-Proto` を付ける（`TrustProxies` は `*` で設定済み。本番で CSS と画像が https で読めている）
+
+### デプロイ後に確認したこと
+
+- 確認済み：デモ用アカウントでのログイン、カード払い（4242）、Webhook が 200、SOLD の表示、CSS と画像の表示（https）、再デプロイ後もシード画像が表示されること、「Detected a new open port TCP:9000」が php-fpm の修正後に出なくなったこと
+- 確認済み（登録の開放後）：会員登録画面の案内、架空のアドレスでの登録（認証待ちを通らずにプロフィールの登録へ）、ログアウト後の再ログイン、`DEMO_CLIENT_IP_HEADER` と Build Filters が Blueprint の同期で入ったこと、デプロイのログのマイグレーションと `Demo data was reset`
+- 未確認：下の「今後の予定」の「次」に挙げたもの
+
 ## 今後の予定
 
-- 次：Render へのデプロイ：S3（`IMAGE_DISK=s3`、`AWS_*`、バケットの公開設定）、SMTP、Webhook エンドポイントの登録と `STRIPE_WEBHOOK_SECRET`、DB の作り直し、`entrypoint.sh` の `storage:link` / `chown` の動作確認、`PurchasesTableSeeder` を `DatabaseSeeder` から呼ぶかの判断（今は呼んでいない）
-  - SMTP に切り替えるときは GHSA-5vg9-5847-vvmq を再確認する（今は `MAIL_MAILER=log` で外部に送っていない前提で残している）。README と `composer.json` の理由も合わせて直す
-- 仕上げ：検索欄の `value`、ロゴの `alt`、README（「利用技術」が古い：PHP 7.4.9、MySQL、stripe-php 9.9 など）
-- 仕上げ：テストの並び順への依存をまとめて直す — 並び順なしの `first()` / `all()` が 8 ファイルに残っている（`CommentFunctionTest`、`RegisterForExhibitionTest`、`MyPageFunctionTest`、`MyProfileDisplayedTest`、`ShowItemDetailTest`、`SearchItemsTest`、`IndexFunctionTest`、`LoginValidationTest`）。テスト中に VACUUM が走ると ID 順に返らず、まれに失敗する（`MylistFunctionTest` で発生し、`orderBy('id')` で修正済み）
+- 次：README を、記述の方針を変えて書き直す（今は、登録の開放で事実と合わなくなった部分だけを直してある）。スクリーンショットを 1〜2 枚足す（「デモ」の節にコメントで場所を確保してある）
+- 次：デプロイ時のログの「CRIT unknown problem killing scheduler: PermissionError」の調査と修正（supervisord がスケジューラーのプロセスを止めるときのエラー。原因は未調査）
+- 次：本番での確認
+  - 登録の回数制限が利用者ごとに数えられているか — 同じ回線から 6 回目が弾かれたあと、別の回線（スマートフォンの回線など）から登録できること。別の回線でも弾かれるなら、`CF-Connecting-IP` が届いていない
+  - 翌朝 4:00 過ぎのログに `Demo data was reset` が出ること（デモで登録したユーザーが消えること）
+  - Neon の使用量を公開から 1 週間見る（目安は 1 日あたり約 3.3 CU 時間まで）。Neon がアクセスのない間に眠ること。多ければ、セッションをファイルにして永続ディスクに置く — 今のマウント先（`storage/app/public`）は外から見えるので、マウント先を `storage/app` に変えて、公開しないフォルダに置く必要がある
+  - 再デプロイ後に、アップロードした画像とログインが残ること
+  - 本番でのコンビニ払い（`basil` で届く `async_payment_succeeded` など）
+  - Markdown だけの push で、Render がデプロイしないこと
+- 最後に `portfolio` を `main` にマージする（プルリクエスト経由）— GitHub の既定のブランチは `main` で、書き直した README は `portfolio` にあるため。それまで README のクローン手順は `-b portfolio` のまま。マージしたら手順から `-b portfolio` を外す
+- メールを実際に送る場合：GHSA-5vg9-5847-vvmq を再確認する（今は `MAIL_MAILER=log` で外部に送っていない前提で残している）。README と `composer.json` の理由も合わせて直す。`DEMO_MODE` を `false` にすると、メール認証が戻り、デモ用の案内・制限・初期化がすべて止まる。印のあるユーザーは残るので、手で消す
+- 仕上げ：検索欄の `value`、ロゴの `alt`
+- 仕上げ：テストの並び順への依存をまとめて直す — 並び順なしの `first()` / `all()` が 7 ファイルに残っている（`CommentFunctionTest`、`RegisterForExhibitionTest`、`MyPageFunctionTest`、`MyProfileDisplayedTest`、`SearchItemsTest`、`IndexFunctionTest`、`LoginValidationTest`）。テスト中に VACUUM が走ると ID 順に返らず、まれに失敗する（`MylistFunctionTest` と `ShowItemDetailTest` で発生し、`orderBy('id')` で修正済み。テストを足すと、テーブルの中の並びが変わって表に出ることがある）
 - Laravel のメジャーアップグレード（未定）：残る 5 件の勧告と、放棄されたパッケージ 2 つが解消する
 - 確認待ち：`/search` の要ログインが仕様どおりか（今は触らない）
 - 確認待ち：商品一覧（`index`）で自分の出品を除外するか（今は触らない。`IndexFunctionTest::testWithoutMyExhibition` は skip）
@@ -146,3 +215,6 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
 - 依存パッケージ：脆弱な 10 パッケージを更新（35 パッケージ）、`minimum-stability` を `stable` に、残る 5 件の勧告を理由付きで登録、登録メールアドレスの制御文字の検証、README への記録
 - いいね：`likes_count` の廃止、POST / DELETE と `insertOrIgnore`、自分の状態でのアイコン表示と連打対策（`like.js`）、`LikeFunctionTest` の書き直し
 - 環境：作業フォルダを WSL2 に移行（Windows のマウント越しだと 1 リクエストに約 1 秒かかったため）
+- 不要ファイルの整理：Git に入っていた MySQL のデータフォルダ（`docker/mysql/data/`）の追跡除外、入れ子のリポジトリ・CSS のバックアップ・画像の複製などの削除、`.dockerignore`
+- デモ：デモ用アカウントとログイン画面のボタン、会員登録の開放（メール認証の省略、「デモで登録した」印、登録と出品の上限）、シードのユーザーのログイン拒否、毎日 4:00 とデプロイ時の初期化（`demo:reset`）
+- デプロイ：Render（有料）と Neon（無料）に公開。起動スクリプトの修正、`sessions` テーブル、`/healthz` と `robots.txt`、`DB_SSLMODE`、php-fpm の待ち受けアドレス、README の全面的な書き直し（ER 図と構成図は Mermaid）、DB のエラーの記録から値を外す、ビルドフィルター
