@@ -104,48 +104,47 @@ input[type="submit"]:disabled {
     font-size: 16.2px;
     text-decoration: none;
 }
-/* 選ばれたタブのすそ：左右の線が下の線とぶつかるところを、外へ広がる丸みにする（内側にえぐれた角）。
-   タブの外側の下に四角を置き、その外側の上の角を中心にした円で塗り分ける。
-   円の内側は透明、線の太さの輪がタブの線、その外側はタブの中の色。
-   四角はタブの縦の線の上にも重なり、輪より下のまっすぐな線を、中の色で消す */
-.tab-nav_item--active::before,
-.tab-nav_item--active::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    width: calc(var(--tab-flare) + var(--tab-line));
-    height: calc(var(--tab-flare) + var(--tab-line));
-    pointer-events: none;
-}
-.tab-nav_item--active::before {
-    left: calc(-1 * (var(--tab-flare) + var(--tab-line)));
-    background: radial-gradient(circle at 0 0,
-        transparent calc(var(--tab-flare) - 0.5px),
-        var(--tab-edge) var(--tab-flare),
-        var(--tab-edge) calc(var(--tab-flare) + var(--tab-line)),
-        var(--tab-fill) calc(var(--tab-flare) + var(--tab-line) + 0.5px));
-}
-.tab-nav_item--active::after {
-    right: calc(-1 * (var(--tab-flare) + var(--tab-line)));
-    background: radial-gradient(circle at 100% 0,
-        transparent calc(var(--tab-flare) - 0.5px),
-        var(--tab-edge) var(--tab-flare),
-        var(--tab-edge) calc(var(--tab-flare) + var(--tab-line)),
-        var(--tab-fill) calc(var(--tab-flare) + var(--tab-line) + 0.5px));
-}
 /* 選ばれたタブ：白い背景に、下の横線と同じ太さ・同じ色の線。上辺だけ赤で太くする。
-   線の太さの分だけ下にはみ出して、下の横線に重なる。タブの幅の中は白い背景が横線を消し、
-   すそは横線につながる */
+   箱は、すその高さの分だけ短くして（margin-bottom）、左右の線を箱の下端で止める。その下は「すそ」が受け継ぐ。
+   箱の下の白い帯（下の横線を消す部分）は、白い box-shadow で作る：真下と、すその幅だけ左右にずらしたもの */
 .tab-nav_item--active {
     --tab-edge: #000;
     --tab-fill: #fff;
     z-index: 1;
-    margin-bottom: calc(-1 * var(--tab-line));
+    margin-bottom: var(--tab-flare);
     padding-top: 10.8px;
-    padding-bottom: calc(9px + var(--tab-line));
+    padding-bottom: calc(9px - var(--tab-flare));
     border-top: 4px solid red;
     color: #000;
     font-weight: bold;
+    box-shadow:
+        0 calc(var(--tab-flare) + var(--tab-line)) 0 0 var(--tab-fill),
+        calc(-1 * var(--tab-flare)) calc(var(--tab-flare) + var(--tab-line)) 0 0 var(--tab-fill),
+        var(--tab-flare) calc(var(--tab-flare) + var(--tab-line)) 0 0 var(--tab-fill);
+}
+/* 選ばれたタブのすそ：左右の線が下の横線とぶつかるところを、外へ広がる丸みにする（内側にえぐれた角）。
+   箱の下の左右に四角を置き、その「タブ側の縦の枠線」と「下の枠線」を角丸でつなぐ。
+   タブの縦の線、丸み、下の横線が、すべてブラウザの枠線になるので、太さと濃さがそろい、倍率を変えてもつなぎ目がずれない
+   （色の塗り分けで描くと、輪郭がぼけて、つなぎ目で太さが変わって見えた） */
+.tab-nav_item--active::before,
+.tab-nav_item--active::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    width: calc(var(--tab-flare) + var(--tab-line));
+    height: calc(var(--tab-flare) + var(--tab-line));
+    border-bottom: var(--tab-line) solid var(--tab-edge);
+    pointer-events: none;
+}
+.tab-nav_item--active::before {
+    right: 100%;
+    border-right: var(--tab-line) solid var(--tab-edge);
+    border-bottom-right-radius: calc(var(--tab-flare) + var(--tab-line));
+}
+.tab-nav_item--active::after {
+    left: 100%;
+    border-left: var(--tab-line) solid var(--tab-edge);
+    border-bottom-left-radius: calc(var(--tab-flare) + var(--tab-line));
 }
 
 /* 商品の並びが 0 件のときの案内（マイページとトップページで共通）。並びの幅いっぱいに、中央に出す */
