@@ -34,6 +34,9 @@
         </a>
         @endforeach
         @endif
+        @if($items->isEmpty())
+        <p class="item-list_empty">{{ $tab === 'buy' ? '購入した商品はありません。' : '出品した商品はありません。' }}</p>
+        @endif
     </div>
 
     </body>

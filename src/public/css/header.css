@@ -111,6 +111,15 @@ input[type="submit"]:disabled {
     font-weight: bold;
 }
 
+/* 商品の並びが 0 件のときの案内（マイページとトップページで共通）。並びの幅いっぱいに、中央に出す */
+.item-list_empty {
+    width: 100%;
+    margin: 0;
+    padding: 6vh 0;
+    color: #555;
+    text-align: center;
+}
+
 /* 販売状況（SOLD / 取引中 / お支払い待ち）を商品画像に重ねる表示 */
 .sale-status_frame {
     position: relative;

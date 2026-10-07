@@ -34,6 +34,17 @@
         </a>
         @endforeach
         @endif
+        {{-- 0 件のときの案内。検索の文字があれば検索の結果として、なければマイリストが空として案内する。
+             検索もマイリストもログインが必要なので、未ログインの一覧には出さない --}}
+        @auth
+        @if($items->isEmpty())
+        @if(isset($keyword) && $keyword !== '')
+        <p class="item-list_empty">該当する商品はありません。</p>
+        @elseif($mylist)
+        <p class="item-list_empty">いいねした商品はありません。</p>
+        @endif
+        @endif
+        @endauth
     </div>
 </body>
 
