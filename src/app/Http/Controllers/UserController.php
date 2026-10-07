@@ -16,45 +16,15 @@ class UserController extends Controller
 
     public function myPage(Request $request)
     {
-        $tab = $request->query('tab');
-        //dd($tab);
-
-        switch ($tab) {
-            case "buy":
-                return $this->getPurchasedItems();
-
-            case "sell":
-                return $this->getExhibitedItems();
-
-            default:
-                return $this->getProfile();
+        // マイページに並べるのは、自分が出品した商品と、自分が購入した商品だけ。
+        // タブの指定がなければ「出品した商品」（知らない値も同じ）
+        if ($request->query('tab') === 'buy') {
+            return $this->getPurchasedItems();
         }
+
+        return $this->getExhibitedItems();
     }
 
-
-
-
-    public function getProfile()
-    {
-        //$items = Item::all();
-        $items = Item::with('activePurchase')->where('user_id', '!=', Auth::id())->get(); //本番はこちらに変更/自分の出品は表示なし
-        $auth_id = Auth::id();
-        $user = User::find($auth_id);
-        $profile = Profile::where('user_id', $auth_id)->first(); //本番はAuth::id()となる
-        //dd($profile);
-        return view(
-            'mypage',
-            [
-                'items' => $items,
-                //'keyword' => $
-                'profile' => $profile,
-                'user' => $user,
-
-            ]
-        );
-        //dd('on getProfile');
-        //return view('mypage');
-    }
     public function getPurchasedItems()
 
     {

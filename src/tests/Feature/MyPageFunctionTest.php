@@ -204,7 +204,7 @@ class MyPageFunctionTest extends TestCase
             ->get();
 
 
-        $response->assertSee($item->item_image); //画像表示確認
+        $response->assertSee($profile->profile_image); //プロフィール画像表示確認
         $response->assertSee($user->name);
 
         $response = $this->get('/mypage/?tab=sell'); //出品商品の表示確認
