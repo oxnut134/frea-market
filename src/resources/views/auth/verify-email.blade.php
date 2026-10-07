@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <title>メール認証</title>
+    <link rel="icon" href="@versioned('favicon.ico')" sizes="any">
+    <link rel="icon" href="@versioned('favicon.svg')" type="image/svg+xml">
     <script src="@versioned('js/submit-guard.js')" defer></script>
     <style>
         /* ほかの画面（header.css）と同じ、文字の大きさの基準 */
