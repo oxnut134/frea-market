@@ -119,15 +119,15 @@
     justify-content: flex-start;
     flex-wrap: wrap;
 }
+/* カテゴリー：赤い線の丸い枠。幅は文字に合わせる */
 .detail-form_Item_category {
-    width: 25%;
-    border: 1px solid red;
-    border-radius: 9px;
-    margin: 1vh 2%;
-    display: flex;
-    justify-content: center;
+    margin: 1vh 5.4px;
+    padding: 4.5px 10.8px;
+    border: 2px solid red;
+    border-radius: 22.5px;
     font-size: 10.8px;
     color: red;
+    text-align: center;
 }
 .detail-form_Item_condition_wrapper {
     margin-top: 3vh;
