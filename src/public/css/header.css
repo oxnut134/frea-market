@@ -15,9 +15,15 @@ input {
     align-items: center;*/
     background-color: #000;
 }
-.frea-market_header_logo {
+/* ロゴ（商品一覧へのリンク）。大きさと位置はリンクの側で決める */
+.frea-market_header_logo_link {
+    display: block;
     width: 22%;
     margin-left: 2%;
+}
+.frea-market_header_logo {
+    display: block;
+    width: 100%;
 
     /* オリジナルロゴサイス
     　　236.98 × 80     */
