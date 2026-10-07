@@ -78,35 +78,72 @@ input[type="submit"]:disabled {
 }
 
 /* タブ（マイページの「出品した商品／購入した商品」と、トップページの「おすすめ／マイリスト」で共通）。
-   フォルダのつまみのように、選ばれたタブが手前に出て、下の商品の欄とつながって見える */
+   ブラウザのタブのように、選ばれたタブが手前に出て、下の商品の欄とつながって見える。
+   上の左右の角は丸める。選ばれたタブは、下の左右を「すそ」（下の線へ向かって外へ広がる丸み）にする */
 .tab-nav {
+    --tab-line: 2px;     /* 線の太さ（下の横線と同じ） */
+    --tab-flare: 7px;    /* すその丸みの半径 */
     display: flex;
     align-items: flex-end;
-    gap: 5.4px;
+    gap: var(--tab-flare);    /* 選ばれたタブのすそが、隣のタブに重ならない幅 */
     margin-top: 4vh;
     padding: 0 8%;
-    border-bottom: 2px solid #000;
+    border-bottom: var(--tab-line) solid #000;
 }
-/* 選ばれていないタブ：薄い灰色で、奥にあるように見せる */
+/* 選ばれていないタブ：薄い灰色で、奥にあるように見せる。下は、下の横線にそのまま載る */
 .tab-nav_item {
+    --tab-edge: #c8c8c8;   /* 線の色 */
+    --tab-fill: #e9e9e9;   /* 中の色 */
+    position: relative;
     padding: 9px 25.2px;
-    border: 2px solid #c8c8c8;
+    border: var(--tab-line) solid var(--tab-edge);
     border-bottom: none;
-    border-radius: 7.2px 7.2px 0 0;
-    background-color: #e9e9e9;
+    border-radius: 9px 9px 0 0;
+    background-color: var(--tab-fill);
     color: #555;
     font-size: 16.2px;
     text-decoration: none;
 }
-/* 選ばれたタブ：白い背景に上・左・右の枠線。上辺だけ赤で太くする。
-   下にはみ出して並びの下の線に重なり、白い下辺でその部分の線を消す */
+/* 選ばれたタブのすそ：左右の線が下の線とぶつかるところを、外へ広がる丸みにする（内側にえぐれた角）。
+   タブの外側の下に四角を置き、その外側の上の角を中心にした円で塗り分ける。
+   円の内側は透明、線の太さの輪がタブの線、その外側はタブの中の色。
+   四角はタブの縦の線の上にも重なり、輪より下のまっすぐな線を、中の色で消す */
+.tab-nav_item--active::before,
+.tab-nav_item--active::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    width: calc(var(--tab-flare) + var(--tab-line));
+    height: calc(var(--tab-flare) + var(--tab-line));
+    pointer-events: none;
+}
+.tab-nav_item--active::before {
+    left: calc(-1 * (var(--tab-flare) + var(--tab-line)));
+    background: radial-gradient(circle at 0 0,
+        transparent calc(var(--tab-flare) - 0.5px),
+        var(--tab-edge) var(--tab-flare),
+        var(--tab-edge) calc(var(--tab-flare) + var(--tab-line)),
+        var(--tab-fill) calc(var(--tab-flare) + var(--tab-line) + 0.5px));
+}
+.tab-nav_item--active::after {
+    right: calc(-1 * (var(--tab-flare) + var(--tab-line)));
+    background: radial-gradient(circle at 100% 0,
+        transparent calc(var(--tab-flare) - 0.5px),
+        var(--tab-edge) var(--tab-flare),
+        var(--tab-edge) calc(var(--tab-flare) + var(--tab-line)),
+        var(--tab-fill) calc(var(--tab-flare) + var(--tab-line) + 0.5px));
+}
+/* 選ばれたタブ：白い背景に、下の横線と同じ太さ・同じ色の線。上辺だけ赤で太くする。
+   線の太さの分だけ下にはみ出して、下の横線に重なる。タブの幅の中は白い背景が横線を消し、
+   すそは横線につながる */
 .tab-nav_item--active {
-    margin-bottom: -2px;
+    --tab-edge: #000;
+    --tab-fill: #fff;
+    z-index: 1;
+    margin-bottom: calc(-1 * var(--tab-line));
     padding-top: 10.8px;
-    border-color: #000;
+    padding-bottom: calc(9px + var(--tab-line));
     border-top: 4px solid red;
-    border-bottom: 2px solid #fff;
-    background-color: #fff;
     color: #000;
     font-weight: bold;
 }
