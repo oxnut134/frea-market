@@ -76,14 +76,24 @@
                 <span class="detail-form_Item_condition_column_name">商品の状態</span>
                 <span class="detail-form_Item_condition">{{ $item->condition }}</span>
             </div>
-            {{-- 件数と最新の 1 件は、ログインしていなくても見られる。送信はログインしてから --}}
+            {{-- コメントは、ログインしていなくても読める。送信はログインしてから。
+                 すべてを新しい順に並べ、高さの上限を超えたら、枠の中だけスクロールする（detail.css） --}}
             <h2>{{ 'コメント(' . $comments . ')'}}</h2>
-            @if($first_comment)
-            <div class="detail-form_user_picture_wrapper">
-                <img class="detail-form_user_picture" src="{{ $commenter_image_url }}" alt="プロフィール画像">
-                <div class="detail-form_user_name">{{ $commenter_name }}</div>
-            </div>
-            <div class="detail-form_user_comment">{{ $first_comment->comment }}</div>
+            @if($comment_list->isEmpty())
+            <p class="detail-form_no_comments">コメントはまだありません。</p>
+            @else
+            <ul class="detail-form_comment_list">
+                @foreach($comment_list as $comment)
+                <li class="detail-form_comment">
+                    <div class="detail-form_user_picture_wrapper">
+                        <img class="detail-form_user_picture" src="{{ $comment->user->profile_image_url }}" alt="プロフィール画像">
+                        <div class="detail-form_user_name">{{ $comment->user->name }}</div>
+                    </div>
+                    {{-- 改行は CSS（white-space: pre-wrap）で残すので、タグの中に余分な空白や改行を入れない --}}
+                    <div class="detail-form_user_comment">{{ $comment->comment }}</div>
+                </li>
+                @endforeach
+            </ul>
             @endif
             @auth
             <form action="/item/comment" name="comment" method="post">

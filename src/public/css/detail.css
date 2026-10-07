@@ -139,27 +139,49 @@
 .detail-form_Item_condition {
     margin-left: 15%;
 }
+/* コメントの一覧。高さの上限（画面の高さの 40%）を超えたら、枠の中だけスクロールする */
+.detail-form_comment_list {
+    max-height: 40vh;
+    overflow-y: auto;
+    margin: 0;
+    padding: 0 3%;
+    border: 1px solid #c8c8c8;
+    border-radius: 4.5px;
+    list-style: none;
+}
+.detail-form_comment {
+    padding: 1.5vh 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+.detail-form_comment:last-child {
+    border-bottom: none;
+}
+.detail-form_no_comments {
+    color: #555;
+}
 .detail-form_user_picture_wrapper {
     display: flex;
     justify-content: flex-start;
+    align-items: center;
 }
+/* 枠の中に何件も並ぶので、小さな固定の大きさにする */
 .detail-form_user_picture {
-    width: 10.2%;
+    width: 28.8px;
+    height: 28.8px;
     border-radius: 50%;
+    object-fit: cover;
 }
 .detail-form_user_name {
-    display: flex;
-    align-items: center;
-    margin-left: 3%;
+    margin-left: 9px;
 }
+/* 本文。入力した改行を残し（pre-wrap）、長い単語や URL も枠の幅で折り返す */
 .detail-form_user_comment {
-    width: 100%;
-    height: 6vh;
+    margin-top: 0.8vh;
+    padding: 7.2px 9px;
+    border-radius: 4.5px;
     background-color: lightgrey;
-    padding: 2%;
-    display: flex;
-    align-items: center;
-    margin-top: 3vh;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }
 .detail-form_your_comment {
     font-size: 18px;

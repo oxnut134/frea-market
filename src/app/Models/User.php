@@ -43,4 +43,10 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasOne(Profile::class);
     }
+
+    // プロフィール画像の URL（$user->profile_image_url）。プロフィールがない場合も、既定のアイコンを返す
+    public function getProfileImageUrlAttribute()
+    {
+        return ($this->profile ?? new Profile)->image_url;
+    }
 }

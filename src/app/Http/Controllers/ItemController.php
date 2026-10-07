@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\Item;
 use App\Models\Like;
 use App\Models\Comment;
-use App\Models\Profile;
 use App\Models\Category;
 use App\Models\ItemCategory;
 use Illuminate\Support\Facades\Auth;
@@ -81,17 +80,13 @@ class ItemController extends Controller
         //dd($my_like);
         //コメント数取得
 
-        $comment_count = Comment::where('item_id', $id)->count();
-        // 最新の 1 件（同じ時刻なら、あとから書かれたもの）
-        $first_comment = Comment::with('user.profile')
+        // コメントはすべて、新しい順（同じ時刻なら、あとから書かれたもの）。
+        // 1 件ずつ書いた人の名前と画像を出すので、投稿者とプロフィールもまとめて読み込む
+        $comments = Comment::with('user.profile')
             ->where('item_id', $id)
             ->orderBy('created_at', 'desc')
             ->orderBy('id', 'desc')
-            ->first();
-
-        // 最新のコメントを書いた人の名前と画像（見ている本人のものではない）。
-        // プロフィールがなければ、既定のアイコン
-        $commenter = $first_comment ? $first_comment->user : null;
+            ->get();
 
         //中間テーブル経由で関係するカテゴリーをすべて取得
         //          Itemモデルの当該レコード->モデルItemのﾘﾚｰｼｮﾝMethod名
@@ -105,10 +100,8 @@ class ItemController extends Controller
                 'item' => $item,
                 'likes' => $like_count,
                 'my_like' => $my_like,
-                'comments' => $comment_count,
-                'first_comment' => $first_comment,
-                'commenter_name' => $commenter ? $commenter->name : null,
-                'commenter_image_url' => $commenter ? ($commenter->profile ?? new Profile)->image_url : null,
+                'comments' => $comments->count(),
+                'comment_list' => $comments,
                 'categories' => $categories //配列渡し
             ]
         );
