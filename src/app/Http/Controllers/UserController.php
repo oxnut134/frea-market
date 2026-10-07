@@ -48,6 +48,7 @@ class UserController extends Controller
                 //'keyword' => $
                 'profile' => $profile,
                 'user' => $user,
+                'tab' => 'buy', // 選ばれているタブ
                 'awaiting_payment' => true, // 確保中の商品を「お支払い待ち」と表示する
             ]
 
@@ -68,7 +69,8 @@ class UserController extends Controller
                 'items' => $items,
                 //'keyword' => $
                 'profile' => $profile,
-                'user' => $user
+                'user' => $user,
+                'tab' => 'sell', // 選ばれているタブ
 
             ]
         );

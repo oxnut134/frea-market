@@ -9,14 +9,16 @@
 <body>
 
     @auth
-    <div class="index-form_mode_change_button_box">
-        <a class="index-form_mode_recommend_button" href="/">おすすめ</a>
+    {{-- タブ（header.css の tab-nav）。?tab=mylist ならマイリスト、それ以外（検索結果も）はおすすめが選ばれている --}}
+    @php($mylist = request()->query('tab') === 'mylist')
+    <nav class="tab-nav">
+        <a class="tab-nav_item{{ $mylist ? '' : ' tab-nav_item--active' }}" href="/"{!! $mylist ? '' : ' aria-current="page"' !!}>おすすめ</a>
         @if(isset($keyword))
-        <a class="index-form_mode_mypage_button" href="/?tab=mylist&&keyword={{ $keyword }}">マイリスト</a>
+        <a class="tab-nav_item{{ $mylist ? ' tab-nav_item--active' : '' }}" href="/?tab=mylist&&keyword={{ $keyword }}"{!! $mylist ? ' aria-current="page"' : '' !!}>マイリスト</a>
         @else
-        <a class="index-form_mode_mypage_button" href="/?tab=mylist">マイリスト</a>
+        <a class="tab-nav_item{{ $mylist ? ' tab-nav_item--active' : '' }}" href="/?tab=mylist"{!! $mylist ? ' aria-current="page"' : '' !!}>マイリスト</a>
         @endif
-    </div>
+    </nav>
     @endauth
     <div class="index-form_image_box">
         @if(isset($items))
