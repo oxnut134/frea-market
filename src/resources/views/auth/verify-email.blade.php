@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>メール認証</title>
+    <title>メール認証 | Flea Market</title>
     <link rel="icon" href="@versioned('favicon.ico')" sizes="any">
     <link rel="icon" href="@versioned('favicon.svg')" type="image/svg+xml">
     <script src="@versioned('js/submit-guard.js')" defer></script>

@@ -25,7 +25,7 @@ services:
       sizeGB: 1
     envVars:
       - key: APP_NAME
-        value: frea-market
+        value: Flea Market
       - key: APP_ENV
         value: production
       - key: APP_DEBUG

@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>フリマアプリ</title>
+    <title>Flea Market</title>
     {{-- ファビコン（ロゴと同じ値札）。SVG を使えないブラウザは .ico を使う --}}
     <link rel="icon" href="@versioned('favicon.ico')" sizes="any">
     <link rel="icon" href="@versioned('favicon.svg')" type="image/svg+xml">
