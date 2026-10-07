@@ -31,7 +31,8 @@
             @if (Auth::check())
             <form action="/search" method="post" style="width:50%;display:flex;justify-content:flex-end;">
                 @csrf
-                <input class="frea-market_header_input_key" type="text" name="keyword" value="なにをお探しですか？">
+                {{-- 案内の文字は placeholder（value にすると、その文字で検索される）。検索した文字は、検索後も欄に残す --}}
+                <input class="frea-market_header_input_key" type="text" name="keyword" placeholder="なにをお探しですか？" value="{{ $keyword ?? '' }}">
             </form>
             <div style="width:30%;display:flex;justify-content:space-between;align-items:center;margin-right:3%;margin-left:3%;">
                 <form action="{{ route('logout') }}" method="post" style="width:35%;">
