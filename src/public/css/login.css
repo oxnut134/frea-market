@@ -26,7 +26,7 @@
     justify-content: center;
     align-items: flex-end;
     margin-bottom: 7vh;
-    font-size: 30px;
+    font-size: 27px;
 }
 .login-form_input_title {
     width: 100%;
@@ -48,7 +48,7 @@
 .login-form_input_field {
     width: 60%;
     height: 8vh;
-    min-height: 20px;
+    min-height: 18px;
     display: flex;
     justify-content: flex-start;
 }
@@ -66,9 +66,9 @@
     background-color: red;
     color: #fff;
     border: none;
-    border-radius: 5px;
+    border-radius: 4.5px;
     align-items: center;
-    font-size: 20px;
+    font-size: 18px;
 }
 .login-form_link_box {
     width: 100%;
@@ -81,7 +81,7 @@
     justify-content: center;
     margin-top: 5vh;
     color: blue;
-    font-size:20px;
+    font-size:18px;
     text-decoration:none;
     
 }

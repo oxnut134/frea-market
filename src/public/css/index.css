@@ -1,14 +1,17 @@
 @charset "UTF-8";
+/* 商品の並び（マイページの mypage.css と同じ）。左右の端は、タブの並び（header.css の tab-nav）と同じ 8% にそろえる。
+   4 列：22.3% × 4 + すき間 3.5% × 3 */
 .index-form_image_box {
     display: flex;
     justify-content: flex-start;
     flex-wrap: wrap;
-    margin: 2%;
+    column-gap: 3.5%;
+    row-gap: 2vw;
+    margin: 2% 8%;
 }
 .index-form_image_wrapper {
     flex-direction: column;
-    width: 23%;
-    margin: 1%;
+    width: 22.3%;
     text-decoration:none;
     color:black;
 }

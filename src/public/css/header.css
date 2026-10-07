@@ -1,11 +1,15 @@
 @charset "UTF-8";
+/* 文字の大きさの基準。大きさを指定していない文字と、見出し・入力欄（em や継承で決まるもの）が、ブラウザの既定の 90% になる */
+html {
+    font-size: 90%;
+}
 body {
     font-family: "Gothic"; /*"MS Mincho", "MingLiU", "Hiragino Mincho Pro", serif; /* 明朝体のフォントファミリー */
 }
 input {
-    font-size: 18px;
-    padding-left:10px;
-    letter-spacing:2px;
+    font-size: 16.2px;
+    padding-left:9px;
+    letter-spacing:1.8px;
 }
 .frea-market_header {
     width: 100%;
@@ -33,13 +37,13 @@ input {
     height: 5vh;
     margin-left: 10%;
     margin-right: 0%;
-    font-size: 18px;
-    border-radius: 5px;
+    font-size: 16.2px;
+    border-radius: 4.5px;
 }
 .frea-market_header_link {
-    width: 100px;
+    width: 90px;
     color: #fff;
-    font-size: 17px;
+    font-size: 15.3px;
     font-family: "Gothic";
     margin-right: 1.5%;
 }
@@ -48,7 +52,7 @@ input {
     margin-left: auto;
     margin-right: 3%;
     color: #fff;
-    font-size: 17px;
+    font-size: 15.3px;
     font-family: "Gothic";
     text-decoration: none;
 }
@@ -58,7 +62,7 @@ input {
     background-color: #fff;
     color: #000;
     margin-right: 1%;
-    border-radius: 5px;
+    border-radius: 4.5px;
     text-decoration:none;
     display:flex;
     justify-content:center;
@@ -78,27 +82,27 @@ input[type="submit"]:disabled {
 .tab-nav {
     display: flex;
     align-items: flex-end;
-    gap: 6px;
+    gap: 5.4px;
     margin-top: 4vh;
     padding: 0 8%;
     border-bottom: 2px solid #000;
 }
 /* 選ばれていないタブ：薄い灰色で、奥にあるように見せる */
 .tab-nav_item {
-    padding: 10px 28px;
+    padding: 9px 25.2px;
     border: 2px solid #c8c8c8;
     border-bottom: none;
-    border-radius: 8px 8px 0 0;
+    border-radius: 7.2px 7.2px 0 0;
     background-color: #e9e9e9;
     color: #555;
-    font-size: 18px;
+    font-size: 16.2px;
     text-decoration: none;
 }
 /* 選ばれたタブ：白い背景に上・左・右の枠線。上辺だけ赤で太くする。
    下にはみ出して並びの下の線に重なり、白い下辺でその部分の線を消す */
 .tab-nav_item--active {
     margin-bottom: -2px;
-    padding-top: 12px;
+    padding-top: 10.8px;
     border-color: #000;
     border-top: 4px solid red;
     border-bottom: 2px solid #fff;

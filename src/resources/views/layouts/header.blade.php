@@ -36,7 +36,7 @@
             <div style="width:30%;display:flex;justify-content:space-between;align-items:center;margin-right:3%;margin-left:3%;">
                 <form action="{{ route('logout') }}" method="post" style="width:35%;">
                     @csrf
-                    <button style="max-height:40px;background-color:#000;color:#fff;border-width:0;font-size:17px;">ログアウト</button>
+                    <button style="max-height:36px;background-color:#000;color:#fff;border-width:0;font-size:15.3px;">ログアウト</button>
                 </form>
                 <a class="frea-market_header_link" href="/mypage" style="width:35%;text-decoration:none;">マイページ</a>
                 <a class="frea-market_header_button_to_exhibit" href="/sell" style="width:15%">出品</a>

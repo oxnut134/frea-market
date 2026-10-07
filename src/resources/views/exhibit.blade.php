@@ -24,16 +24,16 @@
                 /* ボタンの基本スタイル */
                 .toggle_button {
 
-                    padding: 5px 10px;
+                    padding: 4.5px 9px;
                     border: 2px solid red;
-                    border-radius: 25px;
+                    border-radius: 22.5px;
                     background-color: white;
                     color: red;
                     cursor: pointer;
                     text-align: center;
                     transition: background-color 0.3s, color 0.3s;
-                    font-size: 12px;
-                    margin-top: 10px;
+                    font-size: 10.8px;
+                    margin-top: 9px;
                     margin-left: 17%;
                 }
 
@@ -86,15 +86,15 @@
                 .toggle_button_category {
                     display: inline-block;
                     margin: 1vh 1%;
-                    padding: 2px 1.5%;
+                    padding: 1.8px 1.5%;
                     border: 2px solid red;
-                    border-radius: 25px;
+                    border-radius: 22.5px;
                     background-color: white;
                     color: red;
                     cursor: pointer;
                     text-align: center;
                     transition: background-color 0.3s, color 0.3s;
-                    font-size: 12px;
+                    font-size: 10.8px;
                 }
 
                 /* チェックボックスがチェックされたときのスタイル */

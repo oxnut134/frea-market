@@ -6,13 +6,13 @@
 }
 .demo-login_button {
     width: 100%;
-    padding: 10px 12px;
+    padding: 9px 10.8px;
     box-sizing: border-box;
     border: 1px solid #333;
-    border-radius: 5px;
+    border-radius: 4.5px;
     background-color: #fff;
     color: #000;
-    font-size: 16px;
+    font-size: 14.4px;
     cursor: pointer;
 }
 .demo-login_button:hover {
@@ -22,17 +22,17 @@
 .demo-notice {
     width: 60%;
     margin: 0 auto 3vh;
-    padding: 12px 16px;
+    padding: 10.8px 14.4px;
     box-sizing: border-box;
     border: 1px solid #999;
-    border-radius: 5px;
+    border-radius: 4.5px;
     background-color: #f7f7f7;
     color: #000;
-    font-size: 14px;
+    font-size: 12.6px;
     text-align: left;
 }
 .demo-notice_text {
-    margin: 0 0 8px;
+    margin: 0 0 7.2px;
 }
 .demo-notice_text:last-child {
     margin-bottom: 0;

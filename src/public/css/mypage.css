@@ -10,11 +10,11 @@
     width: 20%;
     height: 6vh;
     border: solid, 2px, #000;
-    border-radius: 5px;
+    border-radius: 4.5px;
     background-color: #fff;
     margin-top: 6vh;
     margin-right: 8%;
-    font-size: 18px;
+    font-size: 16.2px;
 }
 
 .mypage-form_user_picture_wrapper {
@@ -25,26 +25,29 @@
     margin-left: 13%;
 }
 .mypage-form_user_picture {
-    width: 18%;
+    width: 12.2%;
     border-radius: 50%;
 }
 .mypage-form_user_name {
     display: flex;
     align-items: center;
     margin-left: 6%;
-    font-size: 25px;
+    font-size: 22.5px;
 }
 
+/* 商品の並び（トップページの index.css と同じ）。左右の端は、タブの並び（header.css の tab-nav）と同じ 8% にそろえる。
+   4 列：22.3% × 4 + すき間 3.5% × 3 */
 .mypage-form_image_box {
     display: flex;
     justify-content: flex-start;
     flex-wrap: wrap;
-    margin: 2%;
+    column-gap: 3.5%;
+    row-gap: 2vw;
+    margin: 2% 8%;
 }
 .mypage-form_image_wrapper {
     flex-direction: column;
-    width: 21%;
-    margin: 1vh 2%;
+    width: 22.3%;
     text-decoration:none;
 }
 .mypage-form_image_attribute {
