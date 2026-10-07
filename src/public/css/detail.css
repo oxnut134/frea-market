@@ -34,32 +34,24 @@
     font-size: 18px;
 }
 
-.detail-form_item_price_wrapper {
-    height: 50vh;
-    margin-top: 10vh;
-    margin-bottom: 2vh;
-}
+/* いいねとコメント：アイコンの下に件数。左に寄せて並べる。
+   アイコンは、まわりの文字（価格、ボタン）と同じく固定の大きさにする（画面の幅に合わせると、広い画面でアイコンだけが大きくなる） */
 .detail-form_engagement_image_box {
-    width: 50%;
     display: flex;
     justify-content: flex-start;
-    /*flex-direction:row;*/
 }
 .detail-form_engagement_image_wrapper {
-    width: 20%;
     display: flex;
-    justify-content: center;
     flex-direction: column;
-    margin-top: 3vh;
-    margin-right: 10%;
-    margin-bottom: 0%;
-    margin-left: 10%;
+    align-items: center;
+    margin: 3vh 28px 0 0;
     text-decoration:none;
     /* いいねは <a> なので、リンクの色（青）ではなくコメント数と同じ黒にする */
     color: #000;
 }
 .like-icon {
-    width: 70%;
+    width: 26px;
+    height: 26px;
     cursor: pointer;
 }
 /* いいねの送信中（like.js が付け外しする） */
@@ -71,13 +63,11 @@
     cursor: progress;
 }
 .detail-form_engagement_image {
-    width: 70%;
-    /*margin:3vh 4% 0vh;*/
+    width: 26px;
+    height: 26px;
 }
 .detail-form_engagement_count {
-    width: 70%;
-    display: flex;
-    justify-content: center;
+    margin-top: 3px;
 }
 .detail-form_button_to_purchase_step {
     display: flex;
@@ -187,8 +177,10 @@
     font-size: 18px;
     margin-top: 3vh;
 }
+/* 入力欄の書体と大きさは、まわりの文字と同じにする（指定がないと、ブラウザの既定の等幅の書体になる） */
 .detail-form_your_comment_description {
     width: 100%;
+    font: inherit;
 }
 .detail-form_your_comment_post_button {
     width: 100%;
@@ -198,7 +190,8 @@
     border: none;
     border-radius: 4.5px;
     margin-top: 4vh;
-    font-size: 15.3px;
+    /* 「購入手続きへ」と同じ大きさ */
+    font-size: 18px;
 }
 /* 未ログインのとき、送信ボタンの代わりに出すリンク（見た目は送信ボタンと同じ） */
 .detail-form_login_to_comment_link {
@@ -211,7 +204,7 @@
     color: #fff;
     border-radius: 4.5px;
     margin-top: 4vh;
-    font-size: 15.3px;
+    font-size: 18px;
     text-decoration: none;
 }
 .detail-form_message {

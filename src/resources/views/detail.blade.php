@@ -22,8 +22,7 @@
         <div class="detail-form_detail_descriptions">
             <h1 class="detail-form_item_name">{{ $item->item_name }}</h1>
             <div class="detail-form_brand_name">{{ $item->brand_name }}</div>
-            <div class="detail-form_item_price
-            _wrapper">
+            <div class="detail-form_item_price">
                 <span class="detail-form_item_price">￥</span><span class="detail-form_item_price">{{ $item->price }}</span><span class="detail-form_item_price_tax">（税込）</span>
             </div>
             <!-- いいね------->
