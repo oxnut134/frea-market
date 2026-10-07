@@ -49,11 +49,24 @@ class HeaderLogoLinkTest extends TestCase
         $this->get('/')->assertRedirect('/login');
     }
 
+    // alt は、ロゴに書いてある文字と同じ
     public function testLogoHasMeaningfulAlt(): void
     {
         $response = $this->get('/frea');
 
-        $response->assertSee('alt="フリマアプリ"', false);
+        $response->assertSee('alt="Flea Market"', false);
         $response->assertDontSee('alt="error"', false);
+    }
+
+    // ロゴの画像：ヘッダーの配置が変わらないように、大きさと縦横比は 300 × 32。
+    // 文字はパスにしてあり、フォントに頼らない
+    public function testLogoImageKeepsSizeAndHasNoFontDependentText(): void
+    {
+        $svg = file_get_contents(public_path('images/logo.svg'));
+
+        $this->assertStringContainsString('viewBox="0 0 300 32"', $svg);
+        $this->assertStringContainsString('<title>Flea Market</title>', $svg);
+        $this->assertStringNotContainsString('<text', $svg);
+        $this->assertStringNotContainsString('font-family', $svg);
     }
 }

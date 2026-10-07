@@ -25,7 +25,7 @@
 
             {{-- ロゴは商品一覧へ戻るリンク。未ログインでは / がログイン画面に送られるので、/frea へ --}}
             <a class="frea-market_header_logo_link" href="{{ Auth::check() ? '/' : '/frea' }}">
-                <img class="frea-market_header_logo" src="@versioned('images/logo.svg')" alt="フリマアプリ">
+                <img class="frea-market_header_logo" src="@versioned('images/logo.svg')" alt="Flea Market">
             </a>
 
             @if (Auth::check())
