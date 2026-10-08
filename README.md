@@ -524,4 +524,4 @@ Stripe ダッシュボードで、`https://{公開 URL}/stripe/webhook` を登�
 
 ---
 
-画面と機能の範囲は、COACHTECH の模擬案件の仕様書をもとにしています。
+画面と機能の範囲は、COACHTECH の模擬案件の仕様書をもとにしています（模擬案件として提出した時点の版は、タグ [`coachtech-submission`](https://github.com/oxnut134/frea-market/tree/coachtech-submission) にあります）。
