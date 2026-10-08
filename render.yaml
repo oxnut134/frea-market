@@ -11,12 +11,14 @@ services:
     # A Laravel page would touch the session table every few seconds and keep
     # the Neon database from scaling to zero.
     healthCheckPath: /healthz
-    # Do not deploy when a push only changes documentation. Every deploy stops
+    # Do not deploy when a push only changes documentation (Markdown files and
+    # everything under docs/, such as the README screenshots). Every deploy stops
     # the service briefly (persistent disk) and resets the demo data.
     buildFilter:
       ignoredPaths:
         - "*.md"
         - "**/*.md"
+        - "docs/**"
     # Uploaded and seeded images (IMAGE_DISK=public). Everything outside this
     # path is lost on every deploy.
     disk:
