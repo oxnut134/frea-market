@@ -1,7 +1,17 @@
 # frea-market
 
 COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリオ用に仕上げ中。アプリ名は「Flea Market」（リポジトリと URL の名前は `frea-market` のまま）。
-作業ブランチは `portfolio`（main には直接コミットしない）。
+作業ブランチは `portfolio`。`main` にはマージもコミットもしない（下の「ブランチ」）。
+
+## ブランチ
+
+- `portfolio`：作業ブランチで、公開している版。GitHub の既定のブランチ。Render は、このブランチへの push でデプロイする
+- `main`：元の版の系列として、そのまま残す。`portfolio` を `main` にマージしない — COACHTECH に提出した元の状態を、作り直した版で上書きせずに残すため
+  - `main` の先頭（`6912a32`、2026-06-14）は、提出した版に、PHP 8.1・PostgreSQL への移行と Render 向けの変更（6 コミット）を足したもの。`portfolio` は、そこから枝分かれしている
+  - 提出した時点は、タグ `coachtech-submission`（`1200e99`、2025-09-21）。README の末尾の一文から、このタグへリンクしている
+  - 「画面の動きは `main` に合わせる」（作業ルール）の比べる相手は、`main` の先頭
+- README のクローンの手順は `-b portfolio` を付けたまま — 既定のブランチがどちらでも、同じ結果になるため
+- ほかのブランチ：`origin/feature/deploy-render`（`main` に含まれている古いブランチ）、`backup/guest-browsing`（ローカルだけ）。どちらも触っていない
 
 ## 環境
 
@@ -53,7 +63,7 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
 - 仕様は、コードとテストで確かめてから書く
 - テストを足したら、README のテストの件数も直す
 - 依存パッケージの勧告の詳しい説明は `docs/dependency-advisories.md`。README の「既知の点」からリンクする
-- COACHTECH の模擬案件が土台であることは、末尾の一文だけ
+- COACHTECH の模擬案件が土台であることは、末尾の一文だけ。提出した時点の版（タグ `coachtech-submission`）へのリンクも、その一文の中に入れる
 - ER 図と構成図、購入の流れの図は Mermaid。スキーマや構成を変えたら、図も直す
 - スクリーンショットは `docs/images/` の 4 枚（`items.png`、`item-detail.png`、`purchase.png`、`mypage.png`）。本番の画面を撮り、まわりの余白を切り落として、幅 1200px の PNG に縮めたもの（php コンテナの GD で。4 枚で約 950 KB）。デモアカウントで撮り、個人情報が写っていないことを確かめてから入れる。見た目を変えたら、撮り直す
 
@@ -230,6 +240,7 @@ README には載せない。ファイル名を残してきたのは、この対�
 - `.dockerignore` で、ローカルの `.env`、`vendor`、DB のデータ、`storage` の中身をイメージに入れない
 - DB のエラー（`QueryException`）は、値を埋め込んだ SQL とスタックトレースをログに出さない（`app/Exceptions/Handler.php`）— ログインや会員登録の SQL には、メールアドレスやパスワードのハッシュが入るため。PostgreSQL の `DETAIL:` の行（`Key (email)=(...)`）も落とす。記録するのは、DB のエラーの文、値を `?` のままにした SQL、`app/` の呼び出し位置（ファイルと行）だけ
 - ビルドフィルター：Markdown（`*.md`、`**/*.md`）と `docs/` の下（`docs/**`。README のスクリーンショットなど）だけの変更では、Render はデプロイしない（`render.yaml` の `buildFilter.ignoredPaths`）— デプロイのたびに短い停止があり、デモのデータも初期化されるため。手動のデプロイは、フィルターに関係なく動く
+  - 確認済み（本番、2026-10-06）：README と CLAUDE.md だけのコミットを push しても、Render の Live は `af3e4d8` のまま変わらなかった。`docs/**` を足したあとの、`docs/` の下だけの push は未確認
 - Render は `X-Forwarded-Proto` を付ける（`TrustProxies` は `*` で設定済み。本番で CSS と画像が https で読めている）
 
 ### デプロイ後に確認したこと
@@ -315,8 +326,6 @@ README には載せない。ファイル名を残してきたのは、この対�
   - Neon の使用量を公開から 1 週間見る（目安は 1 日あたり約 3.3 CU 時間まで）。Neon がアクセスのない間に眠ること。多ければ、セッションをファイルにして永続ディスクに置く — 今のマウント先（`storage/app/public`）は外から見えるので、マウント先を `storage/app` に変えて、公開しないフォルダに置く必要がある
   - 再デプロイ後に、アップロードした画像とログインが残ること
   - Render のダッシュボードで、`APP_NAME` が「Flea Market」になっていること（Blueprint の同期）。ブラウザのタブに、ファビコンとタイトル「Flea Market」が出ること
-  - Markdown だけの push で、Render がデプロイしないこと
-- 最後に `portfolio` を `main` にマージする（プルリクエスト経由）— GitHub の既定のブランチは `main` で、書き直した README は `portfolio` にあるため。それまで README のクローン手順は `-b portfolio` のまま。マージしたら手順から `-b portfolio` を外す
 - メールを実際に送る場合：GHSA-5vg9-5847-vvmq を再確認する（今は `MAIL_MAILER=log` で外部に送っていない前提で残している）。`docs/dependency-advisories.md` と `composer.json` の理由も合わせて直す。`DEMO_MODE` を `false` にすると、メール認証が戻り、デモ用の案内・制限・初期化がすべて止まる。印のあるユーザーは残るので、手で消す
 - 仕上げ：`ProfileRequest` と `ProfileFirstRequest` の郵便番号の正規表現の `$` を `\z` にする（`$` は末尾の改行を通す。`RedirectRequest` は修正済み）— `TrimStrings` が先に改行を取り除くので、実害はない
 - Laravel のメジャーアップグレード（未定）：残る 5 件の勧告と、放棄されたパッケージ 2 つが解消する
