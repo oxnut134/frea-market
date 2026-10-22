@@ -16,7 +16,7 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
 ## 環境
 
 - 作業フォルダは WSL2 の `~/coachtech/frea-market`。Windows のフォルダ（`/mnt/c/...`）は使わない — Docker のマウントが遅いため。ホストは WSL2 の Ubuntu（bash）
-- Laravel 8 / PHP 8.1 / PostgreSQL 15。アプリ本体は `src/`
+- Laravel 8 / PHP 8.2（8.2.35）/ PostgreSQL 15。アプリ本体は `src/`
 - Docker Compose：`php`（`docker/php/Dockerfile`）、`nginx`（:80）、`pgsql`（:5432）、`adminer`（:8080）、`mailhog`（:8025 / SMTP :1025）
 - artisan と composer は php コンテナ内で実行：`docker compose exec php php artisan ...`
 - 新しい環境では、`storage` と `bootstrap/cache` の持ち主を www-data にする：`docker compose exec php chown -R www-data:www-data storage bootstrap/cache` と `docker compose exec php chmod -R ug+rwX storage bootstrap/cache`

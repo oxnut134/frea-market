@@ -1,10 +1,10 @@
 # syntax=docker/dockerfile:1
 
 # ---------------------------------------------------------------------------
-# Render deployment image: nginx + php-fpm (PHP 8.1) in a single container,
+# Render deployment image: nginx + php-fpm (PHP 8.2) in a single container,
 # managed by supervisord.
 # ---------------------------------------------------------------------------
-FROM php:8.1-fpm
+FROM php:8.2.35-fpm
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \

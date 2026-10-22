@@ -244,7 +244,7 @@ sequenceDiagram
 
 | 種類 | 内容 |
 |---|---|
-| 言語・フレームワーク | PHP 8.1、Laravel 8.83、Laravel Fortify 1.19 |
+| 言語・フレームワーク | PHP 8.2、Laravel 8.83、Laravel Fortify 1.19 |
 | データベース | PostgreSQL 15 |
 | 決済 | Stripe Checkout、stripe-php 21.3 |
 | テスト | PHPUnit 9.6 |
