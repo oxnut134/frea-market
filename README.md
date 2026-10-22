@@ -413,7 +413,7 @@ STRIPE_WEBHOOK_SECRET={Webhook の署名シークレット（whsec_...）}
 2. Webhook をローカルへ転送します。確認の間は、実行したままにします。
 
    ```
-   stripe listen --forward-to http://localhost/stripe/webhook
+   stripe listen --all-snapshot --forward-to http://localhost/stripe/webhook
    ```
 
 3. 起動時に表示される `whsec_...` を、`.env` の `STRIPE_WEBHOOK_SECRET` に設定します。

@@ -26,7 +26,10 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
 - 画像：`IMAGE_DISK`（既定 `public`。本番も `public` で、永続ディスクに保存）。URL は `Item::image_url` / `Profile::image_url` で生成
   - 新しい環境では、シーディング後に `php artisan storage:link` と `chown -R www-data:www-data storage/app/public`
   - アップロード上限 5MB（`docker/php/php.ini` は 6M。変更したら `docker compose build php && docker compose up -d php`）
-- Stripe CLI：WSL2 側の `/usr/bin/stripe`（1.51.1）を使う。Windows 側の `C:\Program Files\Stripe\stripe`（1.43.2）は使わない。ログインは未実施（`stripe login`）。nginx が WSL2 の 80 番なので、`stripe listen --forward-to http://localhost/stripe/webhook`（WSL2 では未確認）。表示された `whsec_...` を `.env` の `STRIPE_WEBHOOK_SECRET` に入れる。`stripe docs` が使えるかは未確認（使えなければ docs.stripe.com の `.md` を直接取得）
+- Stripe CLI：WSL2 側の `/usr/bin/stripe`（1.51.1）を使う。Windows 側の `C:\Program Files\Stripe\stripe`（1.43.2）は使わない。ログインは済んでいる（`~/.config/stripe/`）。nginx が WSL2 の 80 番なので、`stripe listen --all-snapshot --forward-to http://localhost/stripe/webhook`（WSL2 では未確認）。表示された `whsec_...` を `.env` の `STRIPE_WEBHOOK_SECRET` に入れる（2026-10-22 時点で、`stripe listen --print-secret` の値と `.env` の値は同じ）
+  - 手元で Webhook を受けるには、購入の前に、別のターミナルで `stripe listen` を手で起動しておく。compose のサービスにも php のイメージにも入っていないので、コンテナを作り直しても起動しない。起動していないと、カード払いでも「取引中」のまま `paid` にならない
+  - 本番と同じテストモードのアカウントなので、本番の購入のイベントも手元に転送される。手元の DB にない購入は、laravel.log に「purchase was not found」と出る（手元の不具合ではない）
+  - `stripe docs` が使えるかは未確認（使えなければ docs.stripe.com の `.md` を直接取得）
 - 本番：https://frea-market.onrender.com 。Render（Docker、Starter、シンガポール、永続ディスク 1 GB を `/var/www/storage/app/public` に）と Neon（無料プラン、PostgreSQL 15、シンガポール、`-pooler` の付かない直接接続）
   - 設定はルートの `Dockerfile`、`render.yaml`、`docker/render/`（`entrypoint.sh`、`nginx.conf`、`php-fpm.conf`、`supervisord.conf`、`scheduler.sh`）。`portfolio` への push で自動デプロイ
   - 手入力の環境変数は 6 つ（`APP_KEY`、`APP_URL`、`DATABASE_URL`、`STRIPE_PUBLIC_KEY`、`STRIPE_SECRET_KEY`、`STRIPE_WEBHOOK_SECRET`）。値は Render のダッシュボードにだけ置く
