@@ -14,10 +14,14 @@ input {
 .frea-market_header {
     width: 100%;
     height: 8vh;
-    /*display: flex;
+    display: flex;
     justify-content: center;
-    align-items: center;*/
+    align-items: center;
     background-color: #000;
+}
+/* 未ログイン：ロゴを左に、「ログイン」を右端に置く */
+.frea-market_header--guest {
+    justify-content: flex-start;
 }
 /* ロゴ（商品一覧へのリンク）。大きさと位置はリンクの側で決める */
 .frea-market_header_logo_link {
@@ -32,6 +36,11 @@ input {
     /* オリジナルロゴサイス
     　　236.98 × 80     */
 }
+.frea-market_header_search {
+    width: 50%;
+    display: flex;
+    justify-content: flex-end;
+}
 .frea-market_header_input_key {
     width: 80%;
     height: 5vh;
@@ -40,12 +49,32 @@ input {
     font-size: 16.2px;
     border-radius: 4.5px;
 }
+/* ログアウト・マイページ・出品の並び */
+.frea-market_header_nav {
+    width: 30%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-right: 3%;
+    margin-left: 3%;
+}
+.frea-market_header_logout {
+    width: 35%;
+}
+.frea-market_header_logout_button {
+    max-height: 36px;
+    background-color: #000;
+    color: #fff;
+    border-width: 0;
+    font-size: 15.3px;
+}
 .frea-market_header_link {
-    width: 90px;
+    width: 35%;
     color: #fff;
     font-size: 15.3px;
     font-family: "Gothic";
     margin-right: 1.5%;
+    text-decoration: none;
 }
 /* 未ログインのヘッダーの「ログイン」。ロゴの反対側（右端）に置く */
 .frea-market_header_login_link {
@@ -57,7 +86,7 @@ input {
     text-decoration: none;
 }
 .frea-market_header_button_to_exhibit {
-    width: 7%;
+    width: 15%;
     height: 5vh;
     background-color: #fff;
     color: #000;
@@ -69,6 +98,69 @@ input {
     align-items:center;
 
 
+}
+
+/* 幅が狭いとき（スマートフォンとタブレット）：1 段目にロゴとボタン、2 段目に検索欄を横幅いっぱいに置く。
+   境目は 960px — それより狭いと、1 行の並びのままでは「ログアウト」と「マイページ」が 2 行に折り返すため。
+   ボタンとロゴが 1 段目に収まらない幅（320px など）では、ボタンの並びが次の段に回る */
+@media (max-width: 959px) {
+    .frea-market_header {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        row-gap: 8px;
+        height: auto;
+        min-height: 56px;
+        padding: 8px 16px;
+    }
+    .frea-market_header_logo_link {
+        width: min(130px, 32vw);
+        margin-left: 0;
+    }
+    .frea-market_header_search {
+        order: 1;
+        width: 100%;
+    }
+    .frea-market_header_input_key {
+        width: 100%;
+        height: 40px;
+        margin-left: 0;
+    }
+    .frea-market_header_nav {
+        width: auto;
+        gap: 8px;
+        margin-right: 0;
+        margin-left: auto;
+    }
+    .frea-market_header_logout {
+        width: auto;
+    }
+    /* ボタン 3 つは、文字を折り返さず、押せる高さを 40px 以上にする（文字は小さくして、余白で高さを取る） */
+    .frea-market_header_logout_button,
+    .frea-market_header_link,
+    .frea-market_header_button_to_exhibit {
+        display: flex;
+        align-items: center;
+        width: auto;
+        height: auto;
+        max-height: none;
+        min-height: 40px;
+        margin-right: 0;
+        font-size: 13.5px;
+        white-space: nowrap;
+    }
+    .frea-market_header_logout_button {
+        padding: 0;
+    }
+    .frea-market_header_button_to_exhibit {
+        padding: 0 12px;
+    }
+    /* 「ログイン」も、押せる高さを 40px 以上にする */
+    .frea-market_header_login_link {
+        display: flex;
+        align-items: center;
+        min-height: 40px;
+        margin-right: 0;
+    }
 }
 
 button:disabled,
