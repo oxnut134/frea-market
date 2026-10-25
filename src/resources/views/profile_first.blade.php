@@ -47,8 +47,8 @@
                 <input class="profile-form_input_user_image" type="file" id="imageInput" name="profile_image" value="">
             </div>
             @if ($errors->has('profile_image'))
-            <div style="width:100%;display:flex;justify-content:flex-start;">
-                <div style="width:60%;display:flex;justify-content:flex-start;color:red;">
+            <div class="profile-form_error_wrapper">
+                <div class="profile-form_error">
                     {{$errors->first('profile_image')}}
                 </div>
             </div>
@@ -75,8 +75,8 @@
                 <input class="profile-form_input_field" type="text" name="user_name" value="{{ $name }}" >
             </div>
             @if ($errors->has('user_name'))
-            <div style="width:100%;display:flex;justify-content:flex-start;">
-                <div style="width:60%;display:flex;justify-content:flex-start;color:red;">
+            <div class="profile-form_error_wrapper">
+                <div class="profile-form_error">
                     {{$errors->first('user_name')}}
                 </div>
             </div>
@@ -88,8 +88,8 @@
                 <input class="profile-form_input_field" type="text" name="post_code" value="">
             </div>
             @if ($errors->has('post_code'))
-            <div style="width:100%;display:flex;justify-content:flex-start;">
-                <div style="width:60%;display:flex;justify-content:flex-start;color:red;">
+            <div class="profile-form_error_wrapper">
+                <div class="profile-form_error">
                     {{$errors->first('post_code')}}
                 </div>
             </div>
@@ -101,8 +101,8 @@
                 <input class="profile-form_input_field" type="text" name="address" value="">
             </div>
             @if ($errors->has('address'))
-            <div style="width:100%;display:flex;justify-content:flex-start;">
-                <div style="width:60%;display:flex;justify-content:flex-start;color:red;">
+            <div class="profile-form_error_wrapper">
+                <div class="profile-form_error">
                     {{$errors->first('address')}}
                 </div>
             </div>
@@ -114,8 +114,8 @@
                 <input class="profile-form_input_field" type="text" name="building" value="">
             </div>
             @if ($errors->has('building'))
-            <div style="width:100%;display:flex;justify-content:flex-start;">
-                <div style="width:60%;display:flex;justify-content:flex-start;color:red;">
+            <div class="profile-form_error_wrapper">
+                <div class="profile-form_error">
                     {{$errors->first('building')}}
                 </div>
             </div>

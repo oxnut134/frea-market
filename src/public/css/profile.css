@@ -80,6 +80,18 @@
     padding-left:1%;
     font-size:13.5px;
 }
+/* 入力エラー（各項目の下） */
+.profile-form_error_wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+}
+.profile-form_error {
+    width: 60%;
+    display: flex;
+    justify-content: flex-start;
+    color: red;
+}
 .profile-form_button_box {
     width: 100%;
     display: flex;
@@ -99,3 +111,70 @@
     font-size: 18px;
 }
 
+/* 959px 以下：中身の列を幅いっぱい（最大 480px）にし、左右の余白は 16px（出品・購入の画面と同じ）。
+   縦の余白と高さは vh ではなく固定の px にする。押せる部分は高さ 44px 以上、入力欄の文字は 16px。
+   プロフィールの変更（profile）と登録（profile_first）の両方に効く。
+   「画像を選択する」の指定はビューの <style> にあり、このファイルより後に読まれるので、親のクラスを付けて上書きする */
+@media (max-width: 959px) {
+    .profile_form {
+        height: auto;
+    }
+    .profile-form_container {
+        width: 100%;
+        max-width: 480px;
+        padding: 0 16px;
+    }
+    .profile-form_title {
+        height: auto;
+        margin-top: 16px;
+    }
+    /* 見出しの箱を文字に合わせ、「プロフィール設定」を折り返さない */
+    .profile-form_profile_logo {
+        width: auto;
+        height: auto;
+        margin: 8px 0 0;
+    }
+    .profile-form_user_picture_wrapper {
+        margin-top: 24px;
+    }
+    /* flex の中で縮まないように、固定の大きさの丸に切り抜く */
+    .profile-form_user_picture {
+        flex-shrink: 0;
+        width: 96px;
+        height: 96px;
+        object-fit: cover;
+    }
+    .profile-form_user_picture_wrapper .toggle_button {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        margin: 0 0 0 16px;
+        padding: 0 16px;
+        font-size: 14px;
+        white-space: nowrap;
+    }
+    .profile-form_input_title {
+        margin-top: 16px;
+    }
+    .profile-form_input_title_logo {
+        margin: 0 0 6px;
+        font-size: 15px;
+    }
+    /* 16px 未満だと、iPhone の Safari が入力のときに画面を拡大する */
+    .profile-form_input_field {
+        height: 44px;
+        padding: 0 8px;
+        font-size: 16px;
+    }
+    .profile-form_error {
+        width: 100%;
+        margin-top: 6px;
+    }
+    .profile-form_button_box {
+        margin-bottom: 40px;
+    }
+    .profile-form_redirect_button {
+        height: 48px;
+        margin-top: 32px;
+    }
+}
