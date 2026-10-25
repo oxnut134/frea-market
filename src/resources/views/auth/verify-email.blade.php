@@ -34,7 +34,7 @@
     </style>
 </head>
 
-<body style="width:100%;display:flex;justify-content:center;">
+<body style="display:flex;justify-content:center;">
     <div>
         <h3>登録していただいたメールアドレスに認証メールを送付しました。</h3>
         <div style="display:flex;justify-content:center;">
