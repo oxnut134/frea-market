@@ -44,7 +44,7 @@
             <div class="profile-form_user_picture_wrapper">
                 <img class="profile-form_user_picture" id="imagePreview" src="@versioned('images/default-profile.svg')" alt="選択した画像がここに表示されます。">
                 <label for="imageInput" class="toggle_button">画像を選択する</label>
-                <input class="profile-form_input_user_image" type="file" id="imageInput" name="profile_image" value="">
+                <input class="profile-form_input_user_image" type="file" id="imageInput" name="profile_image" value="" accept="image/jpeg,image/png">
             </div>
             @if ($errors->has('profile_image'))
             <div class="profile-form_error_wrapper">
@@ -72,7 +72,7 @@
                 <h3 class="profile-form_input_title_logo">ユーザー名</h3>
             </div>
             <div class="profile-form_input_box ">
-                <input class="profile-form_input_field" type="text" name="user_name" value="{{ $name }}" >
+                <input class="profile-form_input_field" type="text" name="user_name" value="{{ old('user_name', $name) }}" >
             </div>
             @if ($errors->has('user_name'))
             <div class="profile-form_error_wrapper">
@@ -85,7 +85,7 @@
                 <h3 class="profile-form_input_title_logo">郵便番号</h3>
             </div>
             <div class="profile-form_input_box ">
-                <input class="profile-form_input_field" type="text" name="post_code" value="">
+                <input class="profile-form_input_field" type="text" name="post_code" value="{{ old('post_code') }}">
             </div>
             @if ($errors->has('post_code'))
             <div class="profile-form_error_wrapper">
@@ -98,7 +98,7 @@
                 <h3 class="profile-form_input_title_logo">住所</h3>
             </div>
             <div class="profile-form_input_box ">
-                <input class="profile-form_input_field" type="text" name="address" value="">
+                <input class="profile-form_input_field" type="text" name="address" value="{{ old('address') }}">
             </div>
             @if ($errors->has('address'))
             <div class="profile-form_error_wrapper">
@@ -111,7 +111,7 @@
                 <h3 class="profile-form_input_title_logo">建物名</h3>
             </div>
             <div class="profile-form_input_box ">
-                <input class="profile-form_input_field" type="text" name="building" value="">
+                <input class="profile-form_input_field" type="text" name="building" value="{{ old('building') }}">
             </div>
             @if ($errors->has('building'))
             <div class="profile-form_error_wrapper">
