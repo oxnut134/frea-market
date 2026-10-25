@@ -20,8 +20,8 @@
                 <input class="redirect-form_input_field" type="text" name="post_code" aria-activedescendant="" value="{{ old('post_code', $post_code) }}">
             </div>
             @if ($errors->has('post_code'))
-            <div style="width:100%;display:flex;justify-content:center;">
-                <div style="width:60%;display:flex;justify-content:flex-start;color:red;">
+            <div class="redirect-form_error_wrapper">
+                <div class="redirect-form_error">
                     {{$errors->first('post_code')}}
                 </div>
             </div>
@@ -33,8 +33,8 @@
                 <input class="redirect-form_input_field" type="text" name="address" value="{{ old('address', $address) }}">
             </div>
             @if ($errors->has('address'))
-            <div style="width:100%;display:flex;justify-content:center;">
-                <div style="width:60%;display:flex;justify-content:flex-start;color:red;">
+            <div class="redirect-form_error_wrapper">
+                <div class="redirect-form_error">
                     {{$errors->first('address')}}
                 </div>
             </div>
@@ -46,8 +46,8 @@
                 <input class="redirect-form_input_field" type="text" name="building" value="{{ old('building', $building) }}">
             </div>
             @if ($errors->has('building'))
-            <div style="width:100%;display:flex;justify-content:center;">
-                <div style="width:60%;display:flex;justify-content:flex-start;color:red;">
+            <div class="redirect-form_error_wrapper">
+                <div class="redirect-form_error">
                     {{$errors->first('building')}}
                 </div>
             </div>

@@ -51,6 +51,18 @@
     display: flex;
     justify-content: flex-start;
 }
+/* 入力エラー（各項目の下） */
+.redirect-form_error_wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+.redirect-form_error {
+    width: 60%;
+    display: flex;
+    justify-content: flex-start;
+    color: red;
+}
 .redirect-form_button_box {
     width: 100%;
     display: flex;
@@ -70,3 +82,57 @@
     font-size: 18px;
 }
 
+/* 959px 以下：中身の列を幅いっぱい（最大 480px）にし、左右の余白は 16px（購入・プロフィールの画面と同じ）。
+   縦の余白と高さは vh ではなく固定の px にする。押せる部分は高さ 44px 以上、入力欄の文字は 16px。
+   見出し「住所の変更」の大きさ（27px）は変えない */
+@media (max-width: 959px) {
+    .redirect_form {
+        height: auto;
+    }
+    .redirect-form_container {
+        width: 100%;
+        max-width: 480px;
+        padding: 0 16px;
+    }
+    .redirect-form_title {
+        height: auto;
+        margin-top: 16px;
+    }
+    /* 縦に積む箱の高さは整数にそろえる（27px × 1.5 = 40.5px のままだと、下の入力欄の上端が 0.5px の位置に来て、
+       端末によっては上の枠線が消える） */
+    .redirect-form_redirect_logo {
+        width: auto;
+        height: auto;
+        margin: 8px 0 8px;
+        line-height: 40px;
+    }
+    .redirect-form_input_title {
+        margin-top: 16px;
+    }
+    .redirect-form_input_title_logo {
+        width: 100%;
+        margin: 0 0 6px;
+        font-size: 15px;
+        line-height: 22px;
+    }
+    /* 16px 未満だと、iPhone の Safari が入力のときに画面を拡大する */
+    .redirect-form_input_field {
+        width: 100%;
+        height: 44px;
+        padding: 0 8px;
+        font-size: 16px;
+    }
+    .redirect-form_error {
+        width: 100%;
+        margin-top: 6px;
+        line-height: 22px;
+    }
+    .redirect-form_button_box {
+        margin-bottom: 40px;
+    }
+    .redirect-form_redirect_button {
+        width: 100%;
+        height: 48px;
+        margin-top: 32px;
+    }
+}
