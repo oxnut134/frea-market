@@ -45,8 +45,9 @@
             <div class="exhibit-form_user_picture_wrapper">
                 <img class="exhibit-form_user_picture" id="imagePreview" src="" alt="選択した画像がここに表示されます。">
                 <label for="imageInput" class="toggle_button">画像を選択する</label>
-                <input class="exhibit-form_input_user_image" type="file" id="imageInput" name="item_image">
+                <input class="exhibit-form_input_user_image" type="file" id="imageInput" name="item_image" accept="image/jpeg,image/png">
             </div>
+            <p class="exhibit-form_note"><span class="exhibit-form_required">必須</span>JPEG・PNG、5MB 以下</p>
             @if ($errors->has('item_image'))
             <div style="width:100%;display:flex;justify-content:flex-start;">
                 <div style="width:60%;display:flex;justify-content:flex-start;color:red;">
@@ -72,7 +73,7 @@
                 商品の詳細
             </h3>
             <div class="exhibit-form_input_title">
-                <h3 class="exhibit-form_input_title_logo">カテゴリー</h3>
+                <h3 class="exhibit-form_input_title_logo">カテゴリー<span class="exhibit-form_required">必須</span></h3>
             </div>
             <!---------- チェックボックス処理 ----------------------->
             <style>
@@ -111,7 +112,7 @@
             <div class="exhibit-form_category_box">
                 <!-- チェックボックスとラベル -->
                 @foreach($categories as $category)
-                <input type="checkbox" id="toggleCheckbox{{ $loop->iteration }}" name=" categories[] " value="{{ $category['category'] }}">
+                <input type="checkbox" id="toggleCheckbox{{ $loop->iteration }}" name=" categories[] " value="{{ $category['category'] }}"{{ in_array($category['category'], old('categories', [])) ? ' checked' : '' }}>
                 <label for="toggleCheckbox{{ $loop->iteration }}" class="toggle_button_category">{{ $category['category'] }}</label>
                 @endforeach
                 <!--                <input type="checkbox" id="toggleCheckbox14">
@@ -129,13 +130,13 @@
             <!---------------------------------------------------->
 
             <div class="exhibit-form_input_title">
-                <h3 class="exhibit-form_input_title_logo">商品の状態</h3>
+                <h3 class="exhibit-form_input_title_logo">商品の状態<span class="exhibit-form_required">必須</span></h3>
             </div>
             <select class="exhibit-form_select_item_condition" name="condition">
-                <option>良好</option>
-                <option>目立った汚れや傷なし</option>
-                <option>やや汚れや傷あり</option>
-                <option>状態が悪い</option>
+                <option{{ old('condition') === '良好' ? ' selected' : '' }}>良好</option>
+                <option{{ old('condition') === '目立った汚れや傷なし' ? ' selected' : '' }}>目立った汚れや傷なし</option>
+                <option{{ old('condition') === 'やや汚れや傷あり' ? ' selected' : '' }}>やや汚れや傷あり</option>
+                <option{{ old('condition') === '状態が悪い' ? ' selected' : '' }}>状態が悪い</option>
             </select>
             @if ($errors->has('condition'))
             <div style="width:100%;display:flex;justify-content:flex-start;">
@@ -148,10 +149,10 @@
                 商品名と説明
             </h3>
             <div class="exhibit-form_input_title">
-                <h3 class="exhibit-form_input_title_logo">商品名</h3>
+                <h3 class="exhibit-form_input_title_logo">商品名<span class="exhibit-form_required">必須</span></h3>
             </div>
             <div class="exhibit-form_input_box ">
-                <input class="exhibit-form_input_field" type="text" name="item_name" value="">
+                <input class="exhibit-form_input_field" type="text" name="item_name" value="{{ old('item_name') }}">
             </div>
             @if ($errors->has('item_name'))
             <div style="width:100%;display:flex;justify-content:flex-start;">
@@ -164,7 +165,7 @@
                 <h3 class="exhibit-form_input_title_logo">ブランド名</h3>
             </div>
             <div class="exhibit-form_input_box ">
-                <input class="exhibit-form_input_field" type="text" name="brand_name" value="">
+                <input class="exhibit-form_input_field" type="text" name="brand_name" value="{{ old('brand_name') }}">
             </div>
             @if ($errors->has('brand_name'))
             <div style="width:100%;display:flex;justify-content:flex-start;">
@@ -174,10 +175,10 @@
             </div>
             @endif
             <div class="exhibit-form_input_title">
-                <h3 class="exhibit-form_input_title_logo">商品の説明</h3>
+                <h3 class="exhibit-form_input_title_logo">商品の説明<span class="exhibit-form_required">必須</span></h3>
             </div>
             <div class="exhibit-form_input_box ">
-                <textarea class="exhibit-form_input_text_field" type="text" name="description" row="6" column="25"></textarea>
+                <textarea class="exhibit-form_input_text_field" type="text" name="description" row="6" column="25">{{ old('description') }}</textarea>
             </div>
             @if ($errors->has('description'))
             <div style="width:100%;display:flex;justify-content:flex-start;">
@@ -187,11 +188,12 @@
             </div>
             @endif
             <div class="exhibit-form_input_title">
-                <h3 class="exhibit-form_input_title_logo">販売価格</h3>
+                <h3 class="exhibit-form_input_title_logo">販売価格<span class="exhibit-form_required">必須</span></h3>
             </div>
             <div class="exhibit-form_input_box ">
-                <input class="exhibit-form_input_field" type="text" name="price" value="">
+                <input class="exhibit-form_input_field" type="text" name="price" value="{{ old('price') }}">
             </div>
+            <p class="exhibit-form_note">120 円以上</p>
             @if ($errors->has('price'))
             <div style="width:100%;display:flex;justify-content:flex-start;">
                 <div style="width:60%;display:flex;justify-content:flex-start;color:red;">

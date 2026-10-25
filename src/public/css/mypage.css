@@ -6,6 +6,15 @@
     align-items: center;
 }
 
+/* 出品のあとなどに出すお知らせ。左右の余白はタブの並びと同じ */
+.mypage-form_message {
+    margin: 3vh 8% 0;
+    padding: 10.8px 14.4px;
+    border: 1px solid #c8c8c8;
+    border-radius: 4.5px;
+    background-color: #f7f7f7;
+}
+
 .mypage-form_edit_profile_button {
     width: 20%;
     height: 6vh;

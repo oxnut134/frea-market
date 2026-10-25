@@ -153,7 +153,7 @@ class ItemController extends Controller
                 $item_category->save(); // データベースに保存
             }
         }
-        //return view('exhibit');
-        return back();
+        // 出品した商品は、マイページの「出品した商品」（タブの指定なしの既定）に並ぶ
+        return redirect()->route('mypage')->with('message', '出品しました。');
     }
 }

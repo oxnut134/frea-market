@@ -15,6 +15,9 @@
                 プロフィールを編集
             </button>
     </form>
+    @if (session('message'))
+    <p class="mypage-form_message">{{ session('message') }}</p>
+    @endif
     {{-- タブ（header.css の tab-nav）。選ばれているほうに tab-nav_item--active を付ける --}}
     <nav class="tab-nav">
         <a class="tab-nav_item{{ $tab === 'sell' ? ' tab-nav_item--active' : '' }}" href="/mypage/?tab=sell"{!! $tab === 'sell' ? ' aria-current="page"' : '' !!}>出品した商品</a>
