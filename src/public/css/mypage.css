@@ -62,3 +62,74 @@
 .mypage-form_image_attribute {
     width: 100%;
 }
+
+/* 959px 以下：左右の余白をタブの並びと同じ 16px にそろえ、縦の余白は vh ではなく固定の px にする。
+   プロフィール画像は 64px の正方形に切り抜き（flex の中で高さが伸びて歪まないように）、
+   「プロフィールを編集」は文字を折り返さない幅にする。商品の並びは、トップページ（index.css）と同じ */
+@media (max-width: 959px) {
+    .mypage-form_user_profile_box {
+        box-sizing: border-box;
+        padding: 24px 16px 0;
+    }
+    .mypage-form_user_picture_wrapper {
+        flex: 1;
+        width: auto;
+        min-width: 0;
+        align-items: center;
+        margin: 0;
+    }
+    .mypage-form_user_picture {
+        flex-shrink: 0;
+        width: 64px;
+        height: 64px;
+        object-fit: cover;
+    }
+    .mypage-form_user_name {
+        min-width: 0;
+        margin-left: 16px;
+        overflow-wrap: anywhere;
+    }
+    .mypage-form_edit_profile_button {
+        flex-shrink: 0;
+        width: auto;
+        height: 44px;
+        margin: 0 0 0 16px;
+        padding: 0 16px;
+        white-space: nowrap;
+    }
+    .mypage-form_message {
+        margin: 16px 16px 0;
+    }
+    .mypage-form_image_box {
+        column-gap: 16px;
+        row-gap: 24px;
+        margin: 16px;
+    }
+    .mypage-form_image_wrapper {
+        width: calc((100% - 16px) / 2);
+    }
+    .mypage-form_image_attribute {
+        display: block;
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
+    }
+}
+/* 600px 未満：「プロフィールを編集」は次の行に回して、幅いっぱいにする（画像と同じ行では、名前の幅が残らないため） */
+@media (max-width: 599px) {
+    .mypage-form_user_profile_box {
+        flex-wrap: wrap;
+        row-gap: 16px;
+    }
+    .mypage-form_user_picture_wrapper {
+        flex-basis: 100%;
+    }
+    .mypage-form_edit_profile_button {
+        width: 100%;
+        margin-left: 0;
+    }
+}
+@media (min-width: 600px) and (max-width: 959px) {
+    .mypage-form_image_wrapper {
+        width: calc((100% - 32px) / 3);
+    }
+}
