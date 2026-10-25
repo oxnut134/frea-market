@@ -451,8 +451,10 @@ STRIPE_WEBHOOK_SECRET={Webhook の署名シークレット（whsec_...）}
 
 ```
 docker compose exec pgsql createdb -U laravel_user frea_test
-docker compose exec php php artisan test
+docker compose exec -u www-data php php artisan test --do-not-cache-result
 ```
+
+テストは、アプリと同じ www-data で実行します。root で実行すると、テストが作るビューのキャッシュが root の持ち物になり、そのあとビューを変えたときに、アプリが上書きできずに 500 エラーになります。`--do-not-cache-result` は、www-data が書き込めない `src/` に、PHPUnit が結果のキャッシュを書こうとしないようにするものです。
 
 320 件あります（ほかに、仕様の確認待ちで skip にしているものが 1 件）。データベースは PostgreSQL を使い、決済のテストは Stripe に接続せず、偽の HTTP クライアントと、署名を付けた Webhook を使います。
 

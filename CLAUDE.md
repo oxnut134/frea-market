@@ -20,7 +20,10 @@ COACHTECH の模擬案件のフリマアプリ（Laravel）。ポートフォリ
 - Docker Compose：`php`（`docker/php/Dockerfile`）、`nginx`（:80）、`pgsql`（:5432）、`adminer`（:8080）、`mailhog`（:8025 / SMTP :1025）
 - artisan と composer は php コンテナ内で実行：`docker compose exec php php artisan ...`
 - 新しい環境では、`storage` と `bootstrap/cache` の持ち主を www-data にする：`docker compose exec php chown -R www-data:www-data storage bootstrap/cache` と `docker compose exec php chmod -R ug+rwX storage bootstrap/cache`
-- テスト：`docker compose exec php php artisan test`。DB は `phpunit.xml` の `pgsql_test` / `frea_test`。Stripe の鍵と Webhook シークレットも `phpunit.xml` のダミー値を使う
+- テスト：`docker compose exec -u www-data php php artisan test --do-not-cache-result`。DB は `phpunit.xml` の `pgsql_test` / `frea_test`。Stripe の鍵と Webhook シークレットも `phpunit.xml` のダミー値を使う
+  - www-data で回す — root で回すと、テストがコンパイルしたビューのキャッシュ（`storage/framework/views`）が root の持ち物になる。そのあとビューを変えると、www-data の php-fpm が上書きできず、画面が 500 になる（2026-10-26 に購入画面で起きた）
+  - `--do-not-cache-result` を付ける — 結果のキャッシュ（`src/.phpunit.result.cache`）の置き場所の `src/` は、ホストの uid 1000 の持ち物で、www-data は書けない。付けないと、最後に書き込みで失敗して件数が出ず、終了コードが 2 になる
+  - root で回してしまったときや、新しい環境では、上の chown と chmod で持ち主を戻す — `storage/framework/testing/disks`（`Storage::fake` の置き場所）に root の持ち物が残っていると、www-data で回したテストが画像の保存で `Permission denied` になって失敗する
   - `frea_test` は自動では作られない。新しい環境では `docker compose exec pgsql createdb -U laravel_user frea_test` で作る
 - メール：ローカルは MailHog（http://localhost:8025）
 - 画像：`IMAGE_DISK`（既定 `public`。本番も `public` で、永続ディスクに保存）。URL は `Item::image_url` / `Profile::image_url` で生成
