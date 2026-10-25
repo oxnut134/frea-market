@@ -57,6 +57,17 @@ class ExhibitFormTest extends TestCase
             ->assertSee('120 円以上');
     }
 
+    // 画像を選ぶまでは、代わりの文字ではなく、画像を選べる空の枠を出す（画像の要素は、選ぶまで隠す）
+    public function testEmptyImageFrameIsShownUntilImageIsSelected(): void
+    {
+        $this->get('/sell')
+            ->assertOk()
+            ->assertSee('<label for="imageInput" class="exhibit-form_image_placeholder" id="imagePlaceholder"></label>', false)
+            ->assertSee('<img class="exhibit-form_user_picture" id="imagePreview" alt="選択した画像" hidden>', false)
+            ->assertDontSee('選択した画像がここに表示されます。')
+            ->assertDontSee('src=""', false);
+    }
+
     // 必須の項目（画像、カテゴリー、商品の状態、商品名、商品の説明、販売価格）にだけ「必須」を付ける
     public function testRequiredMarksAreShownOnlyOnRequiredFields(): void
     {

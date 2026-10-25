@@ -43,7 +43,9 @@
                 }
             </style>
             <div class="exhibit-form_user_picture_wrapper">
-                <img class="exhibit-form_user_picture" id="imagePreview" src="" alt="選択した画像がここに表示されます。">
+                <!-- 画像を選ぶまでは空の枠を出す。枠を押しても画像を選べる -->
+                <label for="imageInput" class="exhibit-form_image_placeholder" id="imagePlaceholder"></label>
+                <img class="exhibit-form_user_picture" id="imagePreview" alt="選択した画像" hidden>
                 <label for="imageInput" class="toggle_button">画像を選択する</label>
                 <input class="exhibit-form_input_user_image" type="file" id="imageInput" name="item_image" accept="image/jpeg,image/png">
             </div>
@@ -64,6 +66,8 @@
                         reader.onload = function(e) {
                             const imgElement = document.getElementById('imagePreview');
                             imgElement.src = e.target.result; // 画像のソースを設定
+                            imgElement.hidden = false;
+                            document.getElementById('imagePlaceholder').hidden = true;
                         };
                         reader.readAsDataURL(file); // 画像をデータURLとして読み込む
                     }
