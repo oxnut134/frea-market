@@ -289,4 +289,35 @@
         max-width: 480px;
         margin: 16px auto 0;
     }
+    /* 購入の完了：幅いっぱい（最大 480px）。見出しは行の長さをそろえて折り返す（最後の 1〜2 文字だけが次の行に落ちないように）。
+       auto-phrase は文節で改行する（Chrome・Edge 119 以降。lang="ja" のページだけ）。
+       文が 2 つある見出しは、文ごとに折り返さないまとまり（inline-block）にして、auto-phrase のない Safari でも文の切れ目で改行する */
+    .purchase-complete {
+        width: auto;
+        max-width: 480px;
+        margin: 32px auto 0;
+        padding: 0 16px;
+    }
+    .purchase-complete_message {
+        text-wrap: balance;
+        word-break: auto-phrase;
+    }
+    .purchase-complete_sentence {
+        display: inline-block;
+    }
+    .purchase-complete_detail {
+        margin-top: 16px;
+    }
+    /* 2 つのリンクは縦に並べ、見た目は文字のまま、押せる範囲を幅いっぱい・高さ 44px にする */
+    .purchase-complete_links {
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 24px;
+    }
+    .purchase-complete_links a {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 44px;
+    }
 }

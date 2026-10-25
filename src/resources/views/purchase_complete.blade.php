@@ -10,7 +10,8 @@
     {{-- 表示するだけの画面。購入の確定は Webhook で行う --}}
     <div class="purchase-complete">
         @if($purchase->status === \App\Models\Purchase::STATUS_PAID)
-        <div class="purchase-complete_message">ご購入ありがとうございました。購入が完了しました。</div>
+        {{-- 文ごとに span に分ける。959px 以下では、文の途中で改行しないまとまりにする（span の間に空白を入れない。PC で空白が見えるため） --}}
+        <div class="purchase-complete_message"><span class="purchase-complete_sentence">ご購入ありがとうございました。</span><span class="purchase-complete_sentence">購入が完了しました。</span></div>
         @elseif($purchase->status === \App\Models\Purchase::STATUS_PENDING && $purchase->payment_method === \App\Models\Purchase::PAYMENT_METHOD_KONBINI)
         <div class="purchase-complete_message">コンビニでのお支払いをお待ちしています。</div>
         <div class="purchase-complete_detail">支払い方法は Stripe からのメールをご確認ください。</div>
