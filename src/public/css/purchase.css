@@ -43,6 +43,17 @@
 .purchase-form_item_payment_method_column_name {
     margin-left: 3%;
 }
+.purchase-form_error_wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+.purchase-form_error {
+    width: 85%;
+    display: flex;
+    justify-content: flex-start;
+    color: red;
+}
 .purchase-form_select_payment_method {
     width: 40%;
     height: 4vh;
@@ -160,4 +171,122 @@
     justify-content: center;
     gap: 5%;
     margin-top: 6vh;
+}
+
+/* 959px 以下：左右 2 列をやめて縦に並べる（商品 → 支払い方法 → 配送先 → 確認の表 → 購入するボタン）。
+   左右の余白は 16px、中身の幅は最大 480px（商品詳細と同じ）。縦の余白と高さは vh ではなく固定の px にする */
+@media (max-width: 959px) {
+    .purchase-form {
+        flex-direction: column;
+        align-items: center;
+        box-sizing: border-box;
+        padding: 0 16px;
+    }
+    .purchase-form_confirm_box,
+    .purchase-form_purchase_box {
+        width: 100%;
+        max-width: 480px;
+    }
+    .purchase-form_confirm_box {
+        margin: 24px 0 0;
+    }
+    .purchase-form_item_image_wrapper {
+        align-items: flex-start;
+        padding-bottom: 16px;
+    }
+    /* flex の中で高さが伸びて歪まないように、固定の正方形に切り抜く */
+    .purchase-form_item_image {
+        flex-shrink: 0;
+        width: 96px;
+        height: 96px;
+        object-fit: cover;
+    }
+    .purchase-form_item_information {
+        min-width: 0;
+        margin-left: 16px;
+    }
+    .purchase-form_item_name,
+    .purchase-form_item_price {
+        font-size: 20px;
+        overflow-wrap: anywhere;
+    }
+    .purchase-form_item_price {
+        margin-top: 8px;
+    }
+    .purchase-form_item_payment_method,
+    .purchase-form_shipping_address_wrapper {
+        padding-bottom: 16px;
+    }
+    .purchase-form_item_payment_method_column_name,
+    .purchase-form_shipping_address_column_name {
+        margin: 16px 0 8px;
+    }
+    /* 16px 未満だと、iPhone の Safari が選ぶときに画面を拡大する */
+    .purchase-form_select_payment_method {
+        box-sizing: border-box;
+        width: 100%;
+        height: 44px;
+        margin-left: 0;
+        font-size: 16px;
+    }
+    .purchase-form_error {
+        width: 100%;
+        margin-top: 6px;
+    }
+    /* 見出しと「変更する」を縦の中央にそろえる。押せる範囲は高さ 44px、左右に 12px 広げ、文字の右端は中身の右端にそろえる */
+    .purchase-form_shipping_address_redirect_row {
+        align-items: center;
+        margin: 0;
+    }
+    .purchase-form_shipping_address_redirect_button {
+        display: flex;
+        align-items: center;
+        min-height: 44px;
+        margin: 8px -12px 0 0;
+        padding: 0 12px;
+        white-space: nowrap;
+    }
+    .purchase-form_shipping_address {
+        margin-left: 0;
+        overflow-wrap: anywhere;
+    }
+    .purchase-form_purchase_bag {
+        margin: 24px 0 32px;
+    }
+    /* 確認の表：1 行を「左に項目名・右に値」にする */
+    .purchase-form_purchase_payment_wrapper,
+    .purchase-form_purchase_payment_method_wrapper {
+        box-sizing: border-box;
+        width: 100%;
+        height: auto;
+        min-height: 56px;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 8px 16px;
+    }
+    .purchase-form_purchase_payment,
+    .purchase-form_purchase_payment_method {
+        width: auto;
+        margin: 0;
+    }
+    .purchase-form_purchase_payment:last-child,
+    .purchase-form_purchase_payment_method:last-child {
+        text-align: right;
+        overflow-wrap: anywhere;
+    }
+    .purchase-form_purchase_button {
+        width: 100%;
+        height: 48px;
+        margin-top: 24px;
+    }
+    .purchase-form_pending_message {
+        width: 100%;
+        margin-top: 16px;
+    }
+    .purchase-form_notice {
+        box-sizing: border-box;
+        width: calc(100% - 32px);
+        max-width: 480px;
+        margin: 16px auto 0;
+    }
 }

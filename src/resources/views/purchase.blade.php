@@ -37,8 +37,8 @@
                 </select>
                 @endif
                 @if ($errors->has('payment_method'))
-                <div style="width:100%;display:flex;justify-content:center;">
-                    <div style="width:85%;display:flex;justify-content:flex-start;color:red;">
+                <div class="purchase-form_error_wrapper">
+                    <div class="purchase-form_error">
                         {{$errors->first('payment_method')}}
                     </div>
                 </div>
