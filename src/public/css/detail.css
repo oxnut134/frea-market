@@ -211,3 +211,108 @@
     margin-top: 2vh;
     color: red;
 }
+/* コメントの入力エラーのメッセージ（左寄せ） */
+.detail-form_error_box {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+}
+.detail-form_error {
+    width: 60%;
+    display: flex;
+    justify-content: flex-start;
+    color: red;
+}
+
+/* 959px 以下：画像と情報を縦に並べる（左右の余白 16px、最大幅 480px）。高さと縦の余白は vh ではなく固定の px（横向きで潰れないように） */
+@media (max-width: 959px) {
+    .detail-form {
+        flex-direction: column;
+        align-items: center;
+        box-sizing: border-box;
+        padding: 0 16px;
+    }
+    .detail-form_Item_image,
+    .detail-form_detail_descriptions {
+        width: 100%;
+        max-width: 480px;
+    }
+    .detail-form_Item_image {
+        margin-top: 24px;
+    }
+    .detail-form_image_frame {
+        width: 100%;
+    }
+    .detail-form_detail_descriptions {
+        margin-top: 24px;
+        padding: 0 0 32px;
+    }
+    /* いいねの押せる場所を 44px 四方以上にする。アイコンは中央に置き、左端は文字にそろえる（44px と 26px の差の半分だけ左へ） */
+    .detail-form_engagement_image_box {
+        margin-left: -9px;
+    }
+    .detail-form_engagement_image_wrapper {
+        min-width: 44px;
+        min-height: 44px;
+        margin: 16px 10px 0 0;
+    }
+    .detail-form_button_to_purchase_step,
+    .detail-form_sale_status {
+        height: 48px;
+        margin-top: 16px;
+    }
+    .detail-form_message {
+        margin-top: 16px;
+    }
+    /* カテゴリーと商品の状態：見出しは固定の幅で縮ませず、右は残りの幅を使う */
+    .detail-form_Item_category_column_name,
+    .detail-form_Item_condition_column_name {
+        flex-shrink: 0;
+        width: 6.5em;
+        margin-top: 0;
+    }
+    /* 見出しの行の中央を、1 行目のカテゴリーの枠の中央にそろえる（枠の上の余白 6px + 枠の高さ 32.5px の半分 − 行の高さ 21.6px の半分） */
+    .detail-form_Item_category_column_name {
+        padding-top: 11px;
+    }
+    .detail-form_Item_category_wrapper {
+        flex: 1;
+        width: auto;
+    }
+    .detail-form_Item_category {
+        margin: 6px 5.4px;
+        font-size: 13px;
+    }
+    .detail-form_Item_condition_wrapper {
+        display: flex;
+        margin-top: 16px;
+    }
+    .detail-form_Item_condition {
+        margin-left: 0;
+    }
+    /* 横向き（高さ 375px 前後）でも、コメントが読める高さを残す */
+    .detail-form_comment_list {
+        max-height: max(40vh, 240px);
+    }
+    .detail-form_comment {
+        padding: 12px 0;
+    }
+    .detail-form_user_comment {
+        margin-top: 6px;
+    }
+    .detail-form_your_comment {
+        margin-top: 24px;
+    }
+    /* 16px 未満だと、iPhone の Safari が入力のときに画面を拡大する */
+    .detail-form_your_comment_description {
+        font-size: 16px;
+    }
+    .detail-form_error {
+        width: 100%;
+    }
+    .detail-form_your_comment_post_button,
+    .detail-form_login_to_comment_link {
+        height: 48px;
+        margin-top: 16px;
+    }
+}

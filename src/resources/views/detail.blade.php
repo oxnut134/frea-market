@@ -102,8 +102,8 @@
                 <div class="detail-form_your_comment">商品へのコメント</div>
                 <textarea class="detail-form_your_comment_description" name="comment" rows="6" cols="25"></textarea>
                 @if ($errors->has('comment'))
-                <div style="width:100%;display:flex;justify-content:flex-start;">
-                    <div style="width:60%;display:flex;justify-content:flex-start;color:red;">
+                <div class="detail-form_error_box">
+                    <div class="detail-form_error">
                         {{$errors->first('comment')}}
                     </div>
                 </div>
