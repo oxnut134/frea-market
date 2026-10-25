@@ -49,8 +49,8 @@
             </div>
             <p class="exhibit-form_note"><span class="exhibit-form_required">必須</span>JPEG・PNG、5MB 以下</p>
             @if ($errors->has('item_image'))
-            <div style="width:100%;display:flex;justify-content:flex-start;">
-                <div style="width:60%;display:flex;justify-content:flex-start;color:red;">
+            <div class="exhibit-form_error_wrapper">
+                <div class="exhibit-form_error">
                     {{$errors->first('item_image')}}
                 </div>
             </div>
@@ -120,8 +120,8 @@
             -->
             </div>
             @if ($errors->has('categories'))
-            <div style="width:100%;display:flex;justify-content:flex-start;">
-                <div style="width:60%;display:flex;justify-content:flex-start;color:red;">
+            <div class="exhibit-form_error_wrapper">
+                <div class="exhibit-form_error">
                     {{$errors->first('categories')}}
                 </div>
             </div>
@@ -139,8 +139,8 @@
                 <option{{ old('condition') === '状態が悪い' ? ' selected' : '' }}>状態が悪い</option>
             </select>
             @if ($errors->has('condition'))
-            <div style="width:100%;display:flex;justify-content:flex-start;">
-                <div style="width:60%;display:flex;justify-content:flex-start;color:red;">
+            <div class="exhibit-form_error_wrapper">
+                <div class="exhibit-form_error">
                     {{$errors->first('condition')}}
                 </div>
             </div>
@@ -155,8 +155,8 @@
                 <input class="exhibit-form_input_field" type="text" name="item_name" value="{{ old('item_name') }}">
             </div>
             @if ($errors->has('item_name'))
-            <div style="width:100%;display:flex;justify-content:flex-start;">
-                <div style="width:60%;display:flex;justify-content:flex-start;color:red;">
+            <div class="exhibit-form_error_wrapper">
+                <div class="exhibit-form_error">
                     {{$errors->first('item_name')}}
                 </div>
             </div>
@@ -168,8 +168,8 @@
                 <input class="exhibit-form_input_field" type="text" name="brand_name" value="{{ old('brand_name') }}">
             </div>
             @if ($errors->has('brand_name'))
-            <div style="width:100%;display:flex;justify-content:flex-start;">
-                <div style="width:60%;display:flex;justify-content:flex-start;color:red;">
+            <div class="exhibit-form_error_wrapper">
+                <div class="exhibit-form_error">
                     {{$errors->first('brand_name')}}
                 </div>
             </div>
@@ -181,8 +181,8 @@
                 <textarea class="exhibit-form_input_text_field" type="text" name="description" row="6" column="25">{{ old('description') }}</textarea>
             </div>
             @if ($errors->has('description'))
-            <div style="width:100%;display:flex;justify-content:flex-start;">
-                <div style="width:60%;display:flex;justify-content:flex-start;color:red;">
+            <div class="exhibit-form_error_wrapper">
+                <div class="exhibit-form_error">
                     {{$errors->first('description')}}
                 </div>
             </div>
@@ -191,12 +191,12 @@
                 <h3 class="exhibit-form_input_title_logo">販売価格<span class="exhibit-form_required">必須</span></h3>
             </div>
             <div class="exhibit-form_input_box ">
-                <input class="exhibit-form_input_field" type="text" name="price" value="{{ old('price') }}">
+                <input class="exhibit-form_input_field" type="text" inputmode="numeric" name="price" value="{{ old('price') }}">
             </div>
             <p class="exhibit-form_note">120 円以上</p>
             @if ($errors->has('price'))
-            <div style="width:100%;display:flex;justify-content:flex-start;">
-                <div style="width:60%;display:flex;justify-content:flex-start;color:red;">
+            <div class="exhibit-form_error_wrapper">
+                <div class="exhibit-form_error">
                     {{$errors->first('price')}}
                 </div>
             </div>
