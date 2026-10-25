@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>メール認証 | Flea Market</title>
     <link rel="icon" href="@versioned('favicon.ico')" sizes="any">
     <link rel="icon" href="@versioned('favicon.svg')" type="image/svg+xml">
@@ -11,6 +12,18 @@
         /* ほかの画面（header.css）と同じ、文字の大きさの基準 */
         html {
             font-size: 90%;
+        }
+
+        /* ほかの画面（header.css）と同じ字体 */
+        body {
+            font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", Meiryo, sans-serif;
+        }
+
+        button,
+        input,
+        select,
+        textarea {
+            font-family: inherit;
         }
 
         button:disabled,

@@ -3,8 +3,16 @@
 html {
     font-size: 90%;
 }
+/* 字体。iPhone・Mac はヒラギノ、Android は Noto Sans CJK JP（sans-serif）、Windows はメイリオ。Web フォントは読み込まない */
 body {
-    font-family: "Gothic"; /*"MS Mincho", "MingLiU", "Hiragino Mincho Pro", serif; /* 明朝体のフォントファミリー */
+    font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", Meiryo, sans-serif;
+}
+/* ボタンと入力欄は、ブラウザが字体を継承させないので、本文と同じ字体にそろえる */
+button,
+input,
+select,
+textarea {
+    font-family: inherit;
 }
 input {
     font-size: 16.2px;
@@ -72,7 +80,6 @@ input {
     width: 35%;
     color: #fff;
     font-size: 15.3px;
-    font-family: "Gothic";
     margin-right: 1.5%;
     text-decoration: none;
 }
@@ -82,7 +89,6 @@ input {
     margin-right: 3%;
     color: #fff;
     font-size: 15.3px;
-    font-family: "Gothic";
     text-decoration: none;
 }
 .frea-market_header_button_to_exhibit {

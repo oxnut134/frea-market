@@ -1,7 +1,4 @@
 @charset "UTF-8";
-body {
-    font-family: "Gothic";
-}
 .purchase-form {
     width: 100%;
     display: flex;
