@@ -118,8 +118,13 @@ input {
         min-height: 56px;
         padding: 8px 16px;
     }
+    /* 押せる高さを、右のボタンと同じ 40px にする（ロゴは縦の中央）。
+       折り返して 1 段を占めるとき（320px など）も、段の高さが整数になり、下の画面の位置が半端にならない */
     .frea-market_header_logo_link {
+        display: flex;
+        align-items: center;
         width: min(130px, 32vw);
+        min-height: 40px;
         margin-left: 0;
     }
     .frea-market_header_search {
