@@ -19,3 +19,27 @@
     width: 100%;
 
 }
+
+/* 959px 以下：左右の余白 16px。600px 未満は 2 列、600〜959px は 3 列（列の間 16px）。
+   行の間と上の余白は、vw や % ではなく固定の px（狭い画面で、商品名と次の行の画像が近すぎないように）。
+   画像は正方形に切り抜いて、縦長・横長の画像があっても行の高さをそろえる */
+@media (max-width: 959px) {
+    .index-form_image_box {
+        column-gap: 16px;
+        row-gap: 24px;
+        margin: 16px;
+    }
+    .index-form_image_wrapper {
+        width: calc((100% - 16px) / 2);
+    }
+    .index-form_image_attribute {
+        display: block;
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
+    }
+}
+@media (min-width: 600px) and (max-width: 959px) {
+    .index-form_image_wrapper {
+        width: calc((100% - 32px) / 3);
+    }
+}

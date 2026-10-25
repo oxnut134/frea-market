@@ -244,6 +244,16 @@ input[type="submit"]:disabled {
     border-left: var(--tab-line) solid var(--tab-edge);
     border-bottom-left-radius: calc(var(--tab-flare) + var(--tab-line));
 }
+/* 959px 以下：左右の余白を 16px に（商品の並びの左端とそろえる）。タブの左右の内側の余白も詰める（320px で「出品した商品」が折り返さないように） */
+@media (max-width: 959px) {
+    .tab-nav {
+        padding: 0 16px;
+    }
+    .tab-nav_item {
+        padding-right: 16px;
+        padding-left: 16px;
+    }
+}
 
 /* 商品の並びが 0 件のときの案内（マイページとトップページで共通）。並びの幅いっぱいに、中央に出す */
 .item-list_empty {
