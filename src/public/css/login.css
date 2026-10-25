@@ -84,3 +84,59 @@
     text-decoration:none;
     
 }
+/* 入力エラーのメッセージ（入力欄と同じ幅で、左寄せ） */
+.login-form_error_box {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+.login-form_error {
+    width: 60%;
+    display: flex;
+    justify-content: flex-start;
+    color: red;
+}
+
+/* 959px 以下：左右の余白を 48px にして、入力欄とボタンを横に広げる。高さは vh ではなく固定の px（横向きで低くなりすぎないように） */
+@media (max-width: 959px) {
+    .login-form_container {
+        width: calc(100% - 96px);
+        max-width: 460px;
+    }
+    .login-form_title {
+        height: auto;
+    }
+    .login-form_login_logo {
+        width: 100%;
+        height: auto;
+        margin: 32px 0 24px;
+    }
+    /* demo-notice.css は、このファイルより後に読み込まれるので、親のクラスを付けて優先させる */
+    .login-form_container .demo-login {
+        width: 100%;
+        margin-bottom: 24px;
+    }
+    /* ほかのボタンと同じ高さ */
+    .login-form_container .demo-login_button {
+        height: 48px;
+    }
+    .login-form_input_title_logo,
+    .login-form_error {
+        width: 100%;
+    }
+    .login-form_input_field {
+        width: 100%;
+        height: 44px;
+    }
+    .login-form_login_button {
+        width: 100%;
+        height: 48px;
+        margin-top: 32px;
+    }
+    .login-form_link_to_register {
+        width: 100%;
+        min-height: 44px;
+        align-items: center;
+        margin-top: 16px;
+    }
+}

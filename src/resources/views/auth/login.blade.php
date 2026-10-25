@@ -22,8 +22,8 @@
                 <input class="login-form_input_field" type="email" name="email" value="{{ old('email') }}" />
             </div>
     @if ($errors->has('email'))
-    <div  style="width:100%;display:flex;justify-content:center;">
-         <div style="width:60%;display:flex;justify-content:flex-start;color:red;">
+    <div class="login-form_error_box">
+         <div class="login-form_error">
             {{$errors->first('email')}}
         </div>
     </div>
@@ -35,8 +35,8 @@
                 <input class="login-form_input_field" type="password" name="password" />
             </div>
    @if ($errors->has('password'))
-    <div  style="width:100%;display:flex;justify-content:center;">
-         <div style="width:60%;display:flex;justify-content:flex-start;color:red;">
+    <div class="login-form_error_box">
+         <div class="login-form_error">
             {{$errors->first('password')}}
         </div>
     </div>

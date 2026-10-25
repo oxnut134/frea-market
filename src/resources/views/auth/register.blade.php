@@ -21,8 +21,8 @@
                 <input class="register-form_input_field" type="text" name="name" value="{{ old('name') }}">
             </div>
      @if ($errors->has('name'))
-    <div  style="width:100%;display:flex;justify-content:center;">
-         <div style="width:60%;display:flex;justify-content:flex-start;color:red;">
+    <div class="register-form_error_box">
+         <div class="register-form_error">
             {{$errors->first('name')}}
         </div>
     </div>
@@ -34,8 +34,8 @@
                 <input class="register-form_input_field" type="email" name="email" value="{{ old('email') }}">
             </div>
      @if ($errors->has('email'))
-    <div  style="width:100%;display:flex;justify-content:center;">
-         <div style="width:60%;display:flex;justify-content:flex-start;color:red;">
+    <div class="register-form_error_box">
+         <div class="register-form_error">
             {{$errors->first('email')}}
         </div>
     </div>
@@ -47,8 +47,8 @@
                 <input class="register-form_input_field" type="password" name="password">
             </div>
      @if ($errors->has('password'))
-    <div  style="width:100%;display:flex;justify-content:center;">
-         <div style="width:60%;display:flex;justify-content:flex-start;color:red;">
+    <div class="register-form_error_box">
+         <div class="register-form_error">
             {{$errors->first('password')}}
         </div>
     </div>
@@ -60,8 +60,8 @@
                 <input class="register-form_input_field" type="password" name="password_confirmation">
             </div>
      @if ($errors->has('password_confirmation'))
-    <div  style="width:100%;display:flex;justify-content:center;">
-         <div style="width:60%;display:flex;justify-content:flex-start;color:red;">
+    <div class="register-form_error_box">
+         <div class="register-form_error">
             {{$errors->first('password_confirmation')}}
         </div>
     </div>
