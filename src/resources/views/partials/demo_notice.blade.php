@@ -2,8 +2,11 @@
 @if (config('demo.enabled'))
 <link rel="stylesheet" href="@versioned('css/demo-notice.css')">
 @if ($place === 'login')
+{{-- 「ログインする」（フォームの送信）と見分けがつくように、案内の文と区切りを付け、形も変える（赤い塗りの錠剤型、幅は文字に合わせる） --}}
 <div class="demo-login">
+    <p class="demo-login_lead">アカウントを作らずに、すぐに試せます</p>
     <button type="button" class="demo-login_button js-demo-login" data-email="{{ config('demo.email') }}" data-password="{{ config('demo.password') }}">デモアカウントでログイン</button>
+    <p class="demo-login_or">または、メールアドレスでログイン</p>
 </div>
 <script src="@versioned('js/demo-login.js')" defer></script>
 @else

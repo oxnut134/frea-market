@@ -57,18 +57,24 @@
     display: flex;
     justify-content: center;
 }
+/* ログイン画面の「ログインする」と同じ形：白の背景に赤い枠線と赤い文字 */
 .register-form_redirect_button {
     width: 60%;
     height: 8vh;
     display: flex;
     justify-content: center;
-    margin-top: 7vh;
-    background-color: red;
-    color: #fff;
-    border: none;
+    /* 高さ 650px のページでも、下の「ログインはこちら」までスクロールせずに見えるように、固定の 32px（以前は 7vh） */
+    margin-top: 32px;
+    background-color: #fff;
+    color: red;
+    border: 2px solid red;
     border-radius: 4.5px;
     align-items: center;
     font-size: 18px;
+    cursor: pointer;
+}
+.register-form_redirect_button:hover {
+    background-color: rgba(255, 0, 0, 0.06);
 }
 
 .login-form_link_box {
@@ -99,6 +105,28 @@
 }
 
 /* 959px 以下：左右の余白を 48px にして、入力欄とボタンを横に広げる。高さは vh ではなく固定の px（横向きで低くなりすぎないように） */
+/* 960px 以上：高さ 650px のページでも、下の「ログインはこちら」までスクロールせずに見えるように、縦の余白を詰める
+   （見出しの箱の高さは中身に合わせて、上下の余白だけで間隔を決める。入力欄の見出しの上はブラウザの既定 1em から 6px に、
+   デモの案内の下とリンクの上は vh から固定の 12px に） */
+@media (min-width: 960px) {
+    .register-form_title {
+        height: auto;
+        margin-bottom: 0;
+    }
+    .register-form_register_logo {
+        height: auto;
+        margin: 3vh 0 2vh;
+    }
+    .register-form_container .demo-notice {
+        margin-bottom: 12px;
+    }
+    .register-form_input_title_logo {
+        margin-top: 6px;
+    }
+    .login-form_link_to_register {
+        margin-top: 12px;
+    }
+}
 @media (max-width: 959px) {
     .register-form_container {
         width: calc(100% - 96px);

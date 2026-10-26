@@ -12,19 +12,18 @@
     flex-direction: column;
 }
 
+/* 高さ 650px のページでも、下の「会員登録はこちら」までスクロールせずに見えるように、見出しの箱の高さは中身に合わせ
+   （以前は 20vh）、見出しの上下の余白だけで間隔を決める */
 .login-form_title {
     width: 100%;
-    height: 20vh;
     display: flex;
     justify-content: center;
 }
 .login-form_login_logo {
     width: 60%;
-    height: 10vh;
     display: flex;
     justify-content: center;
-    align-items: flex-end;
-    margin-bottom: 7vh;
+    margin: 4vh 0 3vh;
     font-size: 27px;
 }
 .login-form_input_title {
@@ -56,18 +55,24 @@
     display: flex;
     justify-content: center;
 }
+/* 高さは入力欄と同じ（重く見えないように）。赤で塗るのはデモのボタンだけにして、こちらは白の背景に赤い枠線と赤い文字 */
 .login-form_login_button {
     width: 60%;
-    height: 10vh;
+    height: 8vh;
     display: flex;
     justify-content: center;
-    margin-top: 10vh;
-    background-color: red;
-    color: #fff;
-    border: none;
+    /* 1280×800 で、下の「会員登録はこちら」までスクロールせずに見えるように、固定の 32px（以前は 10vh） */
+    margin-top: 32px;
+    background-color: #fff;
+    color: red;
+    border: 2px solid red;
     border-radius: 4.5px;
     align-items: center;
     font-size: 18px;
+    cursor: pointer;
+}
+.login-form_login_button:hover {
+    background-color: rgba(255, 0, 0, 0.06);
 }
 .login-form_link_box {
     width: 100%;
@@ -116,10 +121,6 @@
         width: 100%;
         margin-bottom: 24px;
     }
-    /* ほかのボタンと同じ高さ */
-    .login-form_container .demo-login_button {
-        height: 48px;
-    }
     .login-form_input_title_logo,
     .login-form_error {
         width: 100%;
@@ -130,7 +131,7 @@
     }
     .login-form_login_button {
         width: 100%;
-        height: 48px;
+        height: 44px;
         margin-top: 32px;
     }
     .login-form_link_to_register {

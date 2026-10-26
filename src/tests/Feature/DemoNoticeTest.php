@@ -26,6 +26,8 @@ class DemoNoticeTest extends TestCase
             ->assertDontSee(self::LOGIN_LABEL)
             ->assertDontSee('js-demo-login')
             ->assertDontSee('demo-login.js')
+            ->assertDontSee('demo-login_lead')
+            ->assertDontSee('demo-login_or')
             ->assertDontSee(config('demo.email'))
             ->assertDontSee(config('demo.password'));
         $this->get('/register')->assertStatus(200)->assertDontSee(self::MESSAGE);
@@ -47,6 +49,21 @@ class DemoNoticeTest extends TestCase
             ->assertDontSee(self::MESSAGE);
 
         $this->assertSame(1, substr_count($response->getContent(), 'js-demo-login'));
+    }
+
+    // ログイン画面：デモのボタンの上に案内の文、下に「または、メールアドレスでログイン」の区切りを置き、フォームと分ける
+    public function testLoginPageSeparatesDemoLoginFromForm(): void
+    {
+        config(['demo.enabled' => true]);
+
+        $this->get('/login')->assertStatus(200)
+            ->assertSeeInOrder([
+                '<p class="demo-login_lead">アカウントを作らずに、すぐに試せます</p>',
+                'js-demo-login',
+                '<p class="demo-login_or">または、メールアドレスでログイン</p>',
+                'name="email"',
+                'ログインする',
+            ], false);
     }
 
     // 会員登録画面：架空のアドレスで登録すること、メールを送らないこと、毎日削除されることを案内する

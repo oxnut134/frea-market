@@ -1,22 +1,65 @@
 @charset "UTF-8";
-/* ログイン画面の「デモアカウントでログイン」 */
+/* ログイン画面の「デモアカウントでログイン」。
+   「ログインする」（角の小さい四角、幅いっぱい）と見分けがつくように、赤い塗りの錠剤型で、幅は文字に合わせ、少し低くする。
+   上に案内の文、下に「または、メールアドレスでログイン」の区切りを置いて、フォームと分ける */
 .demo-login {
     width: 60%;
     margin: 0 auto 3vh;
+    text-align: center;
+}
+.demo-login_lead {
+    margin: 0 0 9px;
+    color: #333;
+    font-size: 14.4px;
 }
 .demo-login_button {
-    width: 100%;
-    padding: 9px 10.8px;
-    box-sizing: border-box;
-    border: 1px solid #333;
-    border-radius: 4.5px;
-    background-color: #fff;
-    color: #000;
-    font-size: 14.4px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 32px;
+    border: none;
+    border-radius: 9999px;
+    background-color: red;
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
     cursor: pointer;
 }
 .demo-login_button:hover {
-    background-color: #eee;
+    background-color: #d00;
+}
+/* 区切り：文字の左右に横線 */
+.demo-login_or {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 24px 0 0;
+    color: #666;
+    font-size: 12.6px;
+}
+.demo-login_or::before,
+.demo-login_or::after {
+    content: "";
+    flex: 1;
+    border-top: 2px solid #999;
+}
+/* 960px 以上：ボタンの幅を「ログインする」と同じにし（どちらも入れ物の 60% の幅いっぱい）、文字と間隔も幅に合わせて大きくする。
+   高さは「ログインする」（入力欄と同じ 8vh）より低くして、形（錠剤型）とあわせて、フォームの送信のボタンと見分けられるようにする */
+@media (min-width: 960px) {
+    .demo-login_lead {
+        margin-bottom: 12px;
+        font-size: 15.3px;
+    }
+    .demo-login_button {
+        width: 100%;
+        min-height: 52px;
+        font-size: 19.8px;
+        letter-spacing: 0.12em;
+    }
+    .demo-login_or {
+        margin-top: 28px;
+    }
 }
 /* 会員登録画面の説明 */
 .demo-notice {
